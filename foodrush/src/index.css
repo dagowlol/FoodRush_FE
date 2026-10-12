@@ -1,0 +1,29 @@
+:root {
+  font-family: 'Baloo 2', 'Segoe UI', 'Noto Sans', 'Trebuchet MS', Tahoma, Arial, sans-serif;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #ffe9c7;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: inherit;
+}
