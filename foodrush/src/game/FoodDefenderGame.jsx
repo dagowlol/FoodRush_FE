@@ -4,7 +4,7 @@ import Tutorial from './Tutorial'
 import GameScreen from './GameScreen'
 import VoucherShop from './VoucherShop'
 import MyVouchers from './MyVouchers'
-import AdminVoucherPanel from './AdminVoucherPanel'
+import AdminPortal from './AdminPortal'
 import { getStoredUser } from './authApi'
 import './game.css'
 
@@ -67,13 +67,12 @@ export default function FoodDefenderGame() {
       {screen === 'playing' && <GameScreen key={runKey} onExit={() => setScreen('menu')} onOpenShop={() => setShowShop(true)} />}
       {showShop && (
         <VoucherShop
-          user={user}
           onClose={() => setShowShop(false)}
           onRedeemed={() => setMenuRefreshKey((k) => k + 1)}
         />
       )}
       {showMyVouchers && <MyVouchers onClose={() => setShowMyVouchers(false)} />}
-      {showAdmin && <AdminVoucherPanel onClose={() => setShowAdmin(false)} />}
+      {showAdmin && <AdminPortal user={user} onClose={() => setShowAdmin(false)} />}
     </div>
   )
 }

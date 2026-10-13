@@ -1,37 +1,53 @@
 ﻿import { useEffect, useState } from 'react'
-import AdminVoucherPanel from '../game/AdminVoucherPanel'
+import AdminPortal from '../game/AdminPortal'
 import { getStoredUser, fetchMeApi } from '../game/authApi'
+import './staff.css'
+
+function GateScreen({ icon, title, description }) {
+  return (
+    <div className="staff-gate">
+      <div className="staff-gate__card">
+        <div className="staff-gate__icon">{icon}</div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <button type="button" className="staff-btn" onClick={() => window.location.assign('/')}>
+          ← Về trang chính
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function AdminVouchersPage() {
   const [user, setUser] = useState(() => getStoredUser())
 
   useEffect(() => {
-    fetchMeApi().then((fresh) => { if (fresh) setUser(fresh) })
+    fetchMeApi().then((fresh) => {
+      if (fresh) setUser(fresh)
+    })
   }, [])
 
-  const goHome = () => { window.location.assign('/') }
+  const goHome = () => window.location.assign('/')
 
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Vui lòng đăng nhập</h2>
-          <button onClick={goHome}>Về trang chính</button>
-        </div>
-      </div>
+      <GateScreen
+        icon="🔐"
+        title="Vui lòng đăng nhập"
+        description="Bạn cần đăng nhập bằng tài khoản quản trị viên để truy cập."
+      />
     )
   }
 
   if (user.role !== 'ADMIN') {
     return (
-      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Không có quyền truy cập (chỉ ADMIN)</h2>
-          <button onClick={goHome}>Về trang chính</button>
-        </div>
-      </div>
+      <GateScreen
+        icon="⛔"
+        title="Không có quyền truy cập"
+        description="Trang này chỉ dành cho tài khoản ADMIN."
+      />
     )
   }
 
-  return <AdminVoucherPanel onClose={goHome} />
+  return <AdminPortal user={user} onClose={goHome} />
 }

@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import '../pages/admin.css'
+import '../pages/staff.css'
 import {
   adminListVouchers,
   adminCreateVoucher,
@@ -11,7 +12,7 @@ import {
 
 const emptyCreate = { name: '', description: '', discountValue: '', priceCoins: 0, initialStock: 0, active: true, imageUrl: '', imagePublicId: '' }
 
-export default function AdminVoucherPanel({ onClose }) {
+export default function AdminVoucherPanel() {
   const [vouchers, setVouchers] = useState([])
   const [issued, setIssued] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +28,7 @@ export default function AdminVoucherPanel({ onClose }) {
   const [imageUploadMessage, setImageUploadMessage] = useState('')
 
   const activeCount = vouchers.filter((v) => v.active).length
+  const outOfStockCount = vouchers.filter((v) => v.outOfStock).length
 
   const resetImageState = () => {
     setSelectedImage(null)
@@ -166,40 +168,39 @@ export default function AdminVoucherPanel({ onClose }) {
       <div className="admin-field full">
         <label>Ảnh voucher (tùy chọn)</label>
         {imagePreview && (
-          <img src={imagePreview} alt="Xem trước ảnh voucher" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', borderRadius: 10, marginBottom: 8, border: '1px solid #ead7bb' }} />
+          <img src={imagePreview} alt="Xem trước ảnh voucher" className="admin-image-preview" />
         )}
         {!imagePreview && form.imageUrl && (
-          <img src={form.imageUrl} alt="Ảnh voucher" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', borderRadius: 10, marginBottom: 8, border: '1px solid #ead7bb' }} />
+          <img src={form.imageUrl} alt="Ảnh voucher" className="admin-image-preview" />
         )}
         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} disabled={uploadingImage} />
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn--ghost" onClick={() => handleImageUpload(target)} disabled={!selectedImage || uploadingImage}>
+        <div className="admin-image-actions">
+          <button type="button" className="staff-btn staff-btn--ghost" onClick={() => handleImageUpload(target)} disabled={!selectedImage || uploadingImage}>
             {uploadingImage ? 'Đang tải ảnh...' : 'Tải ảnh lên'}
           </button>
           {(form.imageUrl || imagePreview || selectedImage) && (
-            <button type="button" className="btn btn-cancel" onClick={() => removeImage(target)} disabled={uploadingImage}>Xóa ảnh</button>
+            <button type="button" className="staff-btn staff-btn--ghost" onClick={() => removeImage(target)} disabled={uploadingImage}>Xóa ảnh</button>
           )}
         </div>
-        {imageUploadMessage && <p style={{ margin: '8px 0 0', color: '#7a6343', fontSize: 13 }}>{imageUploadMessage}</p>}
+        {imageUploadMessage && <p className="admin-upload-note">{imageUploadMessage}</p>}
       </div>
     )
   }
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="admin-shell">
-        <header className="admin-header">
-          <div>
-            <h2>Quản lý voucher ứng dụng</h2>
-            <p>Bảng điều khiển dành cho quản trị viên Five Star</p>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn--primary" onClick={() => { resetImageState(); setCreateOpen(true) }}>Tạo mới voucher</button>
-            <button className="btn btn--ghost" onClick={onClose}>Đóng</button>
-          </div>
-        </header>
+    <>
+      <div className="admin-tab-bar">
+        <h2>Quản lý voucher</h2>
+        <button
+          type="button"
+          className="staff-btn"
+          onClick={() => { resetImageState(); setCreateOpen(true) }}
+        >
+          + Tạo mới voucher
+        </button>
+      </div>
 
-        {message && <p style={{ color: '#b00', margin: '0 0 12px' }}>{message}</p>}
+      {message && <div className="staff-alert is-error">⚠️ {message}</div>}
 
         <section className="admin-summary">
           <div className="admin-card">
@@ -211,14 +212,20 @@ export default function AdminVoucherPanel({ onClose }) {
             <strong>{activeCount}</strong>
           </div>
           <div className="admin-card">
+            <span>Đã hết hàng</span>
+            <strong>{outOfStockCount}</strong>
+          </div>
+          <div className="admin-card">
             <span>Voucher đã phát</span>
             <strong>{issued.length}</strong>
           </div>
         </section>
 
-        {loading ? <p>Đang tải...</p> : (
+        {loading ? (
+          <p className="staff-empty">Đang tải...</p>
+        ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -230,9 +237,9 @@ export default function AdminVoucherPanel({ onClose }) {
                     <tr key={v.id}>
                       <td>
                         {v.imageUrl ? (
-                          <img src={v.imageUrl} alt={v.name} style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #ead7bb' }} />
+                          <img src={v.imageUrl} alt={v.name} className="admin-thumb" />
                         ) : (
-                          <div style={{ width: 56, height: 40, borderRadius: 8, background: '#f4e7cf', display: 'grid', placeItems: 'center', color: '#8a6a3b', fontSize: 11 }}>No img</div>
+                          <div className="admin-thumb admin-thumb--empty">No img</div>
                         )}
                       </td>
                       <td>{v.name}</td>
@@ -247,9 +254,19 @@ export default function AdminVoucherPanel({ onClose }) {
                         {v.outOfStock && <span className="badge oos">Hết</span>}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn" onClick={() => startEdit(v)}>Sửa</button>
-                          <button className="btn btn--ghost" onClick={() => toggleStatus(v)}>
+                        <div className="admin-table__actions">
+                          <button
+                            type="button"
+                            className="staff-btn staff-btn--ghost"
+                            onClick={() => startEdit(v)}
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            type="button"
+                            className="staff-btn staff-btn--ghost"
+                            onClick={() => toggleStatus(v)}
+                          >
                             {v.active ? 'Tắt' : 'Bật'}
                           </button>
                         </div>
@@ -261,28 +278,48 @@ export default function AdminVoucherPanel({ onClose }) {
             </div>
 
             <section className="admin-issued">
-              <h3 style={{ margin: 0 }}>Voucher đã phát ({issued.length})</h3>
+              <h3>Voucher đã phát ({issued.length})</h3>
+              <p className="admin-issued__hint">Danh sách mã khách đã đổi bằng coin trong ứng dụng.</p>
               <div className="admin-issued-list">
-                {issued.map((v) => (
-                  <div className="admin-issued-item" key={v.id}>
-                    {v.code} - {v.voucherName} - người dùng #{v.userId} - {v.redemptionDate} - {v.status}
-                  </div>
-                ))}
+                {issued.length === 0 ? (
+                  <p className="staff-empty">Chưa có voucher nào được phát.</p>
+                ) : (
+                  issued.map((v) => (
+                    <div className="admin-issued-item" key={v.id}>
+                      <span className="admin-issued-item__code">{v.code}</span>
+                      <span className="admin-issued-item__name">{v.voucherName}</span>
+                      <span className="admin-issued-item__meta">
+                        Người dùng #{v.userId} • {v.redemptionDate}
+                      </span>
+                      <span className={`badge ${v.status === 'USED' ? 'inactive' : 'active'}`}>
+                        {v.status === 'USED' ? 'Đã dùng' : v.status === 'EXPIRED' ? 'Hết hạn' : 'Còn hiệu lực'}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           </>
         )}
-      </div>
 
       {createOpen && (
         <div className="admin-modal-backdrop" onClick={() => { setCreateOpen(false); resetImageState() }}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <header className="admin-header" style={{ marginBottom: 12 }}>
-              <div>
-                <h2>Tạo mới voucher</h2>
-                <p>Thêm loại voucher mới cho ứng dụng</p>
+            <header className="admin-header">
+              <div className="admin-header__title">
+                <span className="admin-header__icon">✨</span>
+                <div>
+                  <h2>Tạo mới voucher</h2>
+                  <p>Thêm loại voucher mới cho ứng dụng</p>
+                </div>
               </div>
-              <button className="btn btn--ghost" onClick={() => { setCreateOpen(false); resetImageState() }}>Đóng</button>
+              <button
+                type="button"
+                className="staff-btn staff-btn--ghost"
+                onClick={() => { setCreateOpen(false); resetImageState() }}
+              >
+                ✕ Đóng
+              </button>
             </header>
             <form onSubmit={handleCreate}>
               <div className="admin-form-grid">
@@ -313,9 +350,9 @@ export default function AdminVoucherPanel({ onClose }) {
                 </div>
                 {renderImageSection('create')}
               </div>
-              <div className="admin-actions" style={{ justifyContent: 'flex-end' }}>
-                <button className="btn btn-cancel" type="button" onClick={() => { setCreateOpen(false); resetImageState() }}>Hủy</button>
-                <button className="btn btn-save" type="submit" disabled={uploadingImage}>Lưu thay đổi</button>
+              <div className="admin-actions admin-actions--end">
+                <button className="staff-btn staff-btn--ghost" type="button" onClick={() => { setCreateOpen(false); resetImageState() }}>Hủy</button>
+                <button className="staff-btn" type="submit" disabled={uploadingImage}>Lưu thay đổi</button>
               </div>
             </form>
           </div>
@@ -325,12 +362,21 @@ export default function AdminVoucherPanel({ onClose }) {
       {editing && (
         <div className="admin-modal-backdrop" onClick={() => { setEditing(null); resetImageState() }}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <header className="admin-header" style={{ marginBottom: 12 }}>
-              <div>
-                <h2>Sửa voucher #{editing}</h2>
-                <p>Cập nhật thông tin và tồn kho</p>
+            <header className="admin-header">
+              <div className="admin-header__title">
+                <span className="admin-header__icon">✏️</span>
+                <div>
+                  <h2>Sửa voucher #{editing}</h2>
+                  <p>Cập nhật thông tin và tồn kho</p>
+                </div>
               </div>
-              <button className="btn btn--ghost" onClick={() => { setEditing(null); resetImageState() }}>Đóng</button>
+              <button
+                type="button"
+                className="staff-btn staff-btn--ghost"
+                onClick={() => { setEditing(null); resetImageState() }}
+              >
+                ✕ Đóng
+              </button>
             </header>
             <form onSubmit={handleUpdate}>
               <div className="admin-form-grid">
@@ -361,14 +407,14 @@ export default function AdminVoucherPanel({ onClose }) {
                 </div>
                 {renderImageSection('edit')}
               </div>
-              <div className="admin-actions" style={{ justifyContent: 'flex-end' }}>
-                <button className="btn btn-cancel" type="button" onClick={() => { setEditing(null); resetImageState() }}>Hủy</button>
-                <button className="btn btn-save" type="submit" disabled={uploadingImage}>Lưu thay đổi</button>
+              <div className="admin-actions admin-actions--end">
+                <button className="staff-btn staff-btn--ghost" type="button" onClick={() => { setEditing(null); resetImageState() }}>Hủy</button>
+                <button className="staff-btn" type="submit" disabled={uploadingImage}>Lưu thay đổi</button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

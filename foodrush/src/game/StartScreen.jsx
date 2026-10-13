@@ -255,7 +255,7 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
               className="btn btn--primary hub-login-btn"
               onClick={handleOpenAuth}
             >
-              🔑 Đăng nhập
+              Đăng nhập
             </button>
           )}
         </div>
@@ -274,7 +274,6 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
         {/* Featured Game Section: Food Defender */}
         <section className="hub-section">
           <div className="hub-section__header">
-            <span className="hub-section__badge is-live">● ĐANG HOẠT ĐỘNG</span>
             <h2 className="hub-section__title">Trò Chơi Nổi Bật</h2>
           </div>
 

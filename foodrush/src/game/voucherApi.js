@@ -156,3 +156,64 @@ export async function adminIssuedVouchers() {
     return []
   }
 }
+
+// Admin users
+export async function adminListUsers({ keyword, role, page = 0, size = 10 } = {}) {
+  if (!apiEnabled()) return { content: [], page: 0, size, totalItems: 0, totalPages: 0, first: true, last: true }
+  const params = new URLSearchParams()
+  if (keyword) params.set('keyword', keyword)
+  if (role) params.set('role', role)
+  params.set('page', String(page))
+  params.set('size', String(size))
+  try {
+    const json = await request(`/api/admin/users?${params.toString()}`)
+    const data = json?.data
+    return {
+      content: Array.isArray(data?.content) ? data.content : [],
+      page: data?.page ?? 0,
+      size: data?.size ?? size,
+      totalItems: data?.totalItems ?? 0,
+      totalPages: data?.totalPages ?? 0,
+      first: data?.first ?? true,
+      last: data?.last ?? true,
+    }
+  } catch (err) {
+    console.warn('[voucherApi] adminListUsers failed', err)
+    return { content: [], page: 0, size, totalItems: 0, totalPages: 0, first: true, last: true }
+  }
+}
+
+export async function adminUserStats() {
+  if (!apiEnabled()) return null
+  try {
+    const json = await request('/api/admin/users/stats')
+    return json?.data ?? null
+  } catch (err) {
+    console.warn('[voucherApi] adminUserStats failed', err)
+    return null
+  }
+}
+
+export async function adminCreateUser(payload) {
+  const json = await request('/api/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return json?.data ?? null
+}
+
+export async function adminUpdateUser(id, payload) {
+  const json = await request(`/api/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+  return json?.data ?? null
+}
+
+export async function adminSetUserActive(id, active) {
+  const json = await request(`/api/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ active }),
+  })
+  return json?.data ?? null
+}
