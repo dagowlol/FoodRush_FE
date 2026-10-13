@@ -42,6 +42,16 @@ export async function fetchWallet() {
   }
 }
 
+export async function fetchDailyCoinSummary() {
+  if (!apiEnabled()) return null
+  try {
+    const json = await request('/api/wallet/daily-summary')
+    return json?.data ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function fetchWalletTransactions() {
   if (!apiEnabled()) return []
   try {
@@ -114,6 +124,26 @@ export async function adminUpdateVoucher(id, payload) {
 
 export async function adminUpdateVoucherStatus(id, active) {
   const json = await request(`/api/admin/vouchers/${id}/status`, { method: 'PATCH', body: JSON.stringify({ active }) })
+  return json?.data || null
+}
+
+export async function adminUploadVoucherImage(file) {
+  const token = getToken()
+  const formData = new FormData()
+  formData.append('image', file)
+  const res = await fetch(getBaseUrl() + '/api/admin/vouchers/upload-image', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok) {
+    const err = new Error(json?.message || json?.error || `HTTP ${res.status}`)
+    err.status = res.status
+    throw err
+  }
   return json?.data || null
 }
 

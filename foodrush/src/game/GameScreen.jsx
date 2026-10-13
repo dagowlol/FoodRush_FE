@@ -7,7 +7,7 @@ import Bug from './Bug'
 import FoodArea from './FoodArea'
 import ToolBar from './ToolBar'
 import GameHUD from './GameHUD'
-import DiscountProgressBar from './DiscountProgressBar'
+
 import PowerUpBar from './PowerUpBar'
 import ResultScreen from './ResultScreen'
 import backgroundMain from '../assets/background_main.png'
@@ -39,19 +39,25 @@ function PauseOverlay({ onResume, onRestart, onExit }) {
 export default function GameScreen({ onExit, onOpenShop }) {
   const sessionRef = useRef(null)
   const finishPromiseRef = useRef(Promise.resolve())
+  const [finishResult, setFinishResult] = useState(null)
   const fieldRef = useRef(null)
   const [mousePos, setMousePos] = useState({ x: -100, y: -100, visible: false })
   const [isAttacking, setIsAttacking] = useState(false)
 
   const handleEvent = useCallback((type, payload) => {
     if (type === 'start') {
+      setFinishResult(null)
       gameApi.startSession().then((id) => {
         if (id) sessionRef.current = id
       })
     } else if (type === 'contaminate') {
       gameApi.contaminate(sessionRef.current)
     } else if (type === 'finish') {
-      finishPromiseRef.current = gameApi.finish(sessionRef.current, payload) || Promise.resolve()
+      finishPromiseRef.current = (gameApi.finish(sessionRef.current, payload) || Promise.resolve())
+        .then((data) => {
+          if (data) setFinishResult(data)
+          return data
+        })
     }
   }, [])
 
@@ -121,8 +127,6 @@ export default function GameScreen({ onExit, onOpenShop }) {
         paused={status === 'paused'}
         onTogglePause={() => (status === 'paused' ? engine.resume() : engine.pause())}
       />
-
-      <DiscountProgressBar score={engine.score} />
 
       <main className="fd-main">
         <div className="fd-scene">
@@ -210,6 +214,7 @@ export default function GameScreen({ onExit, onOpenShop }) {
           onExit={onExit}
           onOpenShop={onOpenShop}
           finishPromise={finishPromiseRef.current}
+          finishResult={finishResult}
         />
       )}
     </div>

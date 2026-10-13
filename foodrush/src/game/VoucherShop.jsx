@@ -55,21 +55,21 @@ export default function VoucherShop({ user, onClose }) {
   }
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="result-card" style={{ maxWidth: 880, width: '95%' }}>
-        <h2 style={{ marginTop: 0 }}>Voucher Shop</h2>
+    <div className="overlay" style={{ alignItems: 'flex-start', overflowY: 'auto', padding: '24px 18px' }} role="dialog" aria-modal="true">
+      <div className="result-card" style={{ maxWidth: 880, width: '95%', maxHeight: '88vh', overflow: 'auto' }}>
+        <h2 style={{ marginTop: 0 }}>Cửa hàng voucher</h2>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div>Coin balance: <b>{balance !== null ? balance : '...'}</b></div>
-          <button className="btn btn--ghost" onClick={onClose}>Close</button>
+          <div>Số coin: <b>{balance !== null ? balance : '...'}</b></div>
+          <button className="btn btn--ghost" onClick={onClose}>Đóng</button>
         </div>
         {status && !status.canRedeemToday && (
           <p style={{ color: '#b00' }}>{status.message}</p>
         )}
         {message && <p style={{ color: '#b00' }}>{message}</p>}
         {loading ? (
-          <p>Loading...</p>
+          <p>Đang tải...</p>
         ) : allOutOfStock ? (
-          <p>All rewards have been claimed. You can still play and earn coins.</p>
+          <p>Tất cả phần thưởng đã được nhận. Bạn vẫn có thể chơi để kiếm coin.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
             {vouchers.map((v) => {
@@ -79,12 +79,24 @@ export default function VoucherShop({ user, onClose }) {
                 !v.active ||
                 (balance !== null && balance < v.priceCoins)
               return (
-                <div key={v.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
+                <div key={v.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, overflow: 'hidden' }}>
+                  {v.imageUrl ? (
+                    <img
+                      src={v.imageUrl}
+                      alt={v.name}
+                      style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: 8, background: '#f4e7cf' }}
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: 140, borderRadius: 6, marginBottom: 8, background: '#f4e7cf', display: 'grid', placeItems: 'center', color: '#8a6a3b' }}>
+                      Chưa có ảnh
+                    </div>
+                  )}
                   <h3 style={{ margin: '0 0 4px' }}>{v.name}</h3>
                   <p style={{ margin: '0 0 8px', fontSize: 13 }}>{v.description || v.discountValue}</p>
-                  <div>Price: <b>{v.priceCoins}</b> coins</div>
-                  <div>Stock: <b>{v.remainingStock}</b></div>
-                  <div>Status: {v.outOfStock ? 'Out of stock' : (v.active ? 'Active' : 'Inactive')}</div>
+                  <div>Giá: <b>{v.priceCoins}</b> coin</div>
+                  <div>Tồn kho: <b>{v.remainingStock}</b></div>
+                  <div>Trạng thái: {v.outOfStock ? 'Hết hàng' : (v.active ? 'Đang hoạt động' : 'Đã tắt')}</div>
                   <button
                     type="button"
                     className="btn btn--primary"
@@ -92,10 +104,10 @@ export default function VoucherShop({ user, onClose }) {
                     disabled={disabled}
                     onClick={() => setConfirming(v)}
                   >
-                    {v.outOfStock ? 'Out of stock' : 'Redeem'}
+                    {v.outOfStock ? 'Hết hàng' : 'Đổi'}
                   </button>
                   {balance !== null && balance < v.priceCoins && !v.outOfStock && (
-                    <div style={{ fontSize: 12, color: '#b00', marginTop: 4 }}>Not enough coins</div>
+                    <div style={{ fontSize: 12, color: '#b00', marginTop: 4 }}>Không đủ coin</div>
                   )}
                 </div>
               )
@@ -105,22 +117,22 @@ export default function VoucherShop({ user, onClose }) {
 
         {confirming && (
           <div style={{ marginTop: 16, border: '1px solid #ccc', padding: 12, borderRadius: 8 }}>
-            <p>Redeem <b>{confirming.name}</b> for <b>{confirming.priceCoins}</b> coins?</p>
+            <p>Đổi <b>{confirming.name}</b> với <b>{confirming.priceCoins}</b> coin?</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn--primary" onClick={handleRedeem} disabled={redeeming}>
-                {redeeming ? 'Redeeming...' : 'Confirm'}
+                {redeeming ? 'Đang đổi...' : 'Xác nhận'}
               </button>
-              <button className="btn" onClick={() => setConfirming(null)} disabled={redeeming}>Cancel</button>
+              <button className="btn" onClick={() => setConfirming(null)} disabled={redeeming}>Hủy</button>
             </div>
           </div>
         )}
 
         {issued && (
           <div style={{ marginTop: 16, border: '2px solid #2a7', padding: 12, borderRadius: 8 }}>
-            <h3>Redemption successful!</h3>
+            <h3>Đổi voucher thành công!</h3>
             <div>Voucher: <b>{issued.voucherName}</b></div>
-            <div>Code: <b>{issued.code}</b></div>
-            <div>Redemption date: <b>{issued.redemptionDate}</b></div>
+            <div>Mã: <b>{issued.code}</b></div>
+            <div>Ngày đổi: <b>{issued.redemptionDate}</b></div>
             <div>{issued.usageInstructions}</div>
             <button className="btn" onClick={() => setIssued(null)} style={{ marginTop: 8 }}>OK</button>
           </div>

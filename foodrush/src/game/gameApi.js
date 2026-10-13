@@ -55,9 +55,9 @@ export const gameApi = {
   },
 
   async finish(sessionId, result) {
-    if (!apiEnabled() || !sessionId) return
+    if (!apiEnabled() || !sessionId) return null
     try {
-      await request(`/api/game/sessions/${sessionId}/finish`, {
+      const res = await request(`/api/game/sessions/${sessionId}/finish`, {
         method: 'POST',
         body: JSON.stringify({
           score: result.score,
@@ -65,8 +65,21 @@ export const gameApi = {
           wavesCompleted: result.wavesCompleted,
         }),
       })
+      return res?.data || null
     } catch (error) {
       console.warn('[gameApi] finish failed', error)
+      return null
+    }
+  },
+
+  async fetchHistory() {
+    if (!apiEnabled()) return []
+    try {
+      const res = await request('/api/game/history')
+      return Array.isArray(res?.data) ? res.data : []
+    } catch (error) {
+      console.warn('[gameApi] fetchHistory failed', error)
+      return []
     }
   },
 }

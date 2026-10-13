@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { AntIcon, FlyIcon, SprayIcon, StarLogo, SwatterIcon } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
 import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
+import { fetchDailyCoinSummary } from './voucherApi'
+import { gameApi } from './gameApi'
 import { sound } from './sound'
 import CouponList from './CouponList'
 import AuthModal from './AuthModal'
@@ -67,6 +69,8 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
   const [selectedComingSoon, setSelectedComingSoon] = useState(null)
   const [coupons, setCoupons] = useState([])
   const [eligibility, setEligibility] = useState(null)
+  const [dailyCoin, setDailyCoin] = useState(null)
+  const [bestScore, setBestScore] = useState(0)
 
   const couponCount = coupons.length
 
@@ -81,6 +85,8 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
     if (!user || user.isGuest) {
       setCoupons([])
       setEligibility(null)
+      setDailyCoin(null)
+      setBestScore(0)
       return () => {
         cancelled = true
       }
@@ -88,12 +94,22 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
 
     setCoupons([])
     setEligibility(null)
+    setDailyCoin(null)
+    setBestScore(0)
 
     fetchMyCoupons().then((data) => {
       if (!cancelled) setCoupons(data)
     })
     fetchRewardEligibility().then((data) => {
       if (!cancelled) setEligibility(data)
+    })
+    fetchDailyCoinSummary().then((data) => {
+      if (!cancelled) setDailyCoin(data)
+    })
+    gameApi.fetchHistory().then((history) => {
+      if (cancelled) return
+      const top = history.reduce((max, s) => Math.max(max, s?.scoreEarned ?? 0), 0)
+      setBestScore(top)
     })
 
     return () => {
@@ -106,6 +122,8 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
     setUser(null)
     setCoupons([])
     setEligibility(null)
+    setDailyCoin(null)
+    setBestScore(0)
   }
 
   const handleOpenAuth = () => {
@@ -158,10 +176,13 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
 
           {user && !user.isGuest && (
             <>
-              <button type="button" className="btn btn--ghost" onClick={onOpenShop}>Voucher Shop</button>
-              <button type="button" className="btn btn--ghost" onClick={onOpenMyVouchers}>My Vouchers</button>
+              <button type="button" className="btn btn--ghost" onClick={onOpenShop}>Cửa hàng voucher</button>
+
               {user.role === "ADMIN" && (
-                <button type="button" className="btn btn--ghost" onClick={onOpenAdmin}>Admin</button>
+                <button type="button" className="btn btn--ghost" onClick={() => window.location.assign('/admin')}>Admin App</button>
+              )}
+              {(user.role === "STAFF" || user.role === "ADMIN") && (
+                <button type="button" className="btn btn--ghost" onClick={() => window.location.assign('/staff')}>Staff Web</button>
               )}
             </>
           )}
@@ -175,9 +196,9 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
                 <span className="hub-user-name">
                   {user.displayName || user.username}
                 </span>
-                {user.role === 'STAFF' && (
+                {/* {user.role === 'STAFF' && (
                   <span className="hub-user-badge">Nhân viên</span>
-                )}
+                )} */}
               </div>
               <button
                 type="button"
@@ -232,6 +253,12 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
 
               <div className="featured-highlights">
                 <div className="highlight-pill">
+                  <span className="pill-icon">🏆</span>
+                  <span>
+                    Kỷ lục: <b>{user && !user.isGuest ? bestScore.toLocaleString('vi-VN') : '—'}</b> điểm
+                  </span>
+                </div>
+                <div className="highlight-pill">
                   <span className="pill-icon">📈</span>
                   <span>Độ khó tăng dần theo điểm</span>
                 </div>
@@ -244,6 +271,33 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
                   <span>3 Mạng chơi thử thách</span>
                 </div>
               </div>
+
+              {/* Coin status: balance + how much more can be earned today */}
+              {user && !user.isGuest && dailyCoin && (
+                <div className="hub-coin-panel">
+                  <div className="hub-coin-panel__item">
+                    <span className="hub-coin-panel__label">🪙 Coin hiện có</span>
+                    <span className="hub-coin-panel__value">
+                      {(dailyCoin.coinBalance ?? 0).toLocaleString('vi-VN')}
+                    </span>
+                  </div>
+                  <div className="hub-coin-panel__divider" />
+                  <div className="hub-coin-panel__item">
+                    <span className="hub-coin-panel__label">📅 Có thể kiếm hôm nay</span>
+                    <span className="hub-coin-panel__value is-gain">
+                      {dailyCoin.dailyCoinCap > 0
+                        ? `${(dailyCoin.remainingCoinsToday ?? 0).toLocaleString('vi-VN')} coin`
+                        : 'Không giới hạn'}
+                    </span>
+                    <span className="hub-coin-panel__hint">
+                      Đã kiếm {(dailyCoin.dailyCoinsEarned ?? 0).toLocaleString('vi-VN')}
+                      {dailyCoin.dailyCoinCap > 0
+                        ? ` / ${dailyCoin.dailyCoinCap.toLocaleString('vi-VN')} coin hôm nay`
+                        : ' coin hôm nay'}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Tool Reminder */}
               <div className="legend-mini">

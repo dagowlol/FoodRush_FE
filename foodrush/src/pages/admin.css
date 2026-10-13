@@ -1,0 +1,269 @@
+﻿.admin-shell {
+  width: min(1180px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(36, 20, 0, 0.18);
+  padding: 28px;
+  color: #2b2014;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.admin-header p {
+  margin: 4px 0 0;
+  color: #7a6343;
+}
+
+.admin-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 18px 0 24px;
+}
+
+.admin-card {
+  background: linear-gradient(135deg, #fff7ea, #ffe9c7);
+  border: 1px solid #f0d6a6;
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.admin-card span {
+  display: block;
+  color: #7a6343;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.admin-card strong {
+  font-size: 28px;
+  color: #8a4b00;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid #ead7bb;
+  border-radius: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #ead7bb;
+}
+
+.admin-table th {
+  background: #fff3dd;
+  color: #6d4c1b;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: #fffaf0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge.active {
+  background: #e6f6ea;
+  color: #1f7a31;
+}
+
+.badge.inactive {
+  background: #fde7e7;
+  color: #a32727;
+}
+
+.badge.oos {
+  background: #f1ecff;
+  color: #5a3ea3;
+  margin-left: 6px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.admin-form {
+  background: #fffcf6;
+  border: 1px solid #ead7bb;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.admin-form h4 {
+  margin: 0 0 12px;
+}
+
+.admin-form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-form-fields input[type="text"],
+.admin-form-fields input[type="number"],
+.admin-form-fields input:not([type]) {
+  min-width: 150px;
+  padding: 9px 11px;
+  border: 1px solid #d8bf95;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.admin-form-fields label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-issued {
+  margin-top: 22px;
+  background: #fffcf6;
+  border: 1px solid #ead7bb;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.admin-issued-list {
+  max-height: 260px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-issued-item {
+  border-bottom: 1px solid #ead7bb;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.admin-issued-item:last-child {
+  border-bottom: none;
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,12,0,0.45);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+
+.admin-modal {
+  width: min(720px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.25);
+}
+
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-field.full {
+  grid-column: 1 / -1;
+}
+
+.admin-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5e4626;
+}
+
+.admin-field input[type='text'],
+.admin-field input[type='number'],
+.admin-field input:not([type]) {
+  padding: 10px 12px;
+  border: 1px solid #d8bf95;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.admin-field .admin-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  font-weight: 700;
+}
+
+.btn-save {
+  background: #FCE49E;
+  color: #3a2a14;
+  box-shadow: 0 4px 0 #d9a83f;
+}
+
+.btn-cancel {
+  background: #fff;
+  color: #4b3a24;
+  border: 1px solid #cbb79a;
+  box-shadow: none;
+}
+
+
+:root {
+  --brand-red: #e2452f;
+  --brand-red-dark: #b2311f;
+  --ink: #3a2b25;
+  --cream: #fff8ec;
+}
+
