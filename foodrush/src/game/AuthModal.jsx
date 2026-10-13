@@ -348,27 +348,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
           Đăng nhập bằng Google
         </button>
 
-        <div className="auth-divider">
-          <span>hoặc trải nghiệm nhanh</span>
-        </div>
-
-        <div className="auth-quick-actions">
-          <button
-            type="button"
-            className="btn btn--ghost auth-quick-btn"
-            onClick={fillStaffDemo}
-            title="Tự động điền tài khoản mẫu từ hệ thống"
-          >
-            ⚡ Tài khoản mẫu (Staff)
-          </button>
-          <button
-            type="button"
-            className="btn btn--ghost auth-quick-btn"
-            onClick={handleGuest}
-          >
-            👤 Chơi thử (Khách)
-          </button>
-        </div>
       </div>
     </div>
   )
