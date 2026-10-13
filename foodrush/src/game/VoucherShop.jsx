@@ -6,7 +6,7 @@ import {
   redeemVoucher,
 } from './voucherApi'
 
-export default function VoucherShop({ user, onClose }) {
+export default function VoucherShop({ user, onClose, onRedeemed }) {
   const [vouchers, setVouchers] = useState([])
   const [balance, setBalance] = useState(null)
   const [status, setStatus] = useState(null)
@@ -45,6 +45,8 @@ export default function VoucherShop({ user, onClose }) {
         setIssued(res.voucher)
         setConfirming(null)
         await refresh()
+        // Let the parent refresh the "Mã của tôi" list right away.
+        onRedeemed?.()
       } else {
         setMessage(res.error || 'Redemption failed.')
         setConfirming(null)
@@ -116,25 +118,94 @@ export default function VoucherShop({ user, onClose }) {
         )}
 
         {confirming && (
-          <div style={{ marginTop: 16, border: '1px solid #ccc', padding: 12, borderRadius: 8 }}>
-            <p>Đổi <b>{confirming.name}</b> với <b>{confirming.priceCoins}</b> coin?</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="btn btn--primary" onClick={handleRedeem} disabled={redeeming}>
-                {redeeming ? 'Đang đổi...' : 'Xác nhận'}
-              </button>
-              <button className="btn" onClick={() => setConfirming(null)} disabled={redeeming}>Hủy</button>
+          <div
+            className="overlay overlay--modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !redeeming) setConfirming(null)
+            }}
+          >
+            <div className="confirm-card">
+              <div className="confirm-card__icon">🎟️</div>
+              <h3 className="confirm-card__title">Xác nhận đổi voucher</h3>
+              <p className="confirm-card__text">
+                Bạn có muốn đổi <b>{confirming.name}</b> với <b>{confirming.priceCoins} coin</b> không?
+              </p>
+
+              <div className="confirm-card__summary">
+                <div className="confirm-card__row">
+                  <span>Voucher</span>
+                  <b>{confirming.name}</b>
+                </div>
+                <div className="confirm-card__row">
+                  <span>Chi phí</span>
+                  <b>-{confirming.priceCoins} coin</b>
+                </div>
+                <div className="confirm-card__row">
+                  <span>Số dư còn lại</span>
+                  <b className="is-warn">
+                    {balance !== null
+                      ? `${Math.max(0, balance - confirming.priceCoins).toLocaleString('vi-VN')} coin`
+                      : '...'}
+                  </b>
+                </div>
+              </div>
+
+              {confirming.usageInstructions && (
+                <p className="confirm-card__note">{confirming.usageInstructions}</p>
+              )}
+
+              <div className="confirm-card__actions">
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={handleRedeem}
+                  disabled={redeeming}
+                >
+                  {redeeming ? 'Đang đổi...' : 'Xác nhận đổi'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => setConfirming(null)}
+                  disabled={redeeming}
+                >
+                  Hủy
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {issued && (
-          <div style={{ marginTop: 16, border: '2px solid #2a7', padding: 12, borderRadius: 8 }}>
-            <h3>Đổi voucher thành công!</h3>
-            <div>Voucher: <b>{issued.voucherName}</b></div>
-            <div>Mã: <b>{issued.code}</b></div>
-            <div>Ngày đổi: <b>{issued.redemptionDate}</b></div>
-            <div>{issued.usageInstructions}</div>
-            <button className="btn" onClick={() => setIssued(null)} style={{ marginTop: 8 }}>OK</button>
+          <div className="overlay overlay--modal" role="dialog" aria-modal="true">
+            <div className="confirm-card is-success">
+              <div className="confirm-card__icon">🎉</div>
+              <h3 className="confirm-card__title">Đổi voucher thành công!</h3>
+              <div className="confirm-card__summary">
+                <div className="confirm-card__row">
+                  <span>Voucher</span>
+                  <b>{issued.voucherName}</b>
+                </div>
+                <div className="confirm-card__row">
+                  <span>Mã</span>
+                  <b>{issued.code}</b>
+                </div>
+                <div className="confirm-card__row">
+                  <span>Ngày đổi</span>
+                  <b>{issued.redemptionDate}</b>
+                </div>
+              </div>
+              {issued.usageInstructions && (
+                <p className="confirm-card__note">{issued.usageInstructions}</p>
+              )}
+              <div className="confirm-card__actions">
+                <button type="button" className="btn btn--primary" onClick={() => setIssued(null)}>
+                  OK
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

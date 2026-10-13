@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getStoredUser, fetchMeApi } from '../game/authApi'
 import { validateStaffCoupon, redeemStaffCoupon, fetchStaffRedemptions } from './staffApi'
+import './staff.css'
 
 function formatDate(value) {
   if (!value) return ''
@@ -9,130 +10,265 @@ function formatDate(value) {
   return d.toLocaleString('vi-VN')
 }
 
+const STATUS_LABELS = {
+  ACTIVE: 'Còn hiệu lực',
+  REDEEMED: 'Đã sử dụng',
+  EXPIRED: 'Hết hạn',
+}
+
+function GateScreen({ icon, title, description }) {
+  return (
+    <div className="staff-gate">
+      <div className="staff-gate__card">
+        <div className="staff-gate__icon">{icon}</div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <button type="button" className="staff-btn" onClick={() => window.location.assign('/')}>
+          ← Về trang chính
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function StaffCouponsPage() {
   const [user, setUser] = useState(() => getStoredUser())
   const [code, setCode] = useState('')
   const [validation, setValidation] = useState(null)
   const [note, setNote] = useState('')
+  const [checking, setChecking] = useState(false)
   const [redeeming, setRedeeming] = useState(false)
   const [message, setMessage] = useState('')
   const [redeemed, setRedeemed] = useState(null)
   const [history, setHistory] = useState([])
+  const [stats, setStats] = useState({ total: 0, todayCount: 0, voucherCount: 0 })
   const [loadingHistory, setLoadingHistory] = useState(true)
 
   useEffect(() => {
-    fetchMeApi().then((fresh) => { if (fresh) setUser(fresh) })
+    fetchMeApi().then((fresh) => {
+      if (fresh) setUser(fresh)
+    })
   }, [])
 
   const refreshHistory = async () => {
     setLoadingHistory(true)
     try {
-      setHistory(await fetchStaffRedemptions())
+      const rows = await fetchStaffRedemptions()
+      setHistory(rows)
+      // Counted here (not during render) so the derived values stay stable.
+      const today = new Date().toDateString()
+      setStats({
+        total: rows.length,
+        todayCount: rows.filter((r) => new Date(r.redeemedAt).toDateString() === today).length,
+        voucherCount: rows.filter((r) => r.codeType === 'VOUCHER').length,
+      })
     } finally {
       setLoadingHistory(false)
     }
   }
 
-  useEffect(() => { refreshHistory() }, [])
+  useEffect(() => {
+    refreshHistory()
+  }, [])
 
-  const goHome = () => { window.location.assign('/') }
+  const goHome = () => window.location.assign('/')
 
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Vui lòng đăng nhập</h2>
-          <button onClick={goHome}>Về trang chính</button>
-        </div>
-      </div>
+      <GateScreen
+        icon="🔐"
+        title="Vui lòng đăng nhập"
+        description="Bạn cần đăng nhập để dùng quầy đổi mã của nhân viên."
+      />
     )
   }
 
   if (user.role !== 'STAFF' && user.role !== 'ADMIN') {
     return (
-      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Không có quyền truy cập (chỉ STAFF/ADMIN)</h2>
-          <button onClick={goHome}>Về trang chính</button>
-        </div>
-      </div>
+      <GateScreen
+        icon="⛔"
+        title="Không có quyền truy cập"
+        description="Trang này chỉ dành cho tài khoản STAFF hoặc ADMIN."
+      />
     )
   }
 
   const handleValidate = async (e) => {
-    e.preventDefault()
+    e?.preventDefault()
+    if (!code.trim() || checking) return
+    setChecking(true)
     setMessage('')
     setValidation(null)
     setRedeemed(null)
-    if (!code.trim()) return
     try {
-      const data = await validateStaffCoupon(code.trim())
-      setValidation(data)
+      setValidation(await validateStaffCoupon(code.trim()))
     } catch (err) {
-      setMessage(err.message || 'Validate failed')
+      setMessage(err.message || 'Không kiểm tra được mã. Vui lòng thử lại.')
+    } finally {
+      setChecking(false)
     }
   }
 
   const handleRedeem = async () => {
-    if (!code.trim()) return
+    if (!code.trim() || redeeming) return
     setRedeeming(true)
     setMessage('')
     try {
       const data = await redeemStaffCoupon(code.trim(), note.trim())
       setRedeemed(data)
       setValidation(null)
+      setCode('')
       setNote('')
       await refreshHistory()
     } catch (err) {
-      setMessage(err.message || 'Redeem failed')
+      setMessage(err.message || 'Không đổi được mã. Vui lòng thử lại.')
     } finally {
       setRedeeming(false)
     }
   }
 
+  const isVoucher = validation?.codeType === 'VOUCHER'
+
   return (
-    <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'sans-serif', background: '#fff8ec' }}>
-      <div style={{ maxWidth: 980, margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h1 style={{ margin: 0 }}>Staff • Quản lý voucher web</h1>
-          <button onClick={goHome}>Về trang chính</button>
+    <div className="staff-root">
+      <div className="staff-shell">
+        <header className="staff-header">
+          <div className="staff-header__title">
+            <span className="staff-header__icon">🎫</span>
+            <div>
+              <h1>Quầy đổi mã</h1>
+              <p>Five Star • Dành cho nhân viên cửa hàng</p>
+            </div>
+          </div>
+          <div className="staff-header__actions">
+            <div className="staff-header__user">
+              <span className="staff-header__avatar">🛡️</span>
+              {user.displayName || user.username}
+            </div>
+            <button type="button" className="staff-btn staff-btn--ghost" onClick={goHome}>
+              ← Về trang chính
+            </button>
+          </div>
+        </header>
+
+        <div className="staff-summary">
+          <div className="staff-card">
+            <span>Đã đổi hôm nay</span>
+            <strong>{stats.todayCount}</strong>
+          </div>
+          <div className="staff-card">
+            <span>Tổng lượt đổi</span>
+            <strong>{stats.total}</strong>
+          </div>
+          <div className="staff-card">
+            <span>Voucher (đổi bằng coin)</span>
+            <strong>{stats.voucherCount}</strong>
+          </div>
         </div>
 
-        {message && <p style={{ color: '#b00' }}>{message}</p>}
+        {message && <div className="staff-alert is-error">⚠️ {message}</div>}
 
-        <div style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-          <h3 style={{ marginTop: 0 }}>Kiểm tra / Đổi voucher web (coupon)</h3>
-          <form onSubmit={handleValidate} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <section className="staff-panel">
+          <div className="staff-panel__head">
+            <span style={{ fontSize: 22 }}>⌨️</span>
+            <div>
+              <h2>Nhập mã của khách</h2>
+              <p>Hỗ trợ cả mã coupon (thưởng game) và voucher (đổi bằng coin)</p>
+            </div>
+          </div>
+
+          <form className="staff-scanner" onSubmit={handleValidate}>
             <input
-              placeholder="Nhập mã coupon"
+              autoFocus
+              placeholder="Nhập mã coupon / voucher"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              style={{ flex: 1, minWidth: 220, padding: 8 }}
+              aria-label="Mã coupon hoặc voucher"
             />
-            <button type="submit">Kiểm tra</button>
+            <button type="submit" className="staff-btn" disabled={checking || !code.trim()}>
+              {checking ? 'Đang kiểm tra...' : 'Kiểm tra'}
+            </button>
           </form>
 
           {validation && (
-            <div style={{ marginTop: 12, borderTop: '1px solid #eee', paddingTop: 12 }}>
-              <div><b>Mã:</b> {validation.code}</div>
-              <div><b>Trạng thái:</b> {String(validation.status)}</div>
-              <div><b>Hợp lệ:</b> {validation.valid ? 'Có' : 'Không'}</div>
-              <div><b>Giảm:</b> {validation.discountPercent}%</div>
-              <div><b>Khách:</b> {validation.ownerName}</div>
-              <div><b>Ngày phát:</b> {String(validation.issuedDate)}</div>
-              <div><b>Hết hạn:</b> {formatDate(validation.expiresAt)}</div>
-              <div><b>Thông điệp:</b> {validation.message}</div>
+            <div className={`staff-result ${validation.valid ? 'is-valid' : 'is-invalid'}`}>
+              <div className="staff-result__head">
+                <span style={{ fontSize: 22 }}>{validation.valid ? '✅' : '⛔'}</span>
+                <h3>{validation.valid ? 'Mã hợp lệ' : 'Mã không thể sử dụng'}</h3>
+              </div>
+              <p className="staff-result__message">
+                <span className="staff-result__code">{validation.code}</span>
+                {' · '}
+                <span className={`staff-badge staff-badge--${isVoucher ? 'voucher' : 'coupon'}`}>
+                  {isVoucher ? 'Voucher • đổi bằng coin' : 'Coupon • thưởng game'}
+                </span>
+                {' · '}
+                {STATUS_LABELS[String(validation.status)] || String(validation.status)}
+              </p>
 
-              {validation.valid && (
-                <div style={{ marginTop: 12 }}>
+              <div className="staff-fields">
+                <div className="staff-field">
+                  <span>Khách hàng</span>
+                  <b>{validation.ownerName}</b>
+                </div>
+                {isVoucher ? (
+                  <>
+                    <div className="staff-field">
+                      <span>Voucher</span>
+                      <b>{validation.voucherName}</b>
+                    </div>
+                    <div className="staff-field">
+                      <span>Ưu đãi</span>
+                      <b>{validation.discountValue}</b>
+                    </div>
+                    <div className="staff-field">
+                      <span>Ngày áp dụng</span>
+                      <b>{String(validation.issuedDate)}</b>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="staff-field">
+                      <span>Mức giảm</span>
+                      <b>{validation.discountPercent}%</b>
+                    </div>
+                    <div className="staff-field">
+                      <span>Ngày phát</span>
+                      <b>{String(validation.issuedDate)}</b>
+                    </div>
+                    <div className="staff-field">
+                      <span>Hết hạn</span>
+                      <b>{formatDate(validation.expiresAt)}</b>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {validation.valid ? (
+                <div className="staff-result__actions">
                   <input
+                    className="staff-note-input"
                     placeholder="Ghi chú (tuỳ chọn)"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    style={{ width: '100%', padding: 8, marginBottom: 8 }}
                   />
-                  <button onClick={handleRedeem} disabled={redeeming}>
-                    {redeeming ? 'Đang đổi...' : 'Đổi coupon'}
+                  <button
+                    type="button"
+                    className="staff-btn staff-btn--block"
+                    onClick={handleRedeem}
+                    disabled={redeeming}
+                  >
+                    {redeeming ? 'Đang đổi...' : '✓ Xác nhận đổi'}
+                  </button>
+                </div>
+              ) : (
+                <div className="staff-result__actions">
+                  <button
+                    type="button"
+                    className="staff-btn staff-btn--ghost staff-btn--block"
+                    onClick={() => setValidation(null)}
+                  >
+                    Nhập mã khác
                   </button>
                 </div>
               )}
@@ -140,48 +276,98 @@ export default function StaffCouponsPage() {
           )}
 
           {redeemed && (
-            <div style={{ marginTop: 12, border: '2px solid #2a7', padding: 12, borderRadius: 8 }}>
-              <h4 style={{ margin: '0 0 4px' }}>Đổi thành công</h4>
-              <div>Mã: <b>{redeemed.couponCode}</b></div>
-              <div>Giảm: <b>{redeemed.discountPercent}%</b></div>
-              <div>Khách: {redeemed.customerName}</div>
-              <div>Nhân viên: {redeemed.staffName}</div>
-              <div>Thời gian: {formatDate(redeemed.redeemedAt)}</div>
+            <div className="staff-result is-valid">
+              <div className="staff-result__head">
+                <span style={{ fontSize: 22 }}>🎉</span>
+                <h3>Đổi thành công</h3>
+              </div>
+              <div className="staff-fields">
+                <div className="staff-field">
+                  <span>Mã</span>
+                  <b className="staff-result__code">{redeemed.couponCode}</b>
+                </div>
+                <div className="staff-field">
+                  <span>Khách hàng</span>
+                  <b>{redeemed.customerName}</b>
+                </div>
+                <div className="staff-field">
+                  <span>Ưu đãi</span>
+                  <b>
+                    {redeemed.codeType === 'VOUCHER'
+                      ? redeemed.discountValue
+                      : `${redeemed.discountPercent}%`}
+                  </b>
+                </div>
+                <div className="staff-field">
+                  <span>Thời gian</span>
+                  <b>{formatDate(redeemed.redeemedAt)}</b>
+                </div>
+              </div>
+              <div className="staff-result__actions">
+                <button
+                  type="button"
+                  className="staff-btn staff-btn--block"
+                  onClick={() => setRedeemed(null)}
+                >
+                  Nhập mã tiếp theo
+                </button>
+              </div>
             </div>
           )}
-        </div>
+        </section>
 
-        <div style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 8, padding: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0 }}>Lịch sử đổi coupon</h3>
-            <button onClick={refreshHistory}>Làm mới</button>
+        <section className="staff-panel">
+          <div className="staff-history__head">
+            <h2>Lịch sử đổi mã</h2>
+            <button
+              type="button"
+              className="staff-btn staff-btn--ghost"
+              onClick={refreshHistory}
+              disabled={loadingHistory}
+            >
+              {loadingHistory ? 'Đang tải...' : '↻ Làm mới'}
+            </button>
           </div>
-          {loadingHistory ? <p>Đang tải...</p> : history.length === 0 ? (
-            <p>Chưa có lịch sử.</p>
+
+          {loadingHistory ? null : history.length === 0 ? (
+            <p className="staff-empty">Chưa có lượt đổi nào.</p>
           ) : (
-            <div style={{ overflowX: 'auto', marginTop: 12 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="staff-table-wrap">
+              <table className="staff-table">
                 <thead>
                   <tr>
-                    <th>Mã</th><th>Khách</th><th>Giảm</th><th>Nhân viên</th><th>Thời gian</th><th>Ghi chú</th>
+                    <th>Mã</th>
+                    <th>Loại</th>
+                    <th>Khách</th>
+                    <th>Ưu đãi</th>
+                    <th>Nhân viên</th>
+                    <th>Thời gian</th>
+                    <th>Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody>
                   {history.map((h) => (
-                    <tr key={h.id}>
-                      <td>{h.couponCode}</td>
+                    <tr key={`${h.codeType}-${h.id}`}>
+                      <td className="staff-table__code">{h.couponCode}</td>
+                      <td>
+                        <span
+                          className={`staff-badge staff-badge--${h.codeType === 'VOUCHER' ? 'voucher' : 'coupon'}`}
+                        >
+                          {h.codeType === 'VOUCHER' ? 'Voucher' : 'Coupon'}
+                        </span>
+                      </td>
                       <td>{h.customerName}</td>
-                      <td>{h.discountPercent}%</td>
+                      <td>{h.codeType === 'VOUCHER' ? h.discountValue : `${h.discountPercent}%`}</td>
                       <td>{h.staffName}</td>
                       <td>{formatDate(h.redeemedAt)}</td>
-                      <td>{h.note}</td>
+                      <td className="staff-table__note">{h.note || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   )

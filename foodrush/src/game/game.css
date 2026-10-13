@@ -1075,6 +1075,45 @@
   flex-direction: column;
   gap: 5px;
 }
+.coupon-item__head {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.coupon-item__head .coupon-code {
+  flex: 1;
+}
+.coupon-item__status {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.coupon-item__status.is-active {
+  background: #d9f3dc;
+  color: #237a32;
+}
+.coupon-item__status.is-used {
+  background: #e6e6e6;
+  color: #6b6b6b;
+}
+.coupon-item__status.is-expired {
+  background: #ffdcd6;
+  color: var(--brand-red-dark);
+}
+.coupon-code.is-inactive {
+  opacity: 0.55;
+  cursor: default;
+  border-style: solid;
+  border-color: #cfcfcf;
+}
+.coupon-code.is-inactive .coupon-code__percent {
+  background: #8a8a8a;
+}
 .coupon-item__meta {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1087,6 +1126,88 @@
 }
 .coupon-actions .btn {
   min-width: 140px;
+}
+
+/* ------------------------- Modal confirm dialogs ----------------------- */
+.overlay--modal {
+  z-index: 60;
+  background: rgba(46, 27, 15, 0.55);
+  backdrop-filter: blur(2px);
+}
+.confirm-card {
+  width: min(92vw, 400px);
+  padding: 24px 22px;
+  border-radius: 26px;
+  text-align: center;
+  background: radial-gradient(140% 140% at 50% 0%, #fffaf0 0%, var(--cream) 100%);
+  border: 3px solid #ffe2b5;
+  box-shadow: 0 16px 0 rgba(0, 0, 0, 0.18), inset 0 0 0 6px #fff;
+  animation: cardPop 0.28s cubic-bezier(0.2, 1.4, 0.5, 1);
+}
+.confirm-card.is-success {
+  border-color: #b6e6bd;
+}
+.confirm-card__icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.confirm-card__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  color: var(--brand-red-dark);
+}
+.confirm-card.is-success .confirm-card__title {
+  color: #237a32;
+}
+.confirm-card__text {
+  margin: 0 0 14px;
+  font-weight: 700;
+  color: #6b4a3a;
+}
+.confirm-card__summary {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-align: left;
+  background: #fff;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.08);
+  border: 2px solid #ffe2b5;
+}
+.confirm-card.is-success .confirm-card__summary {
+  border-color: #b6e6bd;
+}
+.confirm-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #8b674d;
+}
+.confirm-card__row + .confirm-card__row {
+  border-top: 1px dashed #f0d6a8;
+}
+.confirm-card__row b {
+  color: var(--brand-red-dark);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.confirm-card__row b.is-warn {
+  color: #d97706;
+}
+.confirm-card__note {
+  margin: 0 0 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #7a563f;
+}
+.confirm-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* ------------------------------- Tutorial ------------------------------- */

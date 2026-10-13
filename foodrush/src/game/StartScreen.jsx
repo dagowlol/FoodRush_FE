@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { AntIcon, FlyIcon, SprayIcon, StarLogo, SwatterIcon } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
 import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
-import { fetchDailyCoinSummary } from './voucherApi'
+import { fetchDailyCoinSummary, fetchMyVouchers } from './voucherApi'
 import { gameApi } from './gameApi'
 import { sound } from './sound'
 import CouponList from './CouponList'
@@ -62,6 +62,46 @@ const COMING_SOON_GAMES = [
   },
 ]
 
+function parsePercent(discountValue) {
+  if (discountValue == null) return null
+  const match = String(discountValue).match(/(\d+(?:[.,]\d+)?)/)
+  if (!match) return null
+  const value = Number(match[1].replace(',', '.'))
+  return Number.isFinite(value) ? Math.round(value) : null
+}
+
+/**
+ * There are two separate sources of codes for the user:
+ *  - coupons claimed from game rewards (CouponResponse)
+ *  - vouchers redeemed with coins in the shop (IssuedVoucherResponse)
+ * Normalise both into one shape so the "Mã của tôi" list shows everything.
+ */
+function normalizeCodes(coupons, issuedVouchers) {
+  const fromCoupons = (coupons || []).map((c) => ({
+    key: `coupon-${c.id ?? c.code}`,
+    code: c.code,
+    name: `Giảm ${c.discountPercent ?? c.percent ?? 0}%`,
+    percent: c.discountPercent ?? c.percent ?? null,
+    discountValue: c.discountValue ?? null,
+    issuedDate: c.issuedDate ?? null,
+    status: c.status ?? 'ACTIVE',
+    usedAt: c.redeemedAt ?? null,
+  }))
+
+  const fromVouchers = (issuedVouchers || []).map((v) => ({
+    key: `voucher-${v.id ?? v.code}`,
+    code: v.code,
+    name: v.voucherName ?? v.name ?? 'Voucher',
+    percent: parsePercent(v.discountValue),
+    discountValue: v.discountValue ?? null,
+    issuedDate: v.redemptionDate ?? v.issuedDate ?? null,
+    status: v.status ?? 'ISSUED',
+    usedAt: v.usedAt ?? null,
+  }))
+
+  return [...fromVouchers, ...fromCoupons]
+}
+
 export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVouchers, onOpenAdmin, user: userProp }) {
   const [user, setUser] = useState(() => getStoredUser())
   const [showAuth, setShowAuth] = useState(false)
@@ -97,8 +137,8 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
     setDailyCoin(null)
     setBestScore(0)
 
-    fetchMyCoupons().then((data) => {
-      if (!cancelled) setCoupons(data)
+    Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) => {
+      if (!cancelled) setCoupons(normalizeCodes(claimed, issued))
     })
     fetchRewardEligibility().then((data) => {
       if (!cancelled) setEligibility(data)
@@ -227,7 +267,7 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
         <div className="hub-hero">
           <h1 className="hub-hero__title">Chơi Game Săn Voucher Ẩm Thực</h1>
           <p className="hub-hero__sub">
-            Vượt qua các thử thách vui nhộn, tích điểm và nhận mã giảm giá lên đến <b>15%</b> mỗi ngày!
+            Tham gia thử thách vui nhộn, tích lũy coin mỗi ngày và dùng coin đổi lấy voucher hấp dẫn tại Five Star!
           </p>
         </div>
 
@@ -403,7 +443,11 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
         <CouponList
           coupons={coupons}
           onClose={() => setShowCoupons(false)}
-          onRefresh={() => fetchMyCoupons().then(setCoupons)}
+          onRefresh={() =>
+            Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) =>
+              setCoupons(normalizeCodes(claimed, issued))
+            )
+          }
         />
       )}
 

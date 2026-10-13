@@ -16,6 +16,7 @@ export default function FoodDefenderGame() {
   const [showShop, setShowShop] = useState(false)
   const [showMyVouchers, setShowMyVouchers] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
+  const [menuRefreshKey, setMenuRefreshKey] = useState(0)
   const [user, setUser] = useState(() => getStoredUser())
   const [seenTutorial, setSeenTutorial] = useState(() => {
     try {
@@ -53,6 +54,7 @@ export default function FoodDefenderGame() {
     <div className="fd-root">
       {screen === 'menu' && (
         <StartScreen
+          key={menuRefreshKey}
           onPlay={handlePlay}
           onTutorial={() => setScreen('tutorial')}
           onOpenShop={() => setShowShop(true)}
@@ -63,7 +65,13 @@ export default function FoodDefenderGame() {
       )}
       {screen === 'tutorial' && <Tutorial onComplete={finishTutorial} onSkip={finishTutorial} />}
       {screen === 'playing' && <GameScreen key={runKey} onExit={() => setScreen('menu')} onOpenShop={() => setShowShop(true)} />}
-      {showShop && <VoucherShop user={user} onClose={() => setShowShop(false)} />}
+      {showShop && (
+        <VoucherShop
+          user={user}
+          onClose={() => setShowShop(false)}
+          onRedeemed={() => setMenuRefreshKey((k) => k + 1)}
+        />
+      )}
       {showMyVouchers && <MyVouchers onClose={() => setShowMyVouchers(false)} />}
       {showAdmin && <AdminVoucherPanel onClose={() => setShowAdmin(false)} />}
     </div>
