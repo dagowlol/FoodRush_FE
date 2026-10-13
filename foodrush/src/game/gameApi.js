@@ -13,7 +13,8 @@ function getToken() {
 }
 
 export function apiEnabled() {
-  return Boolean(baseUrl) && Boolean(getToken())
+  const token = getToken()
+  return Boolean(token) && !token.startsWith('mock_token_')
 }
 
 async function request(path, options = {}) {

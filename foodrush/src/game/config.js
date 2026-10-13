@@ -46,6 +46,8 @@ export const COUPON_TIERS = [
   { minScore: 500, percent: 15 },
 ]
 
+export const MAX_COUPON_SCORE = 500
+
 export const SCORE = {
   ground: 10,
   flying: 15,
@@ -53,17 +55,45 @@ export const SCORE = {
   comboBonus: 5,
 }
 
-// 5 waves with progressive difficulty. Ground bugs are deliberately slow so the
-// player has time to react before they reach the dish.
+// Progressive difficulty calculated dynamically from current score.
+// Starts gentle with slow ground bugs, then gradually increases spawn rate,
+// flying bug mix, movement speed, and occasional tougher 2-HP bugs.
+export function getDifficulty(score = 0) {
+  const s = Math.max(0, score)
+
+  // Spawn interval decreases smoothly as score increases (from 1450ms down to 520ms)
+  const spawnMs = Math.max(520, 1450 - s * 1.35)
+
+  // Ratio of flying bugs: 0% at the start, smoothly rising to 50%
+  const flyingProb = s < 30 ? 0 : Math.min(0.5, 0.15 + (s - 30) * 0.00075)
+
+  // Speeds scale smoothly with a tiny random variation per spawn
+  const groundSpeed = Math.min(96, 62 + s * 0.055) + rand(-3, 4)
+  const flyingSpeed = Math.min(138, 88 + s * 0.075) + rand(-4, 5)
+
+  // Tougher bugs (HP = 2) appear after reaching 200+ score
+  const hpChance = s < 200 ? 0 : Math.min(0.38, (s - 200) * 0.0009)
+  const hp = Math.random() < hpChance ? 2 : 1
+
+  // Max concurrent bugs on screen to keep gameplay fast and responsive
+  const maxBugs = Math.min(8, 3 + Math.floor(s / 110))
+
+  return {
+    spawnMs,
+    flyingProb,
+    groundSpeed,
+    flyingSpeed,
+    hp,
+    maxBugs,
+    level: Math.floor(s / 100) + 1,
+  }
+}
+
+// Retained for backward compatibility
 export const WAVES = [
   { ground: 4, flying: 0, spawnMs: 1250, groundSpeed: 64, flyingSpeed: 0, hp: 1 },
-  { ground: 4, flying: 3, spawnMs: 1050, groundSpeed: 70, flyingSpeed: 92, hp: 1 },
-  { ground: 5, flying: 4, spawnMs: 900, groundSpeed: 76, flyingSpeed: 104, hp: 1 },
-  { ground: 5, flying: 5, spawnMs: 780, groundSpeed: 82, flyingSpeed: 116, hp: 2 },
-  { ground: 6, flying: 6, spawnMs: 660, groundSpeed: 88, flyingSpeed: 128, hp: 2 },
 ]
-
-export const TOTAL_WAVES = WAVES.length
+export const TOTAL_WAVES = COUPON_TIERS.length
 
 // Vertical bands used for spawn hints and rules of thumb.
 export const GROUND_BAND = { minY: 800, maxY: 980 }
@@ -73,9 +103,8 @@ export const rand = (min, max) => min + Math.random() * (max - min)
 
 export function buildWaveQueue(cfg) {
   const queue = []
-  for (let i = 0; i < cfg.ground; i += 1) queue.push(BUG_TYPES.GROUND)
-  for (let i = 0; i < cfg.flying; i += 1) queue.push(BUG_TYPES.FLYING)
-  // Light shuffle so ground/flying bugs mix instead of arriving in blocks.
+  for (let i = 0; i < (cfg?.ground || 0); i += 1) queue.push(BUG_TYPES.GROUND)
+  for (let i = 0; i < (cfg?.flying || 0); i += 1) queue.push(BUG_TYPES.FLYING)
   for (let i = queue.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[queue[i], queue[j]] = [queue[j], queue[i]]

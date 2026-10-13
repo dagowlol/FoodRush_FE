@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   BUG_TYPES,
+  COUPON_TIERS,
   FIELD,
   FOOD,
   FOOD_TYPES,
   LIVES,
   SCORE,
   TOOLS,
-  TOTAL_WAVES,
-  WAVES,
-  buildWaveQueue,
   flyingSpawn,
+  getDifficulty,
   groundSpawn,
   rand,
 } from './config'
-import { sound } from './sound'
+import { tierForScore } from './coupons'
 
 const GROUND_R = 42
 const FLYING_R = 40
+const POWER_UP_DRAIN_PER_HIT = 10
 
 function toDescriptor(bug) {
   return {
@@ -34,8 +34,12 @@ function toDescriptor(bug) {
 /**
  * Owns the whole simulation. Bug positions live in refs and are written straight
  * to the DOM through requestAnimationFrame; React state is only updated when
- * something meaningful changes (spawn, kill, hit, wave, score) to avoid a
+ * something meaningful changes (spawn, kill, hit, score) to avoid a
  * re-render on every frame.
+ *
+ * Gameplay is endless and scales smoothly based on current score:
+ * bugs are generated randomly with increasing speed, frequency, flying mix,
+ * and toughness as the player scores higher.
  */
 export function useGameEngine(onEvent) {
   const [status, setStatus] = useState('idle') // idle | running | paused | result
@@ -43,8 +47,6 @@ export function useGameEngine(onEvent) {
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
   const [bugsKilled, setBugsKilled] = useState(0)
-  const [wavesCompleted, setWavesCompleted] = useState(0)
-  const [wave, setWave] = useState(0)
   const [lives, setLives] = useState(LIVES)
   const [foodType, setFoodType] = useState(FOOD_TYPES[0])
   const [foodHitKey, setFoodHitKey] = useState(0)
@@ -52,7 +54,8 @@ export function useGameEngine(onEvent) {
   const [effects, setEffects] = useState([])
   const [banner, setBanner] = useState(null)
   const [result, setResult] = useState(null)
-  const [muted, setMuted] = useState(sound.muted)
+  const [powerUp, setPowerUp] = useState(0)
+  const [isPowerUpActive, setIsPowerUpActive] = useState(false)
 
   // ---- mutable game data (never triggers a render by itself) ----
   const statusRef = useRef('idle')
@@ -62,19 +65,17 @@ export function useGameEngine(onEvent) {
   const scoreRef = useRef(0)
   const comboRef = useRef(0)
   const bugsKilledRef = useRef(0)
-  const wavesCompletedRef = useRef(0)
-  const waveIndexRef = useRef(0)
   const livesRef = useRef(LIVES)
+  const powerUpRef = useRef(0)
+  const isPowerUpActiveRef = useRef(false)
   const foodTypeRef = useRef(FOOD_TYPES[0])
   const foodHitKeyRef = useRef(0)
   const contaminatedOnceRef = useRef(false)
   const selectedToolRef = useRef(null)
   const lastToolUseRef = useRef(0)
   const elapsedRef = useRef(0)
-  const phaseRef = useRef('spawning') // spawning | clearing | break
-  const spawnQueueRef = useRef([])
-  const spawnTimerRef = useRef(0)
-  const breakTimerRef = useRef(0)
+  const spawnTimerRef = useRef(0.4)
+  const unlockedTiersRef = useRef(new Set())
   const effectIdRef = useRef(0)
   const bannerIdRef = useRef(0)
   const effectTimersRef = useRef([])
@@ -134,30 +135,30 @@ export function useGameEngine(onEvent) {
     syncBugs()
   }, [syncBugs])
 
-  const finishGame = useCallback((victory) => {
+  const finishGame = useCallback(() => {
     if (statusRef.current === 'result') return
     statusRef.current = 'result'
     setStatus('result')
     const remaining = Math.max(0, livesRef.current)
+    const tier = tierForScore(scoreRef.current)
+    const won = Boolean(tier)
     const finalResult = {
       score: scoreRef.current,
       bugsKilled: bugsKilledRef.current,
-      wavesCompleted: wavesCompletedRef.current,
-      totalWaves: TOTAL_WAVES,
+      wavesCompleted: tier ? (tier.percent === 15 ? 3 : tier.percent === 10 ? 2 : 1) : Math.min(10, Math.floor(scoreRef.current / 100)),
+      discountPercent: tier ? tier.percent : 0,
       lives: remaining,
       maxLives: LIVES,
       lost: LIVES - remaining,
-      victory: Boolean(victory),
+      victory: won,
     }
     setResult(finalResult)
-    sound.play(victory ? 'win' : 'lose')
     onEventRef.current?.('finish', finalResult)
   }, [])
 
   // A bug reached the dish: lose a life and instantly swap in a fresh, safe dish.
   const contaminateFood = useCallback(() => {
     addEffect('splat', FOOD.x, FOOD.y - 30, null)
-    sound.play('contaminate')
     if (!contaminatedOnceRef.current) {
       contaminatedOnceRef.current = true
       onEventRef.current?.('contaminate')
@@ -165,7 +166,7 @@ export function useGameEngine(onEvent) {
     livesRef.current -= 1
     setLives(livesRef.current)
     if (livesRef.current <= 0) {
-      finishGame(false)
+      finishGame()
       return
     }
     const options = FOOD_TYPES.filter((t) => t !== foodTypeRef.current)
@@ -176,23 +177,25 @@ export function useGameEngine(onEvent) {
     setFoodHitKey(foodHitKeyRef.current)
   }, [addEffect, finishGame])
 
-  const spawnBug = useCallback((type) => {
-    const cfg = WAVES[waveIndexRef.current]
-    const pos = type === BUG_TYPES.GROUND ? groundSpawn() : flyingSpawn()
+  const spawnBug = useCallback(() => {
+    const diff = getDifficulty(scoreRef.current)
+    const isFlying = Math.random() < diff.flyingProb
+    const type = isFlying ? BUG_TYPES.FLYING : BUG_TYPES.GROUND
+    const pos = isFlying ? flyingSpawn() : groundSpawn()
     const bug = {
       id: (idRef.current += 1),
       type,
-      hp: cfg.hp,
-      maxHp: cfg.hp,
+      hp: diff.hp,
+      maxHp: diff.hp,
       x: pos.x,
       y: pos.y,
-      r: type === BUG_TYPES.GROUND ? GROUND_R : FLYING_R,
-      speed: type === BUG_TYPES.GROUND ? cfg.groundSpeed : cfg.flyingSpeed,
+      r: isFlying ? FLYING_R : GROUND_R,
+      speed: isFlying ? diff.flyingSpeed : diff.groundSpeed,
       seed: Math.random() * 1000,
       angle: 0,
       targetX: FOOD.x + rand(-24, 24),
       targetY: FOOD.y + rand(-18, 18),
-      points: type === BUG_TYPES.GROUND ? SCORE.ground : SCORE.flying,
+      points: isFlying ? SCORE.flying : SCORE.ground,
     }
     bugsRef.current.push(bug)
     syncBugs()
@@ -204,22 +207,21 @@ export function useGameEngine(onEvent) {
     let gained = bug.points
     if (comboRef.current % SCORE.comboSpan === 0) gained += SCORE.comboBonus
     scoreRef.current += gained
-    setScore(scoreRef.current)
+    const currentScore = scoreRef.current
+    setScore(currentScore)
     bugsKilledRef.current += 1
     setBugsKilled(bugsKilledRef.current)
     addEffect('kill', bug.x, bug.y, `+${gained}`)
     removeBug(bug)
-  }, [addEffect, removeBug])
 
-  const startWave = useCallback((index) => {
-    waveIndexRef.current = index
-    spawnQueueRef.current = buildWaveQueue(WAVES[index])
-    spawnTimerRef.current = 0
-    phaseRef.current = 'spawning'
-    setWave(index + 1)
-    pushBanner(`Wave ${index + 1}`, 'wave')
-    sound.play('wave')
-  }, [pushBanner])
+    // Check for discount milestones unlocking in real-time
+    for (const tier of COUPON_TIERS) {
+      if (currentScore >= tier.minScore && !unlockedTiersRef.current.has(tier.percent)) {
+        unlockedTiersRef.current.add(tier.percent)
+        break
+      }
+    }
+  }, [addEffect, removeBug])
 
   const resetAll = useCallback(() => {
     bugsRef.current = []
@@ -228,8 +230,6 @@ export function useGameEngine(onEvent) {
     scoreRef.current = 0
     comboRef.current = 0
     bugsKilledRef.current = 0
-    wavesCompletedRef.current = 0
-    waveIndexRef.current = 0
     livesRef.current = LIVES
     foodTypeRef.current = FOOD_TYPES[0]
     foodHitKeyRef.current = 0
@@ -237,10 +237,10 @@ export function useGameEngine(onEvent) {
     selectedToolRef.current = null
     lastToolUseRef.current = 0
     elapsedRef.current = 0
-    phaseRef.current = 'spawning'
-    spawnQueueRef.current = []
-    spawnTimerRef.current = 0
-    breakTimerRef.current = 0
+    spawnTimerRef.current = 0.4
+    unlockedTiersRef.current.clear()
+    powerUpRef.current = 0
+    isPowerUpActiveRef.current = false
     effectTimersRef.current.forEach(clearTimeout)
     effectTimersRef.current = []
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
@@ -248,9 +248,9 @@ export function useGameEngine(onEvent) {
     setScore(0)
     setCombo(0)
     setBugsKilled(0)
-    setWavesCompleted(0)
-    setWave(0)
     setLives(LIVES)
+    setPowerUp(0)
+    setIsPowerUpActive(false)
     setFoodType(FOOD_TYPES[0])
     setFoodHitKey(0)
     setSelectedTool(null)
@@ -263,10 +263,10 @@ export function useGameEngine(onEvent) {
     resetAll()
     statusRef.current = 'running'
     setStatus('running')
-    startWave(0)
+    pushBanner('Bắt đầu! ', 'milestone')
     // Optional backend session (no-op when API/auth is not configured).
     onEventRef.current?.('start')
-  }, [resetAll, startWave])
+  }, [pushBanner, resetAll])
 
   const pause = useCallback(() => {
     if (statusRef.current !== 'running') return
@@ -292,7 +292,6 @@ export function useGameEngine(onEvent) {
     const toolId = selectedToolRef.current
     if (!toolId) {
       addEffect('info', bug.x, bug.y, 'Chọn công cụ trước nhé!')
-      sound.play('wrong')
       return
     }
     const tool = TOOLS[toolId]
@@ -301,15 +300,40 @@ export function useGameEngine(onEvent) {
       flashBug(bug.id, 'bug--blocked')
       comboRef.current = 0
       setCombo(0)
-      sound.play('wrong')
       return
     }
     const now = performance.now()
     if (now - lastToolUseRef.current < tool.cooldownMs) return
     lastToolUseRef.current = now
 
-    bug.hp -= tool.damage
-    sound.play(toolId === 'swatter' ? 'swatter' : 'spray')
+    const isPowered = isPowerUpActiveRef.current
+    const damage = isPowered ? tool.damage * 2 : tool.damage
+    bug.hp -= damage
+
+    if (isPowered) {
+      addEffect('crit', bug.x, bug.y - 12)
+      const nextVal = Math.max(0, powerUpRef.current - POWER_UP_DRAIN_PER_HIT)
+      powerUpRef.current = nextVal
+      setPowerUp(nextVal)
+      if (nextVal <= 0) {
+        isPowerUpActiveRef.current = false
+        setIsPowerUpActive(false)
+      }
+    }
+
+    // Charge power up gauge if not currently active
+    if (!isPowered) {
+      const gain = (bug.hp <= 0) ? 14 : 8
+      const nextVal = Math.min(100, powerUpRef.current + gain)
+      powerUpRef.current = nextVal
+      setPowerUp(nextVal)
+      if (nextVal >= 100) {
+        isPowerUpActiveRef.current = true
+        setIsPowerUpActive(true)
+        addEffect('crit', FOOD.x, FOOD.y - 70, '⚡ 2X DAMAGE!')
+      }
+    }
+
     if (bug.hp <= 0) {
       killBug(bug)
     } else {
@@ -319,27 +343,22 @@ export function useGameEngine(onEvent) {
     }
   }, [addEffect, flashBug, killBug, updateBugHp])
 
-  const toggleMute = useCallback(() => {
-    setMuted((prev) => {
-      const next = !prev
-      sound.setMuted(next)
-      return next
-    })
-  }, [])
-
   const simulate = useCallback((dt) => {
     elapsedRef.current += dt
     const elapsed = elapsedRef.current
 
-    // 1. spawn phase
-    if (phaseRef.current === 'spawning') {
-      spawnTimerRef.current -= dt
-      if (spawnTimerRef.current <= 0 && spawnQueueRef.current.length) {
-        spawnBug(spawnQueueRef.current.shift())
-        const jitter = 0.75 + Math.random() * 0.5
-        spawnTimerRef.current = (WAVES[waveIndexRef.current].spawnMs / 1000) * jitter
+    // 1. dynamic continuous random spawn scaling with current score
+    spawnTimerRef.current -= dt
+    if (spawnTimerRef.current <= 0) {
+      const diff = getDifficulty(scoreRef.current)
+      if (bugsRef.current.length < diff.maxBugs) {
+        spawnBug()
+        const jitter = 0.76 + Math.random() * 0.45
+        spawnTimerRef.current = (diff.spawnMs / 1000) * jitter
+      } else {
+        // Delay slightly when screen reached bug ceiling
+        spawnTimerRef.current = 0.35
       }
-      if (!spawnQueueRef.current.length) phaseRef.current = 'clearing'
     }
 
     // 2. movement + collisions
@@ -382,26 +401,7 @@ export function useGameEngine(onEvent) {
         el.style.setProperty('--bank', `${Math.sin((elapsed + bug.seed) * 4) * 9}deg`)
       }
     }
-
-    // 4. phase progression
-    if (phaseRef.current === 'clearing' && bugsRef.current.length === 0) {
-      wavesCompletedRef.current = waveIndexRef.current + 1
-      setWavesCompleted(wavesCompletedRef.current)
-      if (waveIndexRef.current + 1 >= TOTAL_WAVES) {
-        finishGame(true)
-        return
-      }
-      phaseRef.current = 'break'
-      breakTimerRef.current = 2
-      pushBanner(`Xong Wave ${waveIndexRef.current + 1}!`, 'wave')
-      sound.play('wave')
-    }
-
-    if (phaseRef.current === 'break') {
-      breakTimerRef.current -= dt
-      if (breakTimerRef.current <= 0) startWave(waveIndexRef.current + 1)
-    }
-  }, [contaminateFood, finishGame, pushBanner, removeBug, spawnBug, startWave])
+  }, [contaminateFood, removeBug, spawnBug])
 
   useEffect(() => {
     if (status !== 'running') return undefined
@@ -417,30 +417,33 @@ export function useGameEngine(onEvent) {
     return () => cancelAnimationFrame(raf)
   }, [status, simulate])
 
+  const currentTier = tierForScore(score)
+  const discountPercent = currentTier ? currentTier.percent : 0
+
   return {
     status,
     bugs,
     score,
     combo,
     bugsKilled,
-    wavesCompleted,
-    wave,
+    discountPercent,
+    wave: Math.floor(score / 100) + 1,
     lives,
     maxLives: LIVES,
+    powerUp,
+    isPowerUpActive,
     foodType,
     foodHitKey,
     selectedTool,
     effects,
     banner,
     result,
-    muted,
-    totalWaves: TOTAL_WAVES,
+    totalWaves: COUPON_TIERS.length,
     start,
     pause,
     resume,
     attack,
     selectTool,
     registerBugEl,
-    toggleMute,
   }
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { tierForScore, nextTierForScore, todayCoupon, claimCoupon } from './coupons'
-import { sound } from './sound'
 import CouponCode from './CouponCode'
 
 export default function ResultScreen({ result, onRestart, onExit }) {
@@ -9,16 +8,15 @@ export default function ResultScreen({ result, onRestart, onExit }) {
 
   if (!result) return null
 
-  const won = result.victory
   const tier = tierForScore(result.score)
   const next = nextTierForScore(result.score)
+  const won = Boolean(tier)
 
   const handleClaim = () => {
     const res = claimCoupon(result.score)
     if (res.ok) {
       setClaimed(res.coupon)
       setJustClaimed(true)
-      sound.play('win')
     } else if (res.coupon) {
       setClaimed(res.coupon)
     }
@@ -27,13 +25,14 @@ export default function ResultScreen({ result, onRestart, onExit }) {
   return (
     <div className="overlay overlay--result" role="dialog" aria-modal="true">
       <div className="result-card">
-        <div className="result-burst" aria-hidden="true">
-          {won ? '🎉' : '😢'}
-        </div>
         <h2 className="result-title">{won ? 'Tuyệt vời!' : 'Hết mạng!'}</h2>
 
         <div className={`result-safety ${won ? 'is-safe' : 'is-bad'}`}>
-          {won ? '🛡️ Bảo vệ thành công đồ ăn' : '💔 Bạn đã để mất hết đồ ăn'}
+          {won
+            ? ` Bạn đã mở khóa mã giảm ${tier.percent}%!`
+            : next
+              ? ` Cố lên! Chỉ cần thêm ${next.minScore - result.score} điểm để mở khóa mã giảm ${next.percent}%.`
+              : ' Chưa đạt mốc nhận mã — cố thêm chút nữa nhé!'}
         </div>
 
         <div className="result-grid">
@@ -46,15 +45,11 @@ export default function ResultScreen({ result, onRestart, onExit }) {
             <b>{result.bugsKilled}</b>
           </div>
           <div className="result-cell">
-            <span>Wave</span>
-            <b>
-              {result.wavesCompleted}/{result.totalWaves}
+            <span>Ưu đãi</span>
+            <b style={{ color: tier ? 'var(--brand-red)' : 'inherit' }}>
+              {tier ? `${tier.percent}%` : '0%'}
             </b>
           </div>
-        </div>
-
-        <div className="result-lives">
-          Mạng còn lại: <b>{result.lives}</b>/{result.maxLives}
         </div>
 
         <div className="coupon-box">

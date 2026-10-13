@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 import StartScreen from './StartScreen'
 import Tutorial from './Tutorial'
 import GameScreen from './GameScreen'
-import { sound } from './sound'
 import './game.css'
 
 const SEEN_KEY = 'fdf_tutorial_seen'
@@ -28,13 +27,11 @@ export default function FoodDefenderGame() {
   }, [])
 
   const startGame = useCallback(() => {
-    sound.unlock()
     setRunKey((k) => k + 1)
     setScreen('playing')
   }, [])
 
   const handlePlay = useCallback(() => {
-    sound.play('click')
     if (seenTutorial) startGame()
     else setScreen('tutorial')
   }, [seenTutorial, startGame])

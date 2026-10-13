@@ -2,15 +2,12 @@ import { StarLogo } from './icons'
 
 export default function GameHUD({
   score,
-  wave,
-  totalWaves,
+  discountPercent = 0,
   combo,
   lives,
   maxLives,
-  muted,
   paused,
   onTogglePause,
-  onToggleMute,
 }) {
   return (
     <header className="hud">
@@ -23,10 +20,10 @@ export default function GameHUD({
           <span className="stat__label">Điểm</span>
           <span className="stat__value">{score}</span>
         </div>
-        <div className="stat stat--wave">
-          <span className="stat__label">Wave</span>
-          <span className="stat__value">
-            {wave}/{totalWaves}
+        <div className="stat stat--discount" title="Mức giảm giá hiện tại">
+          <span className="stat__label">Ưu đãi</span>
+          <span className={`stat__value ${discountPercent > 0 ? 'stat__value--discount' : ''}`}>
+            {discountPercent > 0 ? `-${discountPercent}%` : '0%'}
           </span>
         </div>
         <div className="stat stat--lives" aria-label={`Mạng còn lại ${lives} trên ${maxLives}`}>
@@ -42,14 +39,6 @@ export default function GameHUD({
       </div>
 
       <div className="hud__actions">
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={onToggleMute}
-          aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-        >
-          {muted ? '🔇' : '🔊'}
-        </button>
         <button
           type="button"
           className="icon-btn"
