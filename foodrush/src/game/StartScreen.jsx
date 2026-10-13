@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AntIcon, FlyIcon, SprayIcon, StarLogo, SwatterIcon } from './icons'
-import { getCoupons, turnsLeftToday } from './coupons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
+import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
 import { sound } from './sound'
 import CouponList from './CouponList'
 import AuthModal from './AuthModal'
@@ -60,13 +60,15 @@ const COMING_SOON_GAMES = [
   },
 ]
 
-export default function StartScreen({ onPlay, onTutorial }) {
+export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVouchers, onOpenAdmin, user: userProp }) {
   const [user, setUser] = useState(() => getStoredUser())
   const [showAuth, setShowAuth] = useState(false)
   const [showCoupons, setShowCoupons] = useState(false)
   const [selectedComingSoon, setSelectedComingSoon] = useState(null)
+  const [coupons, setCoupons] = useState([])
+  const [eligibility, setEligibility] = useState(null)
 
-  const couponCount = getCoupons().length
+  const couponCount = coupons.length
 
   useEffect(() => {
     fetchMeApi().then((freshUser) => {
@@ -74,9 +76,36 @@ export default function StartScreen({ onPlay, onTutorial }) {
     })
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    if (!user || user.isGuest) {
+      setCoupons([])
+      setEligibility(null)
+      return () => {
+        cancelled = true
+      }
+    }
+
+    setCoupons([])
+    setEligibility(null)
+
+    fetchMyCoupons().then((data) => {
+      if (!cancelled) setCoupons(data)
+    })
+    fetchRewardEligibility().then((data) => {
+      if (!cancelled) setEligibility(data)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
   const handleLogout = () => {
     clearAuthData()
     setUser(null)
+    setCoupons([])
+    setEligibility(null)
   }
 
   const handleOpenAuth = () => {
@@ -123,8 +152,18 @@ export default function StartScreen({ onPlay, onTutorial }) {
               onClick={() => setShowCoupons(true)}
             >
               🎟️ Mã của tôi{couponCount > 0 ? ` (${couponCount})` : ''}
-              {turnsLeftToday() ? ' • 1 lượt' : ''}
+              {eligibility && !eligibility.claimedToday && eligibility.options?.length ? ' • 1 lượt' : ''}
             </button>
+          )}
+
+          {user && !user.isGuest && (
+            <>
+              <button type="button" className="btn btn--ghost" onClick={onOpenShop}>Voucher Shop</button>
+              <button type="button" className="btn btn--ghost" onClick={onOpenMyVouchers}>My Vouchers</button>
+              {user.role === "ADMIN" && (
+                <button type="button" className="btn btn--ghost" onClick={onOpenAdmin}>Admin</button>
+              )}
+            </>
           )}
 
           {user ? (
@@ -307,7 +346,11 @@ export default function StartScreen({ onPlay, onTutorial }) {
       )}
 
       {showCoupons && (
-        <CouponList onClose={() => setShowCoupons(false)} />
+        <CouponList
+          coupons={coupons}
+          onClose={() => setShowCoupons(false)}
+          onRefresh={() => fetchMyCoupons().then(setCoupons)}
+        />
       )}
 
       {selectedComingSoon && (

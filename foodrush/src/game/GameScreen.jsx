@@ -36,8 +36,9 @@ function PauseOverlay({ onResume, onRestart, onExit }) {
   )
 }
 
-export default function GameScreen({ onExit }) {
+export default function GameScreen({ onExit, onOpenShop }) {
   const sessionRef = useRef(null)
+  const finishPromiseRef = useRef(Promise.resolve())
   const fieldRef = useRef(null)
   const [mousePos, setMousePos] = useState({ x: -100, y: -100, visible: false })
   const [isAttacking, setIsAttacking] = useState(false)
@@ -50,7 +51,7 @@ export default function GameScreen({ onExit }) {
     } else if (type === 'contaminate') {
       gameApi.contaminate(sessionRef.current)
     } else if (type === 'finish') {
-      gameApi.finish(sessionRef.current, payload)
+      finishPromiseRef.current = gameApi.finish(sessionRef.current, payload) || Promise.resolve()
     }
   }, [])
 
@@ -203,7 +204,13 @@ export default function GameScreen({ onExit }) {
       )}
 
       {status === 'result' && (
-        <ResultScreen result={engine.result} onRestart={handleRestart} onExit={onExit} />
+        <ResultScreen
+          result={engine.result}
+          onRestart={handleRestart}
+          onExit={onExit}
+          onOpenShop={onOpenShop}
+          finishPromise={finishPromiseRef.current}
+        />
       )}
     </div>
   )
