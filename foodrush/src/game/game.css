@@ -1566,7 +1566,10 @@
 }
 
 .featured-card__media {
-  background: radial-gradient(circle at 50% 50%, #fff7e6 0%, #ffe0a3 100%);
+  background-color: #ffe0a3;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 22px;
   display: flex;
   flex-direction: column;

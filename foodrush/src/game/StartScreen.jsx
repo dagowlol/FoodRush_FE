@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react'
 import { AntIcon, FlyIcon, SprayIcon, StarLogo, SwatterIcon } from './icons'
 import { getCoupons, turnsLeftToday } from './coupons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
+import { sound } from './sound'
 import CouponList from './CouponList'
 import AuthModal from './AuthModal'
 import ComingSoonModal from './ComingSoonModal'
 import backgroundMain from '../assets/background_main.png'
-import burgerImg from '../assets/burger.png'
-import chickenImg from '../assets/fried_chicken.png'
-import friesImg from '../assets/friess.png'
+import bgFoodDefend from '../assets/bg_fooddefendd.png'
 
 const COMING_SOON_GAMES = [
   {
@@ -92,6 +91,16 @@ export default function StartScreen({ onPlay, onTutorial }) {
     setSelectedComingSoon(game)
   }
 
+  const handlePlayClick = () => {
+    sound.play('start')
+    onPlay()
+  }
+
+  const handleTutorialClick = () => {
+    sound.play('click')
+    onTutorial()
+  }
+
   return (
     <div
       className="hub-root"
@@ -170,13 +179,10 @@ export default function StartScreen({ onPlay, onTutorial }) {
           </div>
 
           <div className="featured-card">
-            <div className="featured-card__media">
-              <div className="featured-food-cluster">
-                <img src={burgerImg} alt="Burger" className="food-thumb food-thumb--burger" />
-                <img src={chickenImg} alt="Gà rán" className="food-thumb food-thumb--chicken" />
-                <img src={friesImg} alt="Khoai tây" className="food-thumb food-thumb--fries" />
-              </div>
-              <div className="featured-badge-live">🔥 PHIÊN BẢN MỚI</div>
+            <div
+              className="featured-card__media"
+              style={{ backgroundImage: `url(${bgFoodDefend})` }}
+            >
             </div>
 
             <div className="featured-card__content">
@@ -220,14 +226,14 @@ export default function StartScreen({ onPlay, onTutorial }) {
                 <button
                   type="button"
                   className="btn btn--primary btn--big featured-play-btn"
-                  onClick={onPlay}
+                  onClick={handlePlayClick}
                 >
                   ▶ CHƠI NGAY
                 </button>
                 <button
                   type="button"
                   className="btn btn--ghost featured-tut-btn"
-                  onClick={onTutorial}
+                  onClick={handleTutorialClick}
                 >
                   ? Hướng dẫn
                 </button>

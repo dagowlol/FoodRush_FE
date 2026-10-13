@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FIELD } from './config'
 import { gameApi } from './gameApi'
 import { useGameEngine } from './useGameEngine'
-import { playToolSound, preloadToolSounds } from './sound'
+import { sound } from './sound'
 import Bug from './Bug'
 import FoodArea from './FoodArea'
 import ToolBar from './ToolBar'
@@ -63,7 +63,8 @@ export default function GameScreen({ onExit }) {
 
   const engineStart = engine.start
   useEffect(() => {
-    preloadToolSounds()
+    sound.preload()
+    sound.play('enter')
     engineStart()
   }, [engineStart])
 
@@ -97,7 +98,7 @@ export default function GameScreen({ onExit }) {
   }
 
   const handleAttackBug = useCallback((bugId) => {
-    if (engine.selectedTool) playToolSound(engine.selectedTool)
+    if (engine.selectedTool) sound.play(engine.selectedTool)
     setIsAttacking(true)
     setTimeout(() => setIsAttacking(false), 160)
     engine.attack(bugId)

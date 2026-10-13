@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { sound } from './sound'
 import { AntIcon, FlyIcon, SprayIcon, SwatterIcon } from './icons'
 
@@ -53,6 +53,10 @@ export default function Tutorial({ onComplete, onSkip }) {
 
   const step = STEPS[index]
   const isLast = index === STEPS.length - 1
+
+  useEffect(() => {
+    sound.play('enter')
+  }, [])
 
   const resetPractice = () => {
     setTool(null)
@@ -127,7 +131,10 @@ export default function Tutorial({ onComplete, onSkip }) {
               <button
                 type="button"
                 className={`tutorial-tool ${tool === 'spray' ? 'is-on' : ''} ${step.tool === 'spray' && !done ? 'is-hint' : ''}`}
-                onClick={() => setTool('spray')}
+                onClick={() => {
+                  sound.play('click')
+                  setTool('spray')
+                }}
               >
                 <SprayIcon />
                 <span>Bình xịt</span>
@@ -135,7 +142,10 @@ export default function Tutorial({ onComplete, onSkip }) {
               <button
                 type="button"
                 className={`tutorial-tool ${tool === 'swatter' ? 'is-on' : ''} ${step.tool === 'swatter' && !done ? 'is-hint' : ''}`}
-                onClick={() => setTool('swatter')}
+                onClick={() => {
+                  sound.play('click')
+                  setTool('swatter')
+                }}
               >
                 <SwatterIcon />
                 <span>Vợt</span>
@@ -148,7 +158,14 @@ export default function Tutorial({ onComplete, onSkip }) {
         )}
 
         <div className="tutorial-actions">
-          <button type="button" className="btn btn--ghost" onClick={onSkip}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => {
+              sound.play('click')
+              onSkip()
+            }}
+          >
             Bỏ qua
           </button>
           <div className="tutorial-actions__right">
