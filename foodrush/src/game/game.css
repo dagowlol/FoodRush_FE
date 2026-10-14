@@ -924,6 +924,8 @@
   flex-direction: column;
   gap: 14px;
   padding: 28px 24px;
+  /* Same grid-item min-size fix as .fs-auth-panel. */
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   color: #FFFFFF;
@@ -1048,6 +1050,11 @@
   flex-direction: column;
   gap: 12px;
   padding: 28px 30px 24px;
+  /* REQUIRED: as a grid item the automatic minimum size is `auto`, so the
+     panel refuses to shrink below its content and the dialog's overflow:hidden
+     then clips the divider + Google button with no way to scroll to them.
+     min-height: 0 lets the panel actually scroll. */
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1340,7 +1347,7 @@
   .fs-auth-panel {
     /* The sheet itself sits above .fs-mobile-nav (overlay z-index 400 > nav
        150), so the bottom nav can never sit on top of the submit button. */
-    padding: 22px 20px 20px;
+    padding: 20px 20px 18px;
     gap: 11px;
   }
 
@@ -1374,7 +1381,9 @@
   .fs-auth-title { font-size: 1.1rem; }
   .fs-auth-sub { display: none; }        /* optional copy only */
   .fs-auth-form { gap: 10px; }
-  .fs-auth-input { height: 41px; padding: 0 11px; }
+  .fs-auth-input { height: 42px; padding: 0 11px; }
+  /* Helper copy is nice-to-have; the labels and fields are not. */
+  .fs-auth-hint { display: none; }
   .fs-auth-input--otp { height: 48px; font-size: 1.25rem; letter-spacing: 0.3em; }
   .fs-auth-submit,
   .fs-auth-google { height: 44px; }
