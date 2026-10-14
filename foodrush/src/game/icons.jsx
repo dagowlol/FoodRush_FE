@@ -126,6 +126,153 @@ export function CloseIcon({ size = 18, className = '' }) {
   )
 }
 
+export function SearchIcon({ size = 18, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <line x1="16.5" y1="16.5" x2="21" y2="21" />
+    </svg>
+  )
+}
+
+/* ---------------------- Mobile Bottom Navigation icons -------------------- */
+export function NavGamesIcon({ size = 22, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
+      <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
+      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2" />
+    </svg>
+  )
+}
+
+export function NavRewardIcon({ size = 22, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 12v8.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V12" />
+      <rect x="2.5" y="7" width="19" height="5" rx="1.5" />
+      <path d="M12 7v14.5" />
+      <path d="M12 7S10.5 3 8 3a2.5 2.5 0 0 0 0 5" />
+      <path d="M12 7s1.5-4 4-4a2.5 2.5 0 0 1 0 5" />
+    </svg>
+  )
+}
+
+export function NavPlayIcon({ size = 22, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="2.5" y="4" width="19" height="16" rx="3.5" />
+      <path d="M10 9.2v5.6l4.6-2.8z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function TicketIcon({ size = 18, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3 8.5V6.5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a2.5 2.5 0 0 0 0 7v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a2.5 2.5 0 0 0 0-7z" />
+      <path d="M14 6v12" strokeDasharray="2 2.4" />
+    </svg>
+  )
+}
+
+export function UsersIcon({ size = 18, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 20a6 6 0 0 1 12 0" />
+      <path d="M16 5.3a3.2 3.2 0 0 1 0 5.4" />
+      <path d="M17.5 14.4A6 6 0 0 1 21 20" />
+    </svg>
+  )
+}
+
+export function ShieldIcon({ size = 18, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 2.5 20 5.5v6c0 4.6-3.2 8.6-8 10-4.8-1.4-8-5.4-8-10v-6z" />
+    </svg>
+  )
+}
+
 export function PlayIcon({ size = 16, className = '' }) {
   return (
     <svg

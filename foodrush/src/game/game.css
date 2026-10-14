@@ -2971,10 +2971,6 @@
   border-radius: 999px;
 }
 
-.fs-nav-link--badge {
-  color: #77736B;
-}
-
 .fs-header__actions {
   display: flex;
   align-items: center;
@@ -3694,32 +3690,138 @@
   color: #77736B;
 }
 
-.fs-category-tabs {
+/* Shop Controls: ô tìm kiếm + dropdown sắp xếp */
+.fs-shop-controls {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.fs-cat-btn {
-  padding: 8px 22px;
+.fs-shop-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  min-height: 42px;
+  padding: 0 12px;
   border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 700;
   background: #FFFFFF;
   border: 1.5px solid #EDE8DF;
+  color: #77736B;
+  transition: border-color 0.15s ease;
+}
+
+.fs-shop-search:focus-within {
+  border-color: #1D1E1A;
+  color: #1D1E1A;
+}
+
+.fs-shop-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1D1E1A;
+}
+
+.fs-shop-search__input::placeholder {
+  color: #A8A49B;
+  font-weight: 500;
+}
+
+.fs-shop-search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.fs-shop-search__clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #EDE8DF;
   color: #1D1E1A;
   cursor: pointer;
-  min-height: 42px;
-  transition: all 0.15s ease;
+  flex: 0 0 auto;
 }
 
-.fs-cat-btn:hover {
-  border-color: #1D1E1A;
-}
-
-.fs-cat-btn--active {
+.fs-shop-search__clear:hover {
   background: #1D1E1A;
-  border-color: #1D1E1A;
   color: #FFFFFF;
+}
+
+.fs-shop-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fs-shop-sort__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #77736B;
+  white-space: nowrap;
+}
+
+.fs-shop-sort__select {
+  min-height: 42px;
+  padding: 0 34px 0 14px;
+  border-radius: 999px;
+  background: #FFFFFF
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D1E1A' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 12px center / 12px;
+  border: 1.5px solid #EDE8DF;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1D1E1A;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s ease;
+}
+
+.fs-shop-sort__select:hover {
+  border-color: #1D1E1A;
+}
+
+/* Empty state khi tìm kiếm không có kết quả */
+.fs-shop-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 56px 20px;
+  text-align: center;
+  background: #FFFFFF;
+  border: 1px dashed #EDE8DF;
+  border-radius: 20px;
+}
+
+.fs-shop-empty__icon {
+  font-size: 2.2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.fs-shop-empty__title {
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1D1E1A;
+  margin: 0;
+}
+
+.fs-shop-empty__desc {
+  font-size: 0.88rem;
+  color: #77736B;
+  margin: 0 0 10px;
 }
 
 /* 4-column Voucher Grid */
@@ -4206,7 +4308,7 @@
   display: flex;
   flex-wrap: nowrap;
   gap: 14px;
-  width: min(100%, 560px);
+  width: min(80%, 560px);
   margin: 0 auto;
   justify-content: center;
 }
@@ -4596,5 +4698,181 @@
   .fs-side-rail--left .powerup-bar {
     width: 32px;
     min-height: 160px;
+  }
+}
+
+/* ==========================================================================
+   Mobile Bottom Navigation (<= 760px)
+   Desktop/tablet keep the horizontal header nav; only narrow screens get this.
+   ========================================================================== */
+.fs-mobile-nav {
+  /* Hidden by default - the header nav owns navigation on wide screens. */
+  display: none;
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  /* Above all page content (header is 100) but below modal backdrops (200),
+     so the bar can never float on top of a dialog. */
+  z-index: 150;
+  padding: 6px;
+  gap: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(247, 243, 233, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid #D8D1C4;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(29, 30, 26, 0.12);
+}
+
+.fs-mobile-nav__tab {
+  /* ~48px touch target, comfortably above the 44px minimum. */
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  font-family: inherit;
+  color: #1D1E1A;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.fs-mobile-nav__tab:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.fs-mobile-nav__tab.is-active {
+  background: #FFF0E8;
+  border-color: #E94B33;
+  color: #E94B33;
+}
+
+.fs-mobile-nav__tab:focus-visible {
+  outline: 2px solid #E94B33;
+  outline-offset: 2px;
+}
+
+.fs-mobile-nav__icon {
+  display: grid;
+  place-items: center;
+}
+
+.fs-mobile-nav__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1;
+  /* Never wrap or overflow, even at 320px. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (max-width: 760px) {
+  .fs-header__nav {
+    display: none;
+  }
+
+  .fs-mobile-nav {
+    display: grid;
+  }
+
+  /* Keep the bottom bar from covering the last bit of content. */
+  .fs-main-content,
+  .fs-shop-container {
+    padding-bottom: 104px;
+  }
+
+  .fs-home,
+  .fs-shop-page {
+    /* Prevents the page itself from scrolling under the fixed bar. */
+    scroll-padding-bottom: 104px;
+  }
+}
+
+/* Secondary header links (Mã của tôi / Nhân viên / Admin).
+   They only appear once the horizontal nav is hidden. */
+.fs-header__mobile-actions {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.fs-header__icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  color: #1D1E1A;
+  background: #FAF7F0;
+  border: 1px solid #EDE8DF;
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fs-header__icon-btn:hover {
+  background: #EDE8DF;
+}
+
+.fs-header__icon-btn:focus-visible {
+  outline: 2px solid #E94B33;
+  outline-offset: 2px;
+}
+
+.fs-header__icon-dot {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: #E94B33;
+  border-radius: 999px;
+}
+
+@media (max-width: 760px) {
+  .fs-header__mobile-actions {
+    display: flex;
+  }
+
+  /* Free up horizontal room on small phones. */
+  .fs-header__container {
+    gap: 8px;
+  }
+  .fs-user-badge__name {
+    display: none;
+  }
+  .fs-wallet-pill {
+    padding: 6px 12px;
+  }
+}
+
+/* Very narrow phones (320px): trim the wallet label to keep everything on one row. */
+@media (max-width: 380px) {
+  .fs-wallet-pill__label {
+    display: none;
+  }
+  .fs-mobile-nav__label {
+    font-size: 0.64rem;
   }
 }

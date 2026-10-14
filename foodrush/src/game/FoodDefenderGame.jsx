@@ -5,7 +5,9 @@ import GameScreen from './GameScreen'
 import VoucherShop from './VoucherShop'
 import MyVouchers from './MyVouchers'
 import AdminPortal from './AdminPortal'
+import MobileNavBar from './MobileNavBar'
 import { getStoredUser } from './authApi'
+import { sound } from './sound'
 import './game.css'
 
 const SEEN_KEY = 'fdf_tutorial_seen'
@@ -50,6 +52,19 @@ export default function FoodDefenderGame() {
     startGame()
   }, [markSeen, startGame])
 
+  // Shared by the mobile bottom nav and the shop's "Cách chơi" link.
+  const goToScreen = useCallback((target) => {
+    sound.play('click')
+    if (target === 'menu') setScreen('menu')
+    if (target === 'shop') setScreen('shop')
+    if (target === 'tutorial') setScreen('tutorial')
+    if (target === 'playing') handlePlay()
+  }, [handlePlay])
+
+  // Gameplay stays immersive: it already has its own close button in the HUD,
+  // so the bottom bar is hidden while the shift is running.
+  const showMobileNav = screen !== 'playing'
+
   return (
     <div className="fd-root">
       {screen === 'menu' && (
@@ -80,17 +95,21 @@ export default function FoodDefenderGame() {
       {screen === 'shop' && (
         <VoucherShop
           onClose={() => setScreen('menu')}
-          onNavigate={(target) => {
-            if (target === 'menu') setScreen('menu')
-            if (target === 'playing') handlePlay()
-            if (target === 'tutorial') setScreen('tutorial')
-          }}
+          onNavigate={goToScreen}
           onRedeemed={() => setMenuRefreshKey((k) => k + 1)}
           user={user}
         />
       )}
       {showMyVouchers && <MyVouchers onClose={() => setShowMyVouchers(false)} />}
       {showAdmin && <AdminPortal user={user} onClose={() => setShowAdmin(false)} />}
+
+      {/* Bottom navigation for narrow screens (hidden on desktop) */}
+      {showMobileNav && (
+        <MobileNavBar
+          activeScreen={screen === 'tutorial' ? 'menu' : screen}
+          onNavigate={goToScreen}
+        />
+      )}
     </div>
   )
 }

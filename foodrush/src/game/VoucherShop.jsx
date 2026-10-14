@@ -11,52 +11,59 @@ import {
   SparkleIcon,
   ArrowLeftIcon,
   VoucherCardGraphic,
+  SearchIcon,
   CloseIcon,
 } from './icons'
 import { sound } from './sound'
 
+// Voucher mẫu (chỉ dùng khi chưa đăng nhập / API lỗi).
+// remainingStock + sortId giúp sắp xếp hoạt động giống dữ liệu thật.
 const DEFAULT_VOUCHERS = [
   {
     id: 'sample-1',
+    sortId: 1,
     badge: 'PHỔ BIẾN',
     value: '50.000đ',
     name: 'Giảm trực tiếp',
     description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
     priceCoins: 500,
-    category: 'Đồ ăn',
+    remainingStock: 40,
     theme: 'yellow',
     letter: '5',
   },
   {
     id: 'sample-2',
+    sortId: 2,
     badge: 'ĐỔI NHANH',
     value: '1 phần',
     name: 'Khoai tây chiên',
     description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
     priceCoins: 350,
-    category: 'Đồ ăn',
+    remainingStock: 12,
     theme: 'coral',
     letter: 'F',
   },
   {
     id: 'sample-3',
+    sortId: 3,
     badge: 'TIẾT KIỆM',
     value: '20%',
     name: 'Combo FiveStar',
     description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
     priceCoins: 700,
-    category: 'Combo',
+    remainingStock: 25,
     theme: 'teal',
     letter: 'C',
   },
   {
     id: 'sample-4',
+    sortId: 4,
     badge: 'ĐẶC BIỆT',
     value: '1 món',
     name: 'Burger tự chọn',
     description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
     priceCoins: 900,
-    category: 'Đồ ăn',
+    remainingStock: 5,
     theme: 'purple',
     letter: '5',
   },
@@ -64,12 +71,41 @@ const DEFAULT_VOUCHERS = [
 
 const THEME_CYCLE = ['yellow', 'coral', 'teal', 'purple']
 
+// Backend không có field "category", nên shop sắp xếp theo dữ liệu thật
+// (giá coin, số lượt còn lại, id tăng dần) thay vì lọc Đồ ăn/Combo.
+const SORT_OPTIONS = [
+  { id: 'newest', label: 'Mới nhất' },
+  { id: 'cheapest', label: 'Rẻ nhất' },
+  { id: 'expensive', label: 'Đắt nhất' },
+  { id: 'stock', label: 'Còn nhiều nhất' },
+]
+
+function sortVouchers(list, sortBy) {
+  const copy = [...list]
+  const stockOf = (v) => v.remainingStock ?? v.initialStock ?? 0
+  const sortIdOf = (v) => v.sortId ?? v.id ?? 0
+
+  switch (sortBy) {
+    case 'cheapest':
+      return copy.sort((a, b) => a.priceCoins - b.priceCoins)
+    case 'expensive':
+      return copy.sort((a, b) => b.priceCoins - a.priceCoins)
+    case 'stock':
+      return copy.sort((a, b) => stockOf(b) - stockOf(a))
+    case 'newest':
+    default:
+      // id tăng dần theo thời gian thêm voucher mới.
+      return copy.sort((a, b) => sortIdOf(b) - sortIdOf(a))
+  }
+}
+
 export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
   const [vouchers, setVouchers] = useState([])
   const [balance, setBalance] = useState(1250)
   const [status, setStatus] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [activeCategory, setActiveCategory] = useState('Tất cả') // 'Tất cả' | 'Đồ ăn' | 'Combo'
+  const [sortBy, setSortBy] = useState('newest')
+  const [keyword, setKeyword] = useState('')
   const [confirming, setConfirming] = useState(null)
   const [issued, setIssued] = useState(null)
   const [redeeming, setRedeeming] = useState(false)
@@ -87,7 +123,6 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
         // Map backend vouchers with graphics
         const mapped = vs.map((v, idx) => {
           const theme = THEME_CYCLE[idx % THEME_CYCLE.length]
-          const cat = v.name?.toLowerCase().includes('combo') ? 'Combo' : 'Đồ ăn'
           const letter = v.name?.charAt(0).toUpperCase() || '5'
           return {
             ...v,
@@ -95,7 +130,6 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
             value: v.discountValue || (v.percent ? `${v.percent}%` : 'Voucher'),
             theme,
             letter,
-            category: cat,
           }
         })
         setVouchers(mapped)
@@ -117,9 +151,18 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
 
   const filteredVouchers = useMemo(() => {
     const list = vouchers.length > 0 ? vouchers : DEFAULT_VOUCHERS
-    if (activeCategory === 'Tất cả') return list
-    return list.filter((v) => v.category === activeCategory)
-  }, [vouchers, activeCategory])
+    const kw = keyword.trim().toLowerCase()
+
+    const matched = kw
+      ? list.filter((v) =>
+        [v.name, v.description, v.value, v.badge]
+          .filter(Boolean)
+          .some((field) => String(field).toLowerCase().includes(kw))
+      )
+      : list
+
+    return sortVouchers(matched, sortBy)
+  }, [vouchers, keyword, sortBy])
 
   const showToast = (msg) => {
     setToastMessage(msg)
@@ -189,7 +232,7 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
             <button
               type="button"
               className="fs-nav-link fs-nav-link--active"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Đổi thưởng
             </button>
@@ -263,27 +306,55 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
           <div className="fs-shop-section-head">
             <h2 className="fs-shop-section-title">Voucher dành cho bạn</h2>
             <p className="fs-shop-section-sub">
-              Voucher có hiệu lực trong 30 ngày sau khi đổi.
+              Voucher không giới hạn thời gian sử dụng sau khi đổi.
             </p>
           </div>
 
-          {/* Category Tabs: Tất cả, Đồ ăn, Combo */}
-          <div className="fs-category-tabs" role="tablist">
-            {['Tất cả', 'Đồ ăn', 'Combo'].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                role="tab"
-                aria-selected={activeCategory === cat}
-                className={`fs-cat-btn ${activeCategory === cat ? 'fs-cat-btn--active' : ''}`}
-                onClick={() => {
+          {/* Search box + Sort dropdown */}
+          <div className="fs-shop-controls">
+            <div className="fs-shop-search">
+              <SearchIcon size={18} />
+              <input
+                type="search"
+                className="fs-shop-search__input"
+                placeholder="Tìm voucher theo tên, mức giảm..."
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value)
                   sound.play('click')
-                  setActiveCategory(cat)
                 }}
+                aria-label="Tìm kiếm voucher"
+              />
+              {keyword && (
+                <button
+                  type="button"
+                  className="fs-shop-search__clear"
+                  onClick={() => setKeyword('')}
+                  aria-label="Xoá từ khoá"
+                >
+                  <CloseIcon size={14} />
+                </button>
+              )}
+            </div>
+
+            <label className="fs-shop-sort">
+              <span className="fs-shop-sort__label">Sắp xếp</span>
+              <select
+                className="fs-shop-sort__select"
+                value={sortBy}
+                onChange={(e) => {
+                  sound.play('click')
+                  setSortBy(e.target.value)
+                }}
+                aria-label="Sắp xếp voucher"
               >
-                {cat}
-              </button>
-            ))}
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </section>
 
@@ -330,6 +401,27 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
               </div>
             </div>
           ))}
+
+          {!loading && filteredVouchers.length === 0 && (
+            <div className="fs-shop-empty">
+              <span className="fs-shop-empty__icon">🔍</span>
+              <p className="fs-shop-empty__title">Không tìm thấy voucher nào</p>
+              <p className="fs-shop-empty__desc">
+                {keyword.trim()
+                  ? `Không có kết quả cho "${keyword.trim()}". Thử từ khoá khác nhé.`
+                  : 'Hiện chưa có voucher nào khả dụng.'}
+              </p>
+              {keyword.trim() && (
+                <button
+                  type="button"
+                  className="fs-btn-secondary"
+                  onClick={() => setKeyword('')}
+                >
+                  Xoá tìm kiếm
+                </button>
+              )}
+            </div>
+          )}
         </section>
       </main>
 

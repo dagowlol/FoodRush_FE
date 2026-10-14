@@ -7,6 +7,9 @@ import {
   CardArtStackAttack,
   CardArtSpeedyChef,
   CardArtFlavorMatch,
+  TicketIcon,
+  UsersIcon,
+  ShieldIcon,
 } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
 import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
@@ -230,6 +233,48 @@ export default function StartScreen({
           </nav>
 
           <div className="fs-header__actions">
+            {/* Khi header nav bị ẩn (<=760px), các link phụ chuyển xuống đây
+                dưới dạng nút icon gọn để không mất chức năng nào trên mobile. */}
+            <div className="fs-header__mobile-actions">
+              {user && !user.isGuest && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => {
+                    sound.play('click')
+                    setShowCoupons(true)
+                  }}
+                  title="Mã của tôi"
+                  aria-label={`Mã của tôi${couponCount > 0 ? ` (${couponCount})` : ''}`}
+                >
+                  <TicketIcon size={20} />
+                  {couponCount > 0 && <span className="fs-header__icon-dot">{couponCount}</span>}
+                </button>
+              )}
+              {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => window.location.assign('/staff')}
+                  title="Nhân viên"
+                  aria-label="Trang nhân viên"
+                >
+                  <UsersIcon size={20} />
+                </button>
+              )}
+              {user && user.role === 'ADMIN' && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => window.location.assign('/admin')}
+                  title="Admin"
+                  aria-label="Trang quản trị"
+                >
+                  <ShieldIcon size={20} />
+                </button>
+              )}
+            </div>
+
             {user && !user.isGuest && (
               <button
                 type="button"
@@ -282,7 +327,7 @@ export default function StartScreen({
         <section className="fs-hero">
           <div className="fs-hero__tag">
             <SparkleIcon size={13} color="#E94B33" />
-            <span>CHƠI VUI, ĂN NGON</span>
+            <span>CHƠI VUI, NHẬN QUÀ</span>
           </div>
 
           <h1 className="fs-hero__title">
