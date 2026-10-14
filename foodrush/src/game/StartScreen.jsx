@@ -131,7 +131,10 @@ export default function StartScreen({
     onTutorial()
   }
 
-  const userCoinDisplay = dailyCoin?.coinBalance ?? (user && !user.isGuest ? 1250 : 1250)
+  // Chỉ hiện số dư thật từ API. Không có dữ liệu thì để trống chứ không
+  // dựng số giả — trước đây fallback 1250 khiến user tưởng mình có coin.
+  const coinBalance = dailyCoin?.coinBalance ?? null
+  const userCoinDisplay = coinBalance != null ? coinBalance.toLocaleString('vi-VN') : '--'
 
   return (
     <div className="fs-home">
@@ -247,7 +250,7 @@ export default function StartScreen({
                 <div className="fs-wallet-pill__text">
                   <span className="fs-wallet-pill__label">SỐ DƯ</span>
                   <span className="fs-wallet-pill__val">
-                    {userCoinDisplay.toLocaleString('vi-VN')}
+                    {userCoinDisplay}
                   </span>
                 </div>
               </button>
@@ -339,7 +342,7 @@ export default function StartScreen({
                     <span className="fs-stats-box__label">FIVECOIN CỦA BẠN</span>
                     <div className="fs-stats-box__val">
                       <CoinIcon size={20} />
-                      <span>{userCoinDisplay.toLocaleString('vi-VN')}</span>
+                      <span>{userCoinDisplay}</span>
                     </div>
                   </div>
 

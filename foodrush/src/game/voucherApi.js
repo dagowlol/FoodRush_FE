@@ -62,6 +62,18 @@ export async function fetchVouchers() {
   }
 }
 
+/**
+ * Bản ném lỗi. Shop cần phân biệt "API lỗi" với "không có voucher nào" để
+ * không bịa dữ liệu mẫu khi mạng lỗi.
+ * Lưu ý: GET /api/vouchers yêu cầu đăng nhập, nên khách chưa đăng nhập sẽ
+ * nhận 401 và cần được xử lý như một trạng thái riêng, không phải lỗi.
+ */
+export async function fetchVouchersStrict() {
+  if (!apiEnabled()) return []
+  const json = await request('/api/vouchers')
+  return Array.isArray(json?.data) ? json.data : []
+}
+
 export async function fetchRedemptionStatus() {
   if (!apiEnabled()) return null
   try {
