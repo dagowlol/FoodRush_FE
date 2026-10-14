@@ -14,6 +14,7 @@ import {
   rand,
 } from './config'
 import { tierForScore } from './coupons'
+import { sound } from './sound'
 
 const GROUND_R = 42
 const FLYING_R = 40
@@ -160,6 +161,8 @@ export function useGameEngine(onEvent) {
   // A bug reached the dish: lose a life and instantly swap in a fresh, safe dish.
   const contaminateFood = useCallback(() => {
     addEffect('splat', FOOD.x, FOOD.y - 30, null)
+    // Báo âm thanh ngay lúc món ăn bị cắn, không đợi hết mạng mới phát.
+    sound.play('damage')
     if (!contaminatedOnceRef.current) {
       contaminatedOnceRef.current = true
       onEventRef.current?.('contaminate')

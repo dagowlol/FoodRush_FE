@@ -4317,3 +4317,66 @@
   color: #e94b33;
   border: 1px solid #ede8df;
 }
+
+/* --- Báo trạng thái kết nối mạng ---------------------------------------- */
+.fs-net-banner {
+  position: fixed;
+  z-index: 80;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(92vw, 460px);
+  padding: 11px 16px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(29, 30, 26, 0.22);
+  animation: fsNetDrop 0.22s ease;
+}
+.fs-net-banner.is-offline { background: #c94032; }
+.fs-net-banner.is-online { background: #3f8a55; }
+.fs-net-banner__dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.fs-net-banner.is-offline .fs-net-banner__dot {
+  animation: fsNetPulse 1s infinite;
+}
+.fs-net-banner__text { min-width: 0; }
+
+@keyframes fsNetDrop {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes fsNetPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-net-banner,
+  .fs-net-banner.is-offline .fs-net-banner__dot {
+    animation: none;
+  }
+}
+
+/* Ô tiêu đề thẻ voucher giờ hiện TÊN voucher (nên cho xuống dòng thay vì
+   cắt bằng ellipsis như trước). */
+.vw-card__reward {
+  min-width: 0;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #1d1e1a;
+  overflow-wrap: anywhere;
+}
+.vw-card.is-used .vw-card__reward,
+.vw-card.is-expired .vw-card__reward { color: #8c867a; }

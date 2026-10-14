@@ -70,6 +70,12 @@ const UI_SOUNDS = {
     tone(240, { type: 'sawtooth', duration: 0.18, gain: 0.45, slideTo: 140 })
     tone(170, { type: 'square', duration: 0.2, gain: 0.3, startAt: 0.1 })
   },
+  // Côn trùng chạm vào món ăn: tiếng "bụp" trầm + nốt hối tiếc tụt xuống.
+  damage: () => {
+    tone(150, { type: 'sine', duration: 0.13, gain: 0.6, slideTo: 62 })
+    tone(330, { type: 'triangle', duration: 0.1, gain: 0.3, slideTo: 200 })
+    tone(196, { type: 'sawtooth', duration: 0.26, gain: 0.26, startAt: 0.13, slideTo: 110 })
+  },
   enter: () => {
     ;[523.25, 659.25, 783.99].forEach((freq, i) =>
       tone(freq, { type: 'triangle', duration: 0.16, startAt: i * 0.075 }),

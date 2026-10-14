@@ -50,16 +50,17 @@ export default function VoucherCard({ card, copiedKey, onCopy }) {
   return (
     <li className={`vw-card ${statusClass}`}>
       <div className="vw-card__top">
-        <span className="vw-card__reward">{card.reward}</span>
+        {/* Hiện tên voucher thay cho giá trị phần thưởng: discountValue từ BE
+            là string tự do ("50", "20%", "1 món"...) nên format ra "Tặng 50"
+            rất khó hiểu. Tên luôn có sẵn và đúng ý nghĩa hơn. */}
+        <h3 className="vw-card__reward" title={card.title}>
+          {card.title}
+        </h3>
         <span className={`vw-card__status ${statusClass}`}>
           <span className="vw-card__status-dot" aria-hidden="true" />
           {meta.label}
         </span>
       </div>
-
-      <h3 className="vw-card__title" title={card.title}>
-        {card.title}
-      </h3>
 
       <div className="vw-card__code-row">
         <div className="vw-card__code-box">

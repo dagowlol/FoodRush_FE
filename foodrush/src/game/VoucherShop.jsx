@@ -317,7 +317,9 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
                 <div className="fs-wallet-pill__text">
                   <span className="fs-wallet-pill__label">SỐ DƯ</span>
                   <span className="fs-wallet-pill__val">
-                    {balance.toLocaleString('vi-VN')}
+                    {/* balance khởi tạo null và chỉ có sau khi /api/wallet trả về,
+                        nên lúc đang tải phải hiện placeholder chứ không .toLocaleString. */}
+                    {balance != null ? balance.toLocaleString('vi-VN') : '--'}
                   </span>
                 </div>
               </div>
@@ -639,7 +641,12 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
               </p>
               <div className="fs-modal-balance-hint">
                 <span>Số dư sau khi đổi: </span>
-                <b>{Math.max(0, balance - confirming.priceCoins).toLocaleString('vi-VN')} FiveCoin</b>
+                <b>
+                  {balance != null
+                    ? Math.max(0, balance - confirming.priceCoins).toLocaleString('vi-VN')
+                    : '--'}{' '}
+                  FiveCoin
+                </b>
               </div>
             </div>
 
