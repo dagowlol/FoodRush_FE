@@ -1,5 +1,27 @@
 :root {
-  font-family: 'Baloo 2', 'Segoe UI', 'Noto Sans', 'Trebuchet MS', Tahoma, Arial, sans-serif;
+  --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* FiveStar Warm Fast-Food Palette */
+  --color-cream: #F7F3E9;
+  --color-cream-surface: #FFFFFF;
+  --color-cream-subtle: #FAF7F0;
+  --color-border: #EDE8DF;
+  --color-primary-red: #E94B33;
+  --color-primary-red-hover: #D63F28;
+  --color-primary-red-light: #FDF1EE;
+  --color-golden-yellow: #F3BE4D;
+  --color-golden-dark: #D49726;
+  --color-charcoal: #1D1E1A;
+  --color-charcoal-light: #2A2B26;
+  --color-muted-gray: #77736B;
+  --color-muted-light: #9B978F;
+  --color-success: #2E7D32;
+  --color-success-bg: #EBF7EE;
+
+  font-family: var(--font-body);
+  color: var(--color-charcoal);
+  background-color: var(--color-cream);
   color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -9,21 +31,31 @@
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body,
 #root {
-  margin: 0;
-  padding: 0;
   min-height: 100%;
+  width: 100%;
 }
 
 body {
-  background: #ffe9c7;
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
   overscroll-behavior: none;
 }
 
 button {
   font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }

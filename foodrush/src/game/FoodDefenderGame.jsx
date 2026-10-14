@@ -57,18 +57,36 @@ export default function FoodDefenderGame() {
           key={menuRefreshKey}
           onPlay={handlePlay}
           onTutorial={() => setScreen('tutorial')}
-          onOpenShop={() => setShowShop(true)}
+          onOpenShop={() => setScreen('shop')}
           onOpenMyVouchers={() => setShowMyVouchers(true)}
           onOpenAdmin={() => setShowAdmin(true)}
           user={user}
         />
       )}
-      {screen === 'tutorial' && <Tutorial onComplete={finishTutorial} onSkip={finishTutorial} />}
-      {screen === 'playing' && <GameScreen key={runKey} onExit={() => setScreen('menu')} onOpenShop={() => setShowShop(true)} />}
-      {showShop && (
+      {screen === 'tutorial' && (
+        <Tutorial
+          onComplete={finishTutorial}
+          onSkip={finishTutorial}
+          onExit={() => setScreen('menu')}
+        />
+      )}
+      {screen === 'playing' && (
+        <GameScreen
+          key={runKey}
+          onExit={() => setScreen('menu')}
+          onOpenShop={() => setScreen('shop')}
+        />
+      )}
+      {screen === 'shop' && (
         <VoucherShop
-          onClose={() => setShowShop(false)}
+          onClose={() => setScreen('menu')}
+          onNavigate={(target) => {
+            if (target === 'menu') setScreen('menu')
+            if (target === 'playing') handlePlay()
+            if (target === 'tutorial') setScreen('tutorial')
+          }}
           onRedeemed={() => setMenuRefreshKey((k) => k + 1)}
+          user={user}
         />
       )}
       {showMyVouchers && <MyVouchers onClose={() => setShowMyVouchers(false)} />}

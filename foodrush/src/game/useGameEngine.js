@@ -48,6 +48,8 @@ export function useGameEngine(onEvent) {
   const [combo, setCombo] = useState(0)
   const [bugsKilled, setBugsKilled] = useState(0)
   const [lives, setLives] = useState(LIVES)
+  const [elapsed, setElapsed] = useState(0)
+  const [toolQuantities, setToolQuantities] = useState({ spray: 30, swatter: 30 })
   const [foodType, setFoodType] = useState(FOOD_TYPES[0])
   const [foodHitKey, setFoodHitKey] = useState(0)
   const [selectedTool, setSelectedTool] = useState(null)
@@ -66,6 +68,7 @@ export function useGameEngine(onEvent) {
   const comboRef = useRef(0)
   const bugsKilledRef = useRef(0)
   const livesRef = useRef(LIVES)
+  const toolQuantitiesRef = useRef({ spray: 30, swatter: 30 })
   const powerUpRef = useRef(0)
   const isPowerUpActiveRef = useRef(false)
   const foodTypeRef = useRef(FOOD_TYPES[0])
@@ -231,6 +234,7 @@ export function useGameEngine(onEvent) {
     comboRef.current = 0
     bugsKilledRef.current = 0
     livesRef.current = LIVES
+    toolQuantitiesRef.current = { spray: 30, swatter: 30 }
     foodTypeRef.current = FOOD_TYPES[0]
     foodHitKeyRef.current = 0
     contaminatedOnceRef.current = false
@@ -249,6 +253,8 @@ export function useGameEngine(onEvent) {
     setCombo(0)
     setBugsKilled(0)
     setLives(LIVES)
+    setElapsed(0)
+    setToolQuantities({ spray: 30, swatter: 30 })
     setPowerUp(0)
     setIsPowerUpActive(false)
     setFoodType(FOOD_TYPES[0])
@@ -346,6 +352,9 @@ export function useGameEngine(onEvent) {
   const simulate = useCallback((dt) => {
     elapsedRef.current += dt
     const elapsed = elapsedRef.current
+    // Update elapsed time display (every second)
+    const elapsedSec = Math.floor(elapsed)
+    setElapsed(elapsedSec)
 
     // 1. dynamic continuous random spawn scaling with current score
     spawnTimerRef.current -= dt
@@ -401,7 +410,7 @@ export function useGameEngine(onEvent) {
         el.style.setProperty('--bank', `${Math.sin((elapsed + bug.seed) * 4) * 9}deg`)
       }
     }
-  }, [contaminateFood, removeBug, spawnBug])
+  }, [contaminateFood, finishGame, removeBug, spawnBug])
 
   useEffect(() => {
     if (status !== 'running') return undefined
@@ -430,6 +439,8 @@ export function useGameEngine(onEvent) {
     wave: Math.floor(score / 100) + 1,
     lives,
     maxLives: LIVES,
+    elapsed,
+    toolQuantities,
     powerUp,
     isPowerUpActive,
     foodType,
@@ -442,8 +453,10 @@ export function useGameEngine(onEvent) {
     start,
     pause,
     resume,
+    togglePause: () => (statusRef.current === 'paused' ? resume() : pause()),
     attack,
     selectTool,
     registerBugEl,
   }
 }
+

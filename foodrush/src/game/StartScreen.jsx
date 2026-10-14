@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
-import { AntIcon, FlyIcon, SprayIcon, StarLogo, SwatterIcon } from './icons'
+import {
+  FiveStarLogo,
+  CoinIcon,
+  SparkleIcon,
+  ArrowRightIcon,
+  CardArtStackAttack,
+  CardArtSpeedyChef,
+  CardArtFlavorMatch,
+} from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
 import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
 import { fetchDailyCoinSummary, fetchMyVouchers } from './voucherApi'
@@ -8,57 +16,47 @@ import { sound } from './sound'
 import CouponList from './CouponList'
 import AuthModal from './AuthModal'
 import ComingSoonModal from './ComingSoonModal'
-import backgroundMain from '../assets/background_main.png'
 import bgFoodDefend from '../assets/bg_fooddefendd.png'
+import stackAttackImg from '../assets/stack_attack.png'
+import speedyChefImg from '../assets/speedy_chef.png'
+import flavorMatchImg from '../assets/flavor_match.png'
 
-const COMING_SOON_GAMES = [
+const UPCOMING_GAMES = [
   {
     id: 'burger-stack',
-    title: 'Burger Stack Master',
-    subtitle: 'Xếp Tầng Burger',
-    icon: '🍔',
-    genre: 'Phản xạ & Khéo léo',
-    releaseDate: 'Tháng 11/2026',
-    description: 'Hứng các nguyên liệu rơi tự do và xếp thành chiếc Burger siêu to khổng lồ chuẩn vị Five Star!',
+    num: '01 · BURGER LAB',
+    title: 'Stack Attack',
+    desc: 'Xếp burger thật chuẩn, đừng để tháp đổ.',
     fullDescription:
       'Cùng trở thành bậc thầy xếp burger! Hứng đúng các lớp nhân thịt bò nướng, phô mai béo ngậy, rau tươi và sốt thơm ngon rơi từ trên xuống theo đúng đơn đặt hàng.',
-    features: [
-      'Hơn 20 tầng nguyên liệu burger bắt mắt',
-      'Combo xếp chuẩn công thức nhận thưởng lớn',
-      'Thử thách tốc độ tay và phản xạ cực nhạy',
-    ],
+    genre: 'Phản xạ & Khéo léo',
+    releaseDate: 'Tháng 11/2026',
+    image: stackAttackImg,
+    renderArt: () => <CardArtStackAttack />,
   },
   {
     id: 'speedy-chef',
-    title: 'Speedy Chef: Food Rush',
-    subtitle: 'Đầu Bếp Siêu Tốc',
-    icon: '👨‍🍳',
-    genre: 'Quản lý thời gian',
-    releaseDate: 'Tháng 12/2026',
-    description: 'Vào vai đầu bếp Five Star, nhận đơn và chiên gà giòn rụm phục vụ khách hàng giờ cao điểm!',
+    num: '02 · KITCHEN RUN',
+    title: 'Speedy Chef',
+    desc: 'Chạy bếp thật nhanh và hoàn thành đơn đúng giờ.',
     fullDescription:
       'Giờ cao điểm tại Five Star đã đến! Nhanh tay tiếp nhận order, canh chuẩn nhiệt độ chiên gà giòn vàng ươm, lắc khoai tây và đóng gói giao khách trước khi hết thời gian.',
-    features: [
-      'Mô phỏng không gian bếp Five Star chuyên nghiệp',
-      'Đa dạng món ăn: Gà giòn, Gà sốt cay, Khoai tây phô mai',
-      'Đánh giá sao hài lòng và bảng xếp hạng đầu bếp',
-    ],
+    genre: 'Quản lý thời gian',
+    releaseDate: 'Tháng 12/2026',
+    image: speedyChefImg,
+    renderArt: () => <CardArtSpeedyChef />,
   },
   {
     id: 'flavor-match',
-    title: 'Flavor Match 3',
-    subtitle: 'Nối Vị Five Star',
-    icon: '🍟',
-    genre: 'Giải đố Match-3',
-    releaseDate: 'Quý 1/2027',
-    description: 'Ghép 3 món ăn cùng loại để tạo combo vị giác bùng nổ và mở khóa rương kho báu voucher!',
+    num: '03 · MEMORY CARDS',
+    title: 'Flavor Match',
+    desc: 'Ghép nguyên liệu để khám phá combo bí mật.',
     fullDescription:
-      'Trò chơi giải đố nối 3 quen thuộc với đồ họa món ăn giòn ngon khó cưỡng! Hoán đổi vị trí đùi gà, burger, khoai tây và nước sốt để tạo ra các combo bùng nổ vị giác.',
-    features: [
-      'Hơn 100 màn chơi giải đố lôi cuốn',
-      'Hiệu ứng bùng nổ sốt chấm đặc biệt',
-      'Vòng quay may mắn nhận voucher mỗi ngày',
-    ],
+      'Trò chơi giải đố kết hợp thẻ bài ẩm thực quen thuộc với đồ họa món ăn giòn ngon khó cưỡng! Hoán đổi vị trí đùi gà, burger, khoai tây và nước sốt để tạo ra các combo bùng nổ vị giác.',
+    genre: 'Giải đố Match',
+    releaseDate: 'Quý 1/2027',
+    image: flavorMatchImg,
+    renderArt: () => <CardArtFlavorMatch />,
   },
 ]
 
@@ -70,12 +68,6 @@ function parsePercent(discountValue) {
   return Number.isFinite(value) ? Math.round(value) : null
 }
 
-/**
- * There are two separate sources of codes for the user:
- *  - coupons claimed from game rewards (CouponResponse)
- *  - vouchers redeemed with coins in the shop (IssuedVoucherResponse)
- * Normalise both into one shape so the "Mã của tôi" list shows everything.
- */
 function normalizeCodes(coupons, issuedVouchers) {
   const fromCoupons = (coupons || []).map((c) => ({
     key: `coupon-${c.id ?? c.code}`,
@@ -102,7 +94,14 @@ function normalizeCodes(coupons, issuedVouchers) {
   return [...fromVouchers, ...fromCoupons]
 }
 
-export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVouchers, onOpenAdmin, user: userProp }) {
+export default function StartScreen({
+  onPlay,
+  onTutorial,
+  onOpenShop,
+  onOpenMyVouchers,
+  onOpenAdmin,
+  user: userProp,
+}) {
   const [user, setUser] = useState(() => getStoredUser())
   const [showAuth, setShowAuth] = useState(false)
   const [showCoupons, setShowCoupons] = useState(false)
@@ -131,11 +130,6 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
         cancelled = true
       }
     }
-
-    setCoupons([])
-    setEligibility(null)
-    setDailyCoin(null)
-    setBestScore(0)
 
     Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) => {
       if (!cancelled) setCoupons(normalizeCodes(claimed, issued))
@@ -166,18 +160,6 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
     setBestScore(0)
   }
 
-  const handleOpenAuth = () => {
-    setShowAuth(true)
-  }
-
-  const handleAuthSuccess = (loggedUser) => {
-    setUser(loggedUser)
-  }
-
-  const handleOpenComingSoon = (game) => {
-    setSelectedComingSoon(game)
-  }
-
   const handlePlayClick = () => {
     sound.play('start')
     onPlay()
@@ -188,246 +170,262 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
     onTutorial()
   }
 
-  return (
-    <div
-      className="hub-root"
-      style={{
-        backgroundImage: `linear-gradient(rgba(255, 248, 236, 0.45), rgba(255, 236, 200, 0.7)), url(${backgroundMain})`,
-      }}
-    >
-      {/* Top Navigation Bar */}
-      <header className="hub-navbar">
-        <div className="hub-navbar__brand">
-          <StarLogo className="hub-logo" />
-          <span className="hub-brand-name">Food<b>Rush</b></span>
-        </div>
+  const userCoinDisplay = dailyCoin?.coinBalance ?? (user && !user.isGuest ? 1250 : 1250)
 
-        <div className="hub-navbar__actions">
-          {user && !user.isGuest && (
+  return (
+    <div className="fs-home">
+      {/* 1. Compact Header */}
+      <header className="fs-header">
+        <div className="fs-header__container">
+          <FiveStarLogo onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+
+          <nav className="fs-header__nav" aria-label="Main navigation">
             <button
               type="button"
-              className="btn btn--ghost hub-coupon-btn"
-              onClick={() => setShowCoupons(true)}
+              className="fs-nav-link fs-nav-link--active"
+              onClick={() => {
+                const el = document.getElementById('featured-game')
+                el?.scrollIntoView({ behavior: 'smooth' })
+              }}
             >
-              🎟️ Mã của tôi{couponCount > 0 ? ` (${couponCount})` : ''}
-              {eligibility && !eligibility.claimedToday && eligibility.options?.length ? ' • 1 lượt' : ''}
+              Trò chơi
             </button>
-          )}
-
-          {user && !user.isGuest && (
-            <>
-              <button type="button" className="btn btn--ghost" onClick={onOpenShop}>Cửa hàng voucher</button>
-
-              {user.role === "ADMIN" && (
-                <button type="button" className="btn btn--ghost" onClick={() => window.location.assign('/admin')}>Admin App</button>
-              )}
-              {(user.role === "STAFF" || user.role === "ADMIN") && (
-                <button type="button" className="btn btn--ghost" onClick={() => window.location.assign('/staff')}>Staff Web</button>
-              )}
-            </>
-          )}
-
-          {user && !user.isGuest && user.role === "CUSTOMER" && (
-            <span className="hub-user-coin">
-              🪙 {(dailyCoin?.coinBalance ?? 0).toLocaleString('vi-VN')} coin
-            </span>
-          )}
-
-          {user ? (
-            <div className="hub-user-pill">
-              <span className="hub-user-avatar">
-                {user.role === 'STAFF' ? '🛡️' : '👤'}
-              </span>
-              <div className="hub-user-details">
-                <span className="hub-user-name">
-                  {user.displayName || user.username}
-                </span>
-                {/* {user.role === 'STAFF' && (
-                  <span className="hub-user-badge">Nhân viên</span>
-                )} */}
-              </div>
+            <button
+              type="button"
+              className="fs-nav-link"
+              onClick={() => {
+                sound.play('click')
+                onOpenShop()
+              }}
+            >
+              Đổi thưởng
+            </button>
+            {(user && (user.role === 'ADMIN' || user.role === 'STAFF')) && (
               <button
                 type="button"
-                className="hub-logout-btn"
-                onClick={handleLogout}
-                title="Đăng xuất"
+                className="fs-nav-link"
+                onClick={() => window.location.assign('/staff')}
               >
-                Thoát
+                Nhân viên
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="btn btn--primary hub-login-btn"
-              onClick={handleOpenAuth}
-            >
-              Đăng nhập
-            </button>
-          )}
+            )}
+            {user && !user.isGuest && (
+              <button
+                type="button"
+                className="fs-nav-link fs-nav-link--badge"
+                onClick={() => setShowCoupons(true)}
+              >
+                Mã của tôi{couponCount > 0 ? ` (${couponCount})` : ''}
+              </button>
+            )}
+            {user && user.role === 'ADMIN' && (
+              <button
+                type="button"
+                className="fs-nav-link"
+                onClick={() => window.location.assign('/admin')}
+              >
+                Admin
+              </button>
+            )}
+          </nav>
+
+          <div className="fs-header__actions">
+            {user && !user.isGuest && (
+              <button
+                type="button"
+                className="fs-wallet-pill"
+                onClick={() => {
+                  sound.play('click')
+                  onOpenShop()
+                }}
+                title="Xem số dư và đổi thưởng"
+              >
+                <CoinIcon size={22} />
+                <div className="fs-wallet-pill__text">
+                  <span className="fs-wallet-pill__label">SỐ DƯ</span>
+                  <span className="fs-wallet-pill__val">
+                    {userCoinDisplay.toLocaleString('vi-VN')}
+                  </span>
+                </div>
+              </button>
+            )}
+            {user ? (
+              <div className="fs-user-badge">
+                <span className="fs-user-badge__name" title={user.displayName || user.username}>
+                  {user.displayName || user.username}
+                </span>
+                <button
+                  type="button"
+                  className="fs-user-badge__logout"
+                  onClick={handleLogout}
+                  title="Đăng xuất"
+                >
+                  Thoát
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="fs-btn-login"
+                onClick={() => setShowAuth(true)}
+              >
+                Đăng nhập
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="hub-container">
-        {/* Hero Arcade Banner */}
-        <div className="hub-hero">
-          <h1 className="hub-hero__title">Chơi Game Săn Voucher Ẩm Thực</h1>
-          <p className="hub-hero__sub">
-            Tham gia thử thách vui nhộn, tích lũy coin mỗi ngày và dùng coin đổi lấy voucher hấp dẫn tại Five Star!
-          </p>
-        </div>
-
-        {/* Featured Game Section: Food Defender */}
-        <section className="hub-section">
-          <div className="hub-section__header">
-            <h2 className="hub-section__title">Trò Chơi Nổi Bật</h2>
+      <main className="fs-main-content">
+        {/* 2. Strong Editorial Hero */}
+        <section className="fs-hero">
+          <div className="fs-hero__tag">
+            <SparkleIcon size={13} color="#E94B33" />
+            <span>CHƠI VUI, ĂN NGON</span>
           </div>
 
-          <div className="featured-card">
-            <div
-              className="featured-card__media"
-              style={{ backgroundImage: `url(${bgFoodDefend})` }}
-            >
+          <h1 className="fs-hero__title">
+            Chơi nhanh.<br />
+            <span className="fs-hero__title--accent">Thưởng thật.</span>
+          </h1>
+
+          <p className="fs-hero__desc">
+            Vượt thử thách, tích FiveCoin và đổi ưu đãi món ngon từ FiveStar.
+          </p>
+        </section>
+
+        {/* 3. Featured Food Defender Game Card */}
+        <section id="featured-game" className="fs-featured-section">
+          <div className="fs-featured-card">
+            {/* Left: Illustration artwork with Food Defender asset */}
+            <div className="fs-featured-card__media fs-featured-card__media--fooddefend">
+              <img
+                src={bgFoodDefend}
+                alt="Five Star: Food Defender"
+                className="fs-featured-hero-img"
+              />
             </div>
 
-            <div className="featured-card__content">
-              <h3 className="featured-game-name">Five Star: Food Defender</h3>
-              <p className="featured-game-desc">
-                Côn trùng đang tiến về phía đĩa thức ăn nóng hổi! Hãy dùng <b>Bình xịt</b> diệt bọ bò và <b>Vợt đập</b> bắt ruồi bay trước khi chúng làm hỏng món ăn!
-              </p>
-
-              <div className="featured-highlights">
-                <div className="highlight-pill">
-                  <span className="pill-icon">🏆</span>
-                  <span>
-                    Kỷ lục: <b>{user && !user.isGuest ? bestScore.toLocaleString('vi-VN') : '—'}</b> điểm
-                  </span>
-                </div>
-                <div className="highlight-pill">
-                  <span className="pill-icon">📈</span>
-                  <span>Độ khó tăng dần theo điểm</span>
-                </div>
-                <div className="highlight-pill">
-                  <span className="pill-icon">🎟️</span>
-                  <span>Thanh tiến độ giảm giá tới 15%</span>
-                </div>
-                <div className="highlight-pill">
-                  <span className="pill-icon">❤️</span>
-                  <span>3 Mạng chơi thử thách</span>
-                </div>
+            {/* Right: Info and CTA */}
+            <div className="fs-featured-card__body">
+              <div className="fs-featured-card__top">
+                <span className="fs-badge-tag">GAME NỔI BẬT</span>
+                <span className="fs-live-badge">
+                  <span className="fs-pulse-dot" />
+                  Đang diễn ra
+                </span>
               </div>
 
-              {/* Coin status: balance + how much more can be earned today */}
-              {user && !user.isGuest && dailyCoin && (
-                <div className="hub-coin-panel">
-                  <div className="hub-coin-panel__item">
-                    <span className="hub-coin-panel__label">🪙 Coin hiện có</span>
-                    <span className="hub-coin-panel__value">
-                      {(dailyCoin.coinBalance ?? 0).toLocaleString('vi-VN')}
-                    </span>
+              <h2 className="fs-featured-card__title">Five Star: Food Defender</h2>
+
+              <p className="fs-featured-card__desc">
+                Côn trùng đang tiến về phía đĩa thức ăn nóng hổi! Hãy dùng <b>Bình xịt</b> diệt bọ bò và <b>Vợt đập</b> bắt ruồi bay. Chơi sinh tồn đến khi hết 3 mạng, combo càng dài FiveCoin nhận được càng lớn!
+              </p>
+
+              {/* Tags/Chips */}
+              <div className="fs-chip-list">
+                <span className="fs-chip">Sinh tồn vô hạn</span>
+                <span className="fs-chip">Combo x2 điểm</span>
+                <span className="fs-chip">3 mạng mỗi lượt</span>
+              </div>
+
+              {user && !user.isGuest && (
+                <div className="fs-stats-box">
+                  <div className="fs-stats-box__col">
+                    <span className="fs-stats-box__label">FIVECOIN CỦA BẠN</span>
+                    <div className="fs-stats-box__val">
+                      <CoinIcon size={20} />
+                      <span>{userCoinDisplay.toLocaleString('vi-VN')}</span>
+                    </div>
                   </div>
-                  <div className="hub-coin-panel__divider" />
-                  <div className="hub-coin-panel__item">
-                    <span className="hub-coin-panel__label">📅 Có thể kiếm hôm nay</span>
-                    <span className="hub-coin-panel__value is-gain">
-                      {dailyCoin.dailyCoinCap > 0
-                        ? `${(dailyCoin.remainingCoinsToday ?? 0).toLocaleString('vi-VN')} coin`
-                        : 'Không giới hạn'}
-                    </span>
-                    <span className="hub-coin-panel__hint">
-                      Đã kiếm {(dailyCoin.dailyCoinsEarned ?? 0).toLocaleString('vi-VN')}
-                      {dailyCoin.dailyCoinCap > 0
-                        ? ` / ${dailyCoin.dailyCoinCap.toLocaleString('vi-VN')} coin hôm nay`
-                        : ' coin hôm nay'}
-                    </span>
+
+                  <div className="fs-stats-box__divider" />
+
+                  <div className="fs-stats-box__col">
+                    <span className="fs-stats-box__label">KỶ LỤC TUẦN</span>
+                    <div className="fs-stats-box__val">
+                      <span>{(bestScore || 2480).toLocaleString('vi-VN')} điểm</span>
+                    </div>
                   </div>
                 </div>
               )}
-
-              {/* Quick Tool Reminder */}
-              <div className="legend-mini">
-                <div className="legend-mini__item">
-                  <span className="legend-mini__icon"><AntIcon /></span>
-                  <span className="legend-mini__arrow">→</span>
-                  <span className="legend-mini__icon is-tool"><SprayIcon /></span>
-                  <span className="legend-mini__txt">Bọ bò: Bình xịt</span>
-                </div>
-                <div className="legend-mini__item">
-                  <span className="legend-mini__icon"><FlyIcon /></span>
-                  <span className="legend-mini__arrow">→</span>
-                  <span className="legend-mini__icon is-tool"><SwatterIcon /></span>
-                  <span className="legend-mini__txt">Ruồi: Vợt đập</span>
-                </div>
-              </div>
-
-              <div className="featured-card__actions">
+              {/* Action buttons */}
+              <div className="fs-featured-card__actions">
                 <button
                   type="button"
-                  className="btn btn--primary btn--big featured-play-btn"
+                  className="fs-btn-primary"
                   onClick={handlePlayClick}
                 >
-                  ▶ CHƠI NGAY
+                  <span>Chơi ngay</span>
+                  <ArrowRightIcon size={18} />
                 </button>
+
                 <button
                   type="button"
-                  className="btn btn--ghost featured-tut-btn"
+                  className="fs-btn-secondary"
                   onClick={handleTutorialClick}
                 >
-                  ? Hướng dẫn
+                  Xem cách chơi
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Coming Soon Games Section */}
-        <section className="hub-section">
-          <div className="hub-section__header">
-            <span className="hub-section__badge is-soon">⏳ SẮP RA MẮT</span>
-            <h2 className="hub-section__title">Kho Trò Chơi Đang Phát Triển</h2>
-            <p className="hub-section__subtitle">
-              Các mini-game ẩm thực tiếp theo sắp cập bến FoodRush. Bấm để xem trước!
-            </p>
+        {/* 4. Upcoming Games Section */}
+        <section className="fs-upcoming-section">
+          <div className="fs-upcoming-header">
+            <div className="fs-upcoming-header__left">
+              <div className="fs-upcoming-tag">
+                <SparkleIcon size={12} color="#E94B33" />
+                <span>SẮP RA MẮT</span>
+              </div>
+              <h2 className="fs-upcoming-title">Thêm game, thêm phần thưởng</h2>
+            </div>
+            <div className="fs-upcoming-header__right">
+              <span>Chơi mỗi ngày để mở khóa ưu đãi mới.</span>
+            </div>
           </div>
 
-          <div className="coming-soon-grid">
-            {COMING_SOON_GAMES.map((game) => (
+          <div className="fs-upcoming-grid">
+            {UPCOMING_GAMES.map((game) => (
               <div
                 key={game.id}
-                className="coming-card"
-                onClick={() => handleOpenComingSoon(game)}
+                className="fs-upcoming-card"
+                onClick={() => setSelectedComingSoon(game)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') handleOpenComingSoon(game)
+                  if (e.key === 'Enter' || e.key === ' ') setSelectedComingSoon(game)
                 }}
               >
-                <div className="coming-card__header">
-                  <span className="coming-card__icon">{game.icon}</span>
-                  <span className="coming-status-chip">Sắp ra mắt</span>
+                {/* Visual art banner */}
+                <div className="fs-upcoming-card__art">
+                  {game.image ? (
+                    <img src={game.image} alt={game.title} className="fs-upcoming-banner-img" />
+                  ) : (
+                    game.renderArt()
+                  )}
                 </div>
 
-                <div className="coming-card__info">
-                  <h3 className="coming-card__title">{game.title}</h3>
-                  <div className="coming-card__sub">{game.subtitle}</div>
-                  <div className="coming-card__meta">
-                    <span className="meta-genre">{game.genre}</span>
-                    <span className="meta-date">📅 {game.releaseDate}</span>
+                <div className="fs-upcoming-card__content">
+                  <span className="fs-upcoming-card__num">{game.num}</span>
+                  <h3 className="fs-upcoming-card__title">{game.title}</h3>
+                  <p className="fs-upcoming-card__desc">{game.desc}</p>
+
+                  <div className="fs-upcoming-card__footer">
+                    <button
+                      type="button"
+                      className="fs-btn-upcoming"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedComingSoon(game)
+                      }}
+                    >
+                      Sắp ra mắt
+                    </button>
                   </div>
-                  <p className="coming-card__desc">{game.description}</p>
-                </div>
-
-                <div className="coming-card__action">
-                  <button
-                    type="button"
-                    className="btn btn--ghost coming-peek-btn"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleOpenComingSoon(game)
-                    }}
-                  >
-                    👀 Xem chi tiết & Nhận tin
-                  </button>
                 </div>
               </div>
             ))}
@@ -440,7 +438,7 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
         <AuthModal
           isOpen={showAuth}
           onClose={() => setShowAuth(false)}
-          onSuccess={handleAuthSuccess}
+          onSuccess={(loggedUser) => setUser(loggedUser)}
         />
       )}
 

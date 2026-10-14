@@ -3,32 +3,48 @@ import { SprayIcon, SwatterIcon } from './icons'
 
 const TOOL_LIST = [TOOLS.spray, TOOLS.swatter]
 
-export default function ToolBar({ selectedTool, onSelect, hasGround, hasFlying, disabled }) {
+export default function ToolBar({
+  selectedTool,
+  onSelect,
+  hasGround,
+  hasFlying,
+  disabled,
+  quantities = { spray: 30, swatter: 30 },
+}) {
   return (
-    <div className="toolbar" role="toolbar" aria-label="Chọn công cụ">
+    <>
       {TOOL_LIST.map((tool) => {
         const present = tool.bugType === BUG_TYPES.GROUND ? hasGround : hasFlying
         const active = selectedTool === tool.id
-        const hint = present && !active
+        const remaining = quantities?.[tool.id] ?? 30
+
         return (
           <button
             key={tool.id}
             type="button"
-            className={`tool ${active ? 'tool--active' : ''} ${hint ? 'tool--hint' : ''}`}
+            className={`fs-tool-card ${active ? 'fs-tool-card--active' : ''} ${present && !active ? 'fs-tool-card--hint' : ''}`}
             onClick={() => onSelect(tool.id)}
             disabled={disabled}
             aria-pressed={active}
+            aria-label={`${tool.name} — ${tool.subtitle}`}
           >
-            <span className="tool__icon">
+            <div className="fs-tool-card__icon-wrap">
               {tool.id === 'spray' ? <SprayIcon /> : <SwatterIcon />}
-            </span>
-            <span className="tool__text">
-              <b>{tool.name}</b>
-              <small>{tool.subtitle}</small>
-            </span>
+            </div>
+
+            <div className="fs-tool-card__info">
+              <span className="fs-tool-card__name">{tool.name}</span>
+              <span className="fs-tool-card__target">{tool.subtitle}</span>
+            </div>
+
+            <div className="fs-tool-card__quantity">
+              <span className="fs-tool-qty-val">{remaining}</span>
+              <span className="fs-tool-qty-label">lượt</span>
+            </div>
           </button>
         )
       })}
-    </div>
+    </>
   )
 }
+

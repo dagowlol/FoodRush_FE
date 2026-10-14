@@ -7,28 +7,28 @@ import Bug from './Bug'
 import FoodArea from './FoodArea'
 import ToolBar from './ToolBar'
 import GameHUD from './GameHUD'
-
 import PowerUpBar from './PowerUpBar'
 import ResultScreen from './ResultScreen'
-import backgroundMain from '../assets/background_main.png'
+import { LightbulbIcon, PlayIcon, ArrowRightIcon } from './icons'
 import bugsprayImg from '../assets/bugspray.png'
 import swatterImg from '../assets/swatter.png'
 
 function PauseOverlay({ onResume, onRestart, onExit }) {
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="pause-card">
-        <h2>Tạm dừng</h2>
-        <p>Nghỉ tay một chút nhé!</p>
-        <div className="pause-actions">
-          <button type="button" className="btn btn--primary" onClick={onResume}>
-            ▶ Tiếp tục
+    <div className="fs-pause-backdrop" role="dialog" aria-modal="true">
+      <div className="fs-pause-card">
+        <h2 className="fs-pause-title">Tạm dừng</h2>
+        <p className="fs-pause-desc">Nghỉ tay một chút trước khi tiếp tục giao đơn nhé!</p>
+        <div className="fs-pause-actions">
+          <button type="button" className="fs-btn-primary full-width" onClick={onResume}>
+            <PlayIcon size={16} />
+            <span>Tiếp tục chơi</span>
           </button>
-          <button type="button" className="btn" onClick={onRestart}>
-            ↻ Chơi lại
+          <button type="button" className="fs-btn-secondary full-width" onClick={onRestart}>
+            Chơi lại từ đầu
           </button>
-          <button type="button" className="btn btn--ghost" onClick={onExit}>
-            Về menu
+          <button type="button" className="fs-btn-outline full-width" onClick={onExit}>
+            Về màn hình chính
           </button>
         </div>
       </div>
@@ -112,36 +112,55 @@ export default function GameScreen({ onExit, onOpenShop }) {
   }, [engine])
 
   return (
-    <div
-      className="fd-app"
-      style={{
-        backgroundImage: `linear-gradient(rgba(255, 248, 236, 0.35), rgba(255, 236, 200, 0.62)), url(${backgroundMain})`,
-      }}
-    >
+    <div className="fs-gameplay-wrapper">
+      {/* 1. Focused Game HUD */}
       <GameHUD
         score={engine.score}
-        discountPercent={engine.discountPercent}
         combo={engine.combo}
+        elapsed={engine.elapsed}
         lives={engine.lives}
         maxLives={engine.maxLives}
         paused={status === 'paused'}
-        onTogglePause={() => (status === 'paused' ? engine.resume() : engine.pause())}
+        onTogglePause={engine.togglePause}
+        onClose={onExit}
       />
 
-      <main className="fd-main">
-        <div className="fd-scene">
-          {/* Power Up Bar on the Left */}
-          <PowerUpBar gauge={engine.powerUp} isActive={engine.isPowerUpActive} />
+      {/* Main Game Stage */}
+      <main className="fs-gameplay-main">
+        {/* Top/Side Mission Order Panel */}
+        <section className="fs-mission-panel">
+          <div className="fs-mission-badge">
+            <span className="fs-mission-badge__dot" />
+            <span>NHIỆM VỤ · BẢO VỆ MÓN ĂN</span>
+          </div>
 
+          <div className="fs-mission-info">
+            <h3 className="fs-mission-title">Five Star: Food Defender</h3>
+            <p className="fs-mission-desc">
+              Côn trùng đang tiến về đĩa thức ăn nóng hổi! Dùng <b>Bình xịt</b> diệt bọ bò và <b>Vợt đập</b> bắt ruồi bay. Bảo vệ thức ăn đến khi hết mạng!
+            </p>
+          </div>
+        </section>
+
+        {/* Power Up Bar beside the game (not inside game field) */}
+        <div className="fs-powerup-side">
+          <PowerUpBar gauge={engine.powerUp} isActive={engine.isPowerUpActive} />
+        </div>
+
+        {/* Central Game Board with Restaurant Dining Environment */}
+        <div className="fs-board-wrapper">
+          {/* Interactive Game Field with bg_gameplayy */}
           <div
             ref={fieldRef}
-            className={`fd-field ${engine.selectedTool ? `has-tool-${engine.selectedTool}` : ''} ${engine.isPowerUpActive ? 'is-power-active' : ''}`}
+            className={`fd-field fs-game-field ${engine.selectedTool ? `has-tool-${engine.selectedTool}` : ''} ${engine.isPowerUpActive ? 'is-power-active' : ''}`}
             onPointerMove={handlePointerMove}
             onPointerLeave={handlePointerLeave}
             onPointerDown={handleFieldPointerDown}
           >
+            {/* Center Dish / Burger Stack */}
             <FoodArea foodType={engine.foodType} foodHitKey={engine.foodHitKey} />
 
+            {/* Bugs layer */}
             <div className="fd-bugs">
               {bugs.map((bug) => (
                 <Bug
@@ -153,6 +172,7 @@ export default function GameScreen({ onExit, onOpenShop }) {
               ))}
             </div>
 
+            {/* Effects layer */}
             <div className="fd-effects" aria-hidden="true">
               {effects.map((effect) => (
                 <div
@@ -193,20 +213,32 @@ export default function GameScreen({ onExit, onOpenShop }) {
             )}
           </div>
         </div>
+
+        {/* Tool Panel: Bình xịt, Vợt đập, Remaining quantities */}
+        <ToolBar
+          selectedTool={engine.selectedTool}
+          onSelect={engine.selectTool}
+          hasGround={hasGround}
+          hasFlying={hasFlying}
+          disabled={!running}
+          quantities={engine.toolQuantities}
+        />
+
+        {/* Small gameplay tip below the board */}
+        <div className="fs-gameplay-tip">
+          <LightbulbIcon size={16} />
+          <span>
+            <b>Mẹo:</b> Chọn <b>Bình xịt</b> diệt bọ bò, <b>Vợt đập</b> bắt ruồi bay. Duy trì combo để x2 điểm và tích thêm nhiều FiveCoin!
+          </span>
+        </div>
       </main>
 
-      <ToolBar
-        selectedTool={engine.selectedTool}
-        onSelect={engine.selectTool}
-        hasGround={hasGround}
-        hasFlying={hasFlying}
-        disabled={!running}
-      />
-
+      {/* Pause Overlay */}
       {status === 'paused' && (
         <PauseOverlay onResume={handleResume} onRestart={handleRestart} onExit={onExit} />
       )}
 
+      {/* Result Screen */}
       {status === 'result' && (
         <ResultScreen
           result={engine.result}

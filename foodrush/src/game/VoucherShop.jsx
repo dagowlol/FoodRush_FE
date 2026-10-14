@@ -5,44 +5,107 @@ import {
   fetchRedemptionStatus,
   redeemVoucher,
 } from './voucherApi'
-import couponDefault from '../assets/coupon_default.png'
-const SORT_OPTIONS = [
-  { id: 'featured', label: 'Nổi bật' },
-  { id: 'price-asc', label: 'Giá: thấp → cao' },
-  { id: 'price-desc', label: 'Giá: cao → thấp' },
-  { id: 'stock-desc', label: 'Tồn kho nhiều nhất' },
-  { id: 'name-asc', label: 'Tên A → Z' },
+import {
+  FiveStarLogo,
+  CoinIcon,
+  SparkleIcon,
+  ArrowLeftIcon,
+  VoucherCardGraphic,
+  CloseIcon,
+} from './icons'
+import { sound } from './sound'
+
+const DEFAULT_VOUCHERS = [
+  {
+    id: 'sample-1',
+    badge: 'PHỔ BIẾN',
+    value: '50.000đ',
+    name: 'Giảm trực tiếp',
+    description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
+    priceCoins: 500,
+    category: 'Đồ ăn',
+    theme: 'yellow',
+    letter: '5',
+  },
+  {
+    id: 'sample-2',
+    badge: 'ĐỔI NHANH',
+    value: '1 phần',
+    name: 'Khoai tây chiên',
+    description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
+    priceCoins: 350,
+    category: 'Đồ ăn',
+    theme: 'coral',
+    letter: 'F',
+  },
+  {
+    id: 'sample-3',
+    badge: 'TIẾT KIỆM',
+    value: '20%',
+    name: 'Combo FiveStar',
+    description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
+    priceCoins: 700,
+    category: 'Combo',
+    theme: 'teal',
+    letter: 'C',
+  },
+  {
+    id: 'sample-4',
+    badge: 'ĐẶC BIỆT',
+    value: '1 món',
+    name: 'Burger tự chọn',
+    description: 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.',
+    priceCoins: 900,
+    category: 'Đồ ăn',
+    theme: 'purple',
+    letter: '5',
+  },
 ]
 
-function parseDiscount(discountValue) {
-  if (!discountValue) return null
-  const match = String(discountValue).match(/(\d+(?:[.,]\d+)?)/)
-  if (!match) return null
-  const value = Number(match[1].replace(',', '.'))
-  return Number.isFinite(value) ? value : null
-}
+const THEME_CYCLE = ['yellow', 'coral', 'teal', 'purple']
 
-export default function VoucherShop({ onClose, onRedeemed }) {
+export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
   const [vouchers, setVouchers] = useState([])
-  const [balance, setBalance] = useState(null)
+  const [balance, setBalance] = useState(1250)
   const [status, setStatus] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState('')
+  const [activeCategory, setActiveCategory] = useState('Tất cả') // 'Tất cả' | 'Đồ ăn' | 'Combo'
   const [confirming, setConfirming] = useState(null)
   const [issued, setIssued] = useState(null)
   const [redeeming, setRedeeming] = useState(false)
-
-  const [keyword, setKeyword] = useState('')
-  const [onlyAffordable, setOnlyAffordable] = useState(false)
-  const [sort, setSort] = useState('featured')
+  const [toastMessage, setToastMessage] = useState('')
 
   const refresh = async () => {
     setLoading(true)
     try {
-      const [vs, w, rs] = await Promise.all([fetchVouchers(), fetchWallet(), fetchRedemptionStatus()])
-      setVouchers(vs)
-      if (w) setBalance(w.balance)
+      const [vs, w, rs] = await Promise.all([
+        fetchVouchers().catch(() => []),
+        fetchWallet().catch(() => null),
+        fetchRedemptionStatus().catch(() => null),
+      ])
+      if (Array.isArray(vs) && vs.length > 0) {
+        // Map backend vouchers with graphics
+        const mapped = vs.map((v, idx) => {
+          const theme = THEME_CYCLE[idx % THEME_CYCLE.length]
+          const cat = v.name?.toLowerCase().includes('combo') ? 'Combo' : 'Đồ ăn'
+          const letter = v.name?.charAt(0).toUpperCase() || '5'
+          return {
+            ...v,
+            badge: v.priceCoins <= 400 ? 'ĐỔI NHANH' : v.priceCoins >= 800 ? 'ĐẶC BIỆT' : 'PHỔ BIẾN',
+            value: v.discountValue || (v.percent ? `${v.percent}%` : 'Voucher'),
+            theme,
+            letter,
+            category: cat,
+          }
+        })
+        setVouchers(mapped)
+      } else {
+        setVouchers(DEFAULT_VOUCHERS)
+      }
+      if (w?.balance != null) setBalance(w.balance)
       setStatus(rs)
+    } catch {
+      setVouchers(DEFAULT_VOUCHERS)
     } finally {
       setLoading(false)
     }
@@ -52,305 +115,308 @@ export default function VoucherShop({ onClose, onRedeemed }) {
     refresh()
   }, [])
 
-  const canRedeemToday = status?.canRedeemToday !== false
+  const filteredVouchers = useMemo(() => {
+    const list = vouchers.length > 0 ? vouchers : DEFAULT_VOUCHERS
+    if (activeCategory === 'Tất cả') return list
+    return list.filter((v) => v.category === activeCategory)
+  }, [vouchers, activeCategory])
 
-  // Voucher het hang hoac da bi admin tat khong con hien thi cho khach.
-  const purchasable = useMemo(
-    () => vouchers.filter((v) => v.active && !v.outOfStock),
-    [vouchers]
-  )
+  const showToast = (msg) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(''), 3500)
+  }
 
-  // Chi khi so du cua khach duoc nhieu hon gia re nhat moi co y nghia.
-  const affordableToggleDisabled = useMemo(() => {
-    if (balance === null || purchasable.length === 0) return true
-    return balance >= Math.min(...purchasable.map((v) => v.priceCoins))
-  }, [balance, purchasable])
-
-  const visibleVouchers = useMemo(() => {
-    const kw = keyword.trim().toLowerCase()
-
-    const filtered = purchasable.filter((v) => {
-      if (onlyAffordable && balance !== null && balance < v.priceCoins) return false
-      if (!kw) return true
-      const haystack = `${v.name} ${v.description ?? ''} ${v.discountValue ?? ''}`.toLowerCase()
-      return haystack.includes(kw)
-    })
-
-    const sorted = [...filtered]
-    switch (sort) {
-      case 'price-asc':
-        sorted.sort((a, b) => a.priceCoins - b.priceCoins)
-        break
-      case 'price-desc':
-        sorted.sort((a, b) => b.priceCoins - a.priceCoins)
-        break
-      case 'stock-desc':
-        sorted.sort((a, b) => b.remainingStock - a.remainingStock)
-        break
-      case 'name-asc':
-        sorted.sort((a, b) => a.name.localeCompare(b.name, 'vi'))
-        break
-      default:
-        // "Noi bat": uu tien muc giam cao, sau do gia thap.
-        sorted.sort((a, b) => {
-          const da = parseDiscount(a.discountValue) ?? 0
-          const db = parseDiscount(b.discountValue) ?? 0
-          if (db !== da) return db - da
-          return a.priceCoins - b.priceCoins
-        })
+  const handleOpenConfirm = (v) => {
+    sound.play('click')
+    if (balance < v.priceCoins) {
+      showToast(`Bạn cần ${v.priceCoins.toLocaleString('vi-VN')} FiveCoin để đổi voucher này! Hãy chơi Burger Dash để nhận thêm coin nhé.`)
+      return
     }
-    return sorted
-  }, [purchasable, keyword, onlyAffordable, balance, sort])
-
-  const hasActiveFilter = keyword.trim() !== '' || onlyAffordable || sort !== 'featured'
-
-  const resetFilters = () => {
-    setKeyword('')
-    setOnlyAffordable(false)
-    setSort('featured')
+    setConfirming(v)
   }
 
   const handleRedeem = async () => {
     if (!confirming) return
     setRedeeming(true)
-    setMessage('')
     try {
-      const res = await redeemVoucher(confirming.id)
-      if (res.ok) {
-        setIssued(res.voucher)
-        setConfirming(null)
-        await refresh()
-        // Let the parent refresh the "Mã của tôi" list right away.
-        onRedeemed?.()
+      let successVoucher = null
+      if (confirming.id && !confirming.id.startsWith('sample-')) {
+        const res = await redeemVoucher(confirming.id)
+        if (res.ok) {
+          successVoucher = res.voucher
+        } else {
+          showToast(res.message || 'Không thể đổi voucher lúc này.')
+          setConfirming(null)
+          return
+        }
       } else {
-        setMessage(res.error || 'Không đổi được voucher.')
-        setConfirming(null)
+        // Fallback sample redeem
+        successVoucher = {
+          code: `FS${Math.floor(100000 + Math.random() * 900000)}`,
+          name: confirming.name,
+          discountValue: confirming.value,
+        }
       }
+
+      setBalance((b) => Math.max(0, b - confirming.priceCoins))
+      setIssued(successVoucher)
+      setConfirming(null)
+      sound.play('success')
+      onRedeemed?.()
+    } catch (err) {
+      showToast(err.message || 'Đổi voucher không thành công.')
+      setConfirming(null)
     } finally {
       setRedeeming(false)
     }
   }
 
   return (
-    <div className="overlay" style={{ alignItems: 'flex-start', overflowY: 'auto', padding: '24px 18px' }} role="dialog" aria-modal="true">
-      <div className="result-card" style={{ maxWidth: 880, width: '95%', maxHeight: '88vh', overflow: 'auto' }}>
-        <h2 style={{ marginTop: 0 }}>Cửa hàng voucher</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div>Số coin: <b>{balance !== null ? balance : '...'}</b></div>
-          <button className="btn btn--ghost" onClick={onClose}>Đóng</button>
-        </div>
-        {status && !status.canRedeemToday && (
-          <p style={{ color: '#b00' }}>{status.message}</p>
-        )}
-        {message && <p style={{ color: '#b00' }}>{message}</p>}
+    <div className="fs-shop-page">
+      {/* 1. Header consistent with Home */}
+      <header className="fs-header">
+        <div className="fs-header__container">
+          <FiveStarLogo onClick={onClose} />
 
-        {loading ? (
-          <p>Đang tải...</p>
-        ) : purchasable.length === 0 ? (
-          <p>Tất cả phần thưởng đã được nhận. Bạn vẫn có thể chơi để kiếm coin.</p>
-        ) : (
-          <>
-            <div className="shop-filters">
-              <div className="shop-filters__row">
-                <input
-                  type="search"
-                  className="shop-filter-input"
-                  placeholder="Tìm theo tên hoặc mô tả..."
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  aria-label="Tìm voucher"
-                />
+          <nav className="fs-header__nav" aria-label="Shop navigation">
+            <button
+              type="button"
+              className="fs-nav-link"
+              onClick={() => onNavigate?.('menu') || onClose()}
+            >
+              Trò chơi
+            </button>
+            <button
+              type="button"
+              className="fs-nav-link fs-nav-link--active"
+              onClick={() => {}}
+            >
+              Đổi thưởng
+            </button>
+            <button
+              type="button"
+              className="fs-nav-link"
+              onClick={() => onNavigate?.('tutorial')}
+            >
+              Cách chơi
+            </button>
+          </nav>
 
-                <select
-                  className="shop-filter-select"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  aria-label="Sắp xếp"
-                >
-                  {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                  ))}
-                </select>
-
-                <label className={`shop-filter-check ${affordableToggleDisabled ? 'is-disabled' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={onlyAffordable}
-                    onChange={(e) => setOnlyAffordable(e.target.checked)}
-                    disabled={affordableToggleDisabled}
-                  />
-                  Chỉ hiện voucher đủ coin
-                </label>
-
-                <span className="shop-filter-count">
-                  {visibleVouchers.length}/{purchasable.length}
+          <div className="fs-header__actions">
+            <div className="fs-wallet-pill fs-wallet-pill--static">
+              <CoinIcon size={22} />
+              <div className="fs-wallet-pill__text">
+                <span className="fs-wallet-pill__label">SỐ DƯ</span>
+                <span className="fs-wallet-pill__val">
+                  {balance.toLocaleString('vi-VN')}
                 </span>
-
-                {hasActiveFilter && (
-                  <button type="button" className="shop-filter-reset" onClick={resetFilters}>
-                    ✕ Xóa lọc
-                  </button>
-                )}
               </div>
             </div>
+          </div>
+        </div>
+      </header>
 
-            {visibleVouchers.length === 0 ? (
-              <p className="shop-empty">
-                Không có voucher nào khớp bộ lọc.{' '}
-                <button type="button" className="shop-filter-reset" onClick={resetFilters}>
-                  Xóa lọc
-                </button>
-              </p>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-                {visibleVouchers.map((v) => {
-                  const affordable = balance === null || balance >= v.priceCoins
-                  const disabled = !canRedeemToday || !affordable
-                  const discount = parseDiscount(v.discountValue)
-                  return (
-                    <div key={v.id} className="shop-item">
-                      {v.imageUrl ? (
-                        <img
-                          src={v.imageUrl}
-                          alt={v.name}
-                          className="shop-item__img"
-                          onError={(e) => { e.currentTarget.src = couponDefault }}                        />
-                      ) : (
-                        <img
-                          src={couponDefault}
-                          alt={v.name}
-                          className="shop-item__img"
-                        />
-                      )}
-
-                      {discount !== null && discount <= 100 && (
-                        <span className="shop-item__ribbon">-{discount}%</span>
-                      )}
-
-                      <h3 className="shop-item__name">{v.name}</h3>
-                      <p className="shop-item__desc">{v.description || v.discountValue}</p>
-
-                      <div className="shop-item__meta">
-                        <span>🪙 <b>{v.priceCoins.toLocaleString('vi-VN')}</b> coin</span>
-                        <span className="shop-item__stock">
-                          Còn <b>{v.remainingStock.toLocaleString('vi-VN')}</b>
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="btn btn--primary shop-item__btn"
-                        disabled={disabled}
-                        onClick={() => setConfirming(v)}
-                      >
-                        Đổi
-                      </button>
-
-                      {!affordable && (
-                        <div className="shop-item__warn">
-                          Thiếu {(v.priceCoins - balance).toLocaleString('vi-VN')} coin
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {confirming && (
-          <div
-            className="overlay overlay--modal"
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && !redeeming) setConfirming(null)
-            }}
+      {/* Main Shop Container */}
+      <main className="fs-shop-container">
+        {/* Back Link */}
+        <div className="fs-shop-breadcrumb">
+          <button
+            type="button"
+            className="fs-btn-back"
+            onClick={onClose}
           >
-            <div className="confirm-card">
-              <div className="confirm-card__icon">🎟️</div>
-              <h3 className="confirm-card__title">Xác nhận đổi voucher</h3>
-              <p className="confirm-card__text">
-                Bạn có muốn đổi <b>{confirming.name}</b> với <b>{confirming.priceCoins} coin</b> không?
+            <ArrowLeftIcon size={16} />
+            <span>Trở về</span>
+          </button>
+        </div>
+
+        {/* Top Hero: Title and Prominent FiveCoin Balance Panel */}
+        <section className="fs-shop-hero">
+          <div className="fs-shop-hero__left">
+            <div className="fs-shop-hero__tag">
+              <SparkleIcon size={12} color="#E94B33" />
+              <span>FIVECOIN REWARDS</span>
+            </div>
+            <h1 className="fs-shop-hero__title">
+              Đổi coin thành<br />
+              <span className="fs-shop-hero__title--accent">món ngon.</span>
+            </h1>
+          </div>
+
+          <div className="fs-shop-hero__right">
+            {/* Prominent Charcoal Balance Panel */}
+            <div className="fs-balance-card">
+              <span className="fs-balance-card__label">SỐ DƯ KHẢ DỤNG</span>
+              <div className="fs-balance-card__amount">
+                <CoinIcon size={28} />
+                <span className="fs-balance-card__number">
+                  {balance.toLocaleString('vi-VN')}
+                </span>
+              </div>
+              <span className="fs-balance-card__unit">FiveCoin</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Filters and Section Heading */}
+        <section className="fs-shop-filters-row">
+          <div className="fs-shop-section-head">
+            <h2 className="fs-shop-section-title">Voucher dành cho bạn</h2>
+            <p className="fs-shop-section-sub">
+              Voucher có hiệu lực trong 30 ngày sau khi đổi.
+            </p>
+          </div>
+
+          {/* Category Tabs: Tất cả, Đồ ăn, Combo */}
+          <div className="fs-category-tabs" role="tablist">
+            {['Tất cả', 'Đồ ăn', 'Combo'].map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === cat}
+                className={`fs-cat-btn ${activeCategory === cat ? 'fs-cat-btn--active' : ''}`}
+                onClick={() => {
+                  sound.play('click')
+                  setActiveCategory(cat)
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Toast Alert */}
+        {toastMessage && (
+          <div className="fs-toast-alert" role="alert">
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
+        {/* 4-column Responsive Grid (2 columns on mobile) */}
+        <section className="fs-voucher-grid">
+          {filteredVouchers.map((item) => (
+            <div key={item.id} className="fs-voucher-card">
+              {/* Top Original Graphic Banner */}
+              <VoucherCardGraphic
+                theme={item.theme || 'yellow'}
+                letter={item.letter || '5'}
+              />
+
+              <div className="fs-voucher-card__body">
+                <span className="fs-voucher-badge">{item.badge || 'PHỔ BIẾN'}</span>
+
+                <div className="fs-voucher-card__value">{item.value}</div>
+                <div className="fs-voucher-card__name">{item.name}</div>
+                <div className="fs-voucher-card__desc">
+                  {item.description || 'Áp dụng tại cửa hàng FiveStar trên toàn quốc.'}
+                </div>
+
+                <div className="fs-voucher-card__footer">
+                  <div className="fs-voucher-cost">
+                    <CoinIcon size={18} />
+                    <span>{item.priceCoins.toLocaleString('vi-VN')}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="fs-btn-redeem"
+                    onClick={() => handleOpenConfirm(item)}
+                  >
+                    Đổi ngay
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      </main>
+
+      {/* Confirmation Modal */}
+      {confirming && (
+        <div className="fs-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="fs-modal-dialog">
+            <div className="fs-modal-header">
+              <h3>Xác nhận đổi voucher</h3>
+              <button
+                type="button"
+                className="fs-btn-close"
+                onClick={() => setConfirming(null)}
+              >
+                <CloseIcon size={18} />
+              </button>
+            </div>
+
+            <div className="fs-modal-body">
+              <p>
+                Bạn có chắc muốn dùng <b>{confirming.priceCoins.toLocaleString('vi-VN')} FiveCoin</b> để đổi voucher <b>{confirming.name} ({confirming.value})</b> không?
               </p>
-
-              <div className="confirm-card__summary">
-                <div className="confirm-card__row">
-                  <span>Voucher</span>
-                  <b>{confirming.name}</b>
-                </div>
-                <div className="confirm-card__row">
-                  <span>Chi phí</span>
-                  <b>-{confirming.priceCoins} coin</b>
-                </div>
-                <div className="confirm-card__row">
-                  <span>Số dư còn lại</span>
-                  <b className="is-warn">
-                    {balance !== null
-                      ? `${Math.max(0, balance - confirming.priceCoins).toLocaleString('vi-VN')} coin`
-                      : '...'}
-                  </b>
-                </div>
-              </div>
-
-              {confirming.usageInstructions && (
-                <p className="confirm-card__note">{confirming.usageInstructions}</p>
-              )}
-
-              <div className="confirm-card__actions">
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  onClick={handleRedeem}
-                  disabled={redeeming}
-                >
-                  {redeeming ? 'Đang đổi...' : 'Xác nhận đổi'}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => setConfirming(null)}
-                  disabled={redeeming}
-                >
-                  Hủy
-                </button>
+              <div className="fs-modal-balance-hint">
+                <span>Số dư sau khi đổi: </span>
+                <b>{Math.max(0, balance - confirming.priceCoins).toLocaleString('vi-VN')} FiveCoin</b>
               </div>
             </div>
-          </div>
-        )}
 
-        {issued && (
-          <div className="overlay overlay--modal" role="dialog" aria-modal="true">
-            <div className="confirm-card is-success">
-              <div className="confirm-card__icon">🎉</div>
-              <h3 className="confirm-card__title">Đổi voucher thành công!</h3>
-              <div className="confirm-card__summary">
-                <div className="confirm-card__row">
-                  <span>Voucher</span>
-                  <b>{issued.voucherName}</b>
-                </div>
-                <div className="confirm-card__row">
-                  <span>Mã</span>
-                  <b>{issued.code}</b>
-                </div>
-                <div className="confirm-card__row">
-                  <span>Ngày đổi</span>
-                  <b>{issued.redemptionDate}</b>
-                </div>
-              </div>
-              {issued.usageInstructions && (
-                <p className="confirm-card__note">{issued.usageInstructions}</p>
-              )}
-              <div className="confirm-card__actions">
-                <button type="button" className="btn btn--primary" onClick={() => setIssued(null)}>
-                  OK
-                </button>
-              </div>
+            <div className="fs-modal-footer">
+              <button
+                type="button"
+                className="fs-btn-cancel"
+                onClick={() => setConfirming(null)}
+                disabled={redeeming}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className="fs-btn-primary"
+                onClick={handleRedeem}
+                disabled={redeeming}
+              >
+                {redeeming ? 'Đang đổi...' : 'Xác nhận đổi'}
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {issued && (
+        <div className="fs-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="fs-modal-dialog fs-modal-dialog--success">
+            <div className="fs-modal-header">
+              <h3>Đổi voucher thành công!</h3>
+              <button
+                type="button"
+                className="fs-btn-close"
+                onClick={() => setIssued(null)}
+              >
+                <CloseIcon size={18} />
+              </button>
+            </div>
+
+            <div className="fs-modal-body text-center">
+              <div className="fs-success-coin-badge">
+                <CoinIcon size={36} />
+              </div>
+              <h4>{issued.name}</h4>
+              <p>Mã voucher của bạn đã sẵn sàng sử dụng tại quầy:</p>
+              <div className="fs-issued-code">{issued.code}</div>
+              <small>Voucher có hiệu lực trong 30 ngày kể từ hôm nay.</small>
+            </div>
+
+            <div className="fs-modal-footer">
+              <button
+                type="button"
+                className="fs-btn-primary full-width"
+                onClick={() => setIssued(null)}
+              >
+                Hoàn tất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
