@@ -2404,18 +2404,6 @@
   padding: 0 10px;
 }
 
-.auth-quick-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.auth-quick-btn {
-  flex: 1;
-  font-size: 0.82rem;
-  padding: 8px 10px;
-}
-
 /* OTP input & actions */
 .form-input--otp {
   text-align: center;

@@ -227,6 +227,12 @@ export default function StartScreen({ onPlay, onTutorial, onOpenShop, onOpenMyVo
             </>
           )}
 
+          {user && !user.isGuest && user.role === "CUSTOMER" && (
+            <span className="hub-user-coin">
+              🪙 {(dailyCoin?.coinBalance ?? 0).toLocaleString('vi-VN')} coin
+            </span>
+          )}
+
           {user ? (
             <div className="hub-user-pill">
               <span className="hub-user-avatar">

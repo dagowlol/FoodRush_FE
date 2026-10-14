@@ -5,7 +5,7 @@ import {
   fetchRedemptionStatus,
   redeemVoucher,
 } from './voucherApi'
-
+import couponDefault from '../assets/coupon_default.png'
 const SORT_OPTIONS = [
   { id: 'featured', label: 'Nổi bật' },
   { id: 'price-asc', label: 'Giá: thấp → cao' },
@@ -214,12 +214,13 @@ export default function VoucherShop({ onClose, onRedeemed }) {
                           src={v.imageUrl}
                           alt={v.name}
                           className="shop-item__img"
-                          onError={(e) => { e.currentTarget.style.display = 'none' }}
-                        />
+                          onError={(e) => { e.currentTarget.src = couponDefault }}                        />
                       ) : (
-                        <div className="shop-item__img shop-item__img--empty">
-                          Chưa có ảnh
-                        </div>
+                        <img
+                          src={couponDefault}
+                          alt={v.name}
+                          className="shop-item__img"
+                        />
                       )}
 
                       {discount !== null && discount <= 100 && (
