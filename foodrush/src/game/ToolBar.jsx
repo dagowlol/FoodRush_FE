@@ -12,7 +12,7 @@ export default function ToolBar({
   quantities = { spray: 30, swatter: 30 },
 }) {
   return (
-    <>
+    <div className="fs-toolbar-tools" role="group" aria-label="Bộ công cụ diệt côn trùng">
       {TOOL_LIST.map((tool) => {
         const present = tool.bugType === BUG_TYPES.GROUND ? hasGround : hasFlying
         const active = selectedTool === tool.id
@@ -36,15 +36,10 @@ export default function ToolBar({
               <span className="fs-tool-card__name">{tool.name}</span>
               <span className="fs-tool-card__target">{tool.subtitle}</span>
             </div>
-
-            <div className="fs-tool-card__quantity">
-              <span className="fs-tool-qty-val">{remaining}</span>
-              <span className="fs-tool-qty-label">lượt</span>
-            </div>
           </button>
         )
       })}
-    </>
+    </div>
   )
 }
 

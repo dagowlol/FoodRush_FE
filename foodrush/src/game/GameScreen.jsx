@@ -142,13 +142,15 @@ export default function GameScreen({ onExit, onOpenShop }) {
           </div>
         </section>
 
-        {/* Power Up Bar beside the game (not inside game field) */}
-        <div className="fs-powerup-side">
-          <PowerUpBar gauge={engine.powerUp} isActive={engine.isPowerUpActive} />
-        </div>
+        {/* Stage: thanh Power Up dọc ở bên trái + bàn chơi ở giữa */}
+        <div className="fs-gameplay-stage">
+          {/* Power Up Bar beside the game (not inside game field) */}
+          <aside className="fs-side-rail fs-side-rail--left">
+            <PowerUpBar gauge={engine.powerUp} isActive={engine.isPowerUpActive} />
+          </aside>
 
-        {/* Central Game Board with Restaurant Dining Environment */}
-        <div className="fs-board-wrapper">
+          {/* Central Game Board with Restaurant Dining Environment */}
+          <div className="fs-board-wrapper">
           {/* Interactive Game Field with bg_gameplayy */}
           <div
             ref={fieldRef}
@@ -212,6 +214,10 @@ export default function GameScreen({ onExit, onOpenShop }) {
               </div>
             )}
           </div>
+          </div>
+
+          {/* Rail phải rỗng để bàn chơi luôn nằm giữa màn hình */}
+          <div className="fs-side-rail fs-side-rail--right" aria-hidden="true" />
         </div>
 
         {/* Tool Panel: Bình xịt, Vợt đập, Remaining quantities */}

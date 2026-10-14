@@ -4204,6 +4204,7 @@
 /* Tool Cards: Bình xịt, Vợt đập, Remaining quantities (standalone) */
 .fs-toolbar-tools {
   display: flex;
+  flex-wrap: nowrap;
   gap: 14px;
   width: min(100%, 560px);
   margin: 0 auto;
@@ -4211,7 +4212,8 @@
 }
 
 .fs-tool-card {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -4223,6 +4225,21 @@
   cursor: pointer;
   transition: all 0.15s ease;
   min-height: 54px;
+}
+
+.fs-tool-card__icon-wrap {
+  flex: 0 0 32px;
+}
+
+.fs-tool-card__info {
+  min-width: 0;
+}
+
+.fs-tool-card__name,
+.fs-tool-card__target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fs-tool-card:hover {
@@ -4253,7 +4270,7 @@
 }
 
 .fs-tool-card__icon-wrap img {
-  width: 100%;
+  width: 50%;
   height: 100%;
   object-fit: contain;
 }
@@ -4527,5 +4544,57 @@
   }
 }
 
-.fs-powerup-side { position: absolute; left: 12px; top: 15%; bottom: 22%; z-index: 8; }
-.fs-powerup-side .powerup-bar { position: static; left: auto; }
+/* Stage: thanh Power Up dọc ở bên trái + bàn chơi ở giữa.
+   Dùng flex 3 cột (rail trái | bàn | rail phải rỗng) để bàn chơi luôn
+   nằm giữa màn hình, không phụ thuộc vị trí thanh power up. */
+.fs-gameplay-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: min(100%, 720px);
+  margin: 0 auto;
+}
+
+.fs-side-rail {
+  flex: 0 0 48px;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+}
+
+.fs-side-rail--left .powerup-bar {
+  position: static;
+  left: auto;
+  top: auto;
+  bottom: auto;
+  width: 44px;
+  height: 72%;
+  min-height: 200px;
+}
+
+/* Rail phải chỉ để cân bằng, không hiện gì. */
+.fs-side-rail--right {
+  visibility: hidden;
+}
+
+/* Màn hình hẹp: bỏ rail phải, thu nhỏ rail trái để bàn vẫn đủ chỗ. */
+@media (max-width: 700px) {
+  .fs-gameplay-stage {
+    gap: 8px;
+    width: min(100%, 560px);
+  }
+  .fs-side-rail {
+    flex-basis: 36px;
+  }
+  .fs-side-rail--right {
+    display: none;
+  }
+  .fs-side-rail--left .powerup-bar {
+    width: 32px;
+    min-height: 160px;
+  }
+}
