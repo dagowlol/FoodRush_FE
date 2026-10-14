@@ -8,6 +8,7 @@ import FoodArea from './FoodArea'
 import ToolBar from './ToolBar'
 import GameHUD from './GameHUD'
 import PowerUpBar from './PowerUpBar'
+import HeldToolBadge from './HeldToolBadge'
 import ResultScreen from './ResultScreen'
 import { LightbulbIcon, PlayIcon } from './icons'
 import bugsprayImg from '../assets/bugspray.png'
@@ -36,7 +37,7 @@ function PauseOverlay({ onResume, onRestart, onExit }) {
   )
 }
 
-export default function GameScreen({ onExit, onOpenShop }) {
+export default function GameScreen({ onExit, onOpenShop, onLoggedIn }) {
   const sessionRef = useRef(null)
   const finishPromiseRef = useRef(Promise.resolve())
   const [finishResult, setFinishResult] = useState(null)
@@ -147,6 +148,7 @@ export default function GameScreen({ onExit, onOpenShop }) {
           {/* Power Up Bar beside the game (not inside game field) */}
           <aside className="fs-side-rail fs-side-rail--left">
             <PowerUpBar gauge={engine.powerUp} isActive={engine.isPowerUpActive} />
+            <HeldToolBadge toolId={engine.selectedTool} isPowered={engine.isPowerUpActive} />
           </aside>
 
           {/* Central Game Board with Restaurant Dining Environment */}
@@ -252,6 +254,7 @@ export default function GameScreen({ onExit, onOpenShop }) {
           onOpenShop={onOpenShop}
           finishPromise={finishPromiseRef.current}
           finishResult={finishResult}
+          onLoggedIn={onLoggedIn}
         />
       )}
     </div>

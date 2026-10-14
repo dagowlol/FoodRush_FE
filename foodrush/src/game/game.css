@@ -244,6 +244,60 @@
   inset: 0;
   pointer-events: none;
 }
+/* Floating score popups ("+10") and hit/wrong-tool messages.
+   .fx positions each popup over the bug it belongs to. */
+.fx {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  white-space: nowrap;
+  z-index: 5;
+}
+.fx--kill {
+  color: #2f9e44;
+  font-size: clamp(14px, 3.6vmin, 26px);
+  text-shadow: 0 2px 0 #fff;
+  animation: floatUp 0.9s ease-out forwards;
+}
+.fx--hit {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe27a 45%, rgba(255, 226, 122, 0) 70%);
+  animation: burst 0.32s ease-out forwards;
+}
+.fx--wrong,
+.fx--info {
+  background: #fff;
+  color: #b3401f;
+  font-size: clamp(11px, 2.6vmin, 16px);
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+  animation: floatUp 0.9s ease-out forwards;
+}
+.fx--info {
+  color: #2a6fb0;
+}
+.fx--splat {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #8bc34a, #4e7a2a 70%);
+  opacity: 0.85;
+  animation: splat 0.7s ease-out forwards;
+}
+.fx--crit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 0 #b21f1f, 0 0 12px #ff4c3b;
+  animation: pop 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 12;
+}
 .fd-banner {
   position: absolute;
   top: 20%;
@@ -442,6 +496,50 @@
   font-size: 0.78rem;
   color: #8b674d;
   font-weight: 700;
+}
+/* Guest prompt: log in to convert the finished round into real coins. */
+.result-claim {
+  margin: 0 0 18px;
+  padding: 14px;
+  border-radius: 18px;
+  background: radial-gradient(120% 120% at 50% 0%, #fff8e2 0%, #ffeec9 100%);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 2px #fff;
+  border: 2px solid #ffd27a;
+  text-align: left;
+}
+.result-claim__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.result-claim__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12), inset 0 0 0 2px #ffd27a;
+}
+.result-claim__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.result-claim__text b {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--brand-red-dark);
+}
+.result-claim__text span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7a5a42;
+}
+.result-claim .btn {
+  width: 100%;
 }
 /* ------------------------------- Coupons -------------------------------- */
 .coupon-code {
@@ -784,6 +882,15 @@
 @keyframes splat {
   0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.2); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -140%) scale(1); }
+}
+@keyframes burst {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
 }
 @keyframes bannerPop {
   0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
@@ -1672,6 +1779,14 @@
   }
 }
 
+/* Màn cảm ứng: tool trên tay do .fs-held-tool đảm nhiệm, ẩn con trỏ ảnh
+   để không bị nháy lệch vị trí khi vuốt ngón tay trên bàn chơi. */
+@media (pointer: coarse) {
+  .tool-cursor {
+    display: none;
+  }
+}
+
 .tool-cursor {
   position: absolute;
   pointer-events: none;
@@ -2424,7 +2539,7 @@
   font-size: 0.88rem;
   color: #77736B;
 }
-/* Shop Controls: Ã´ tÃ¬m kiáº¿m + dropdown sáº¯p xáº¿p */
+/* Shop Controls: ô tìm kiếm + dropdown sắp xếp */
 .fs-shop-controls {
   display: flex;
   align-items: center;
@@ -2512,7 +2627,7 @@
 .fs-shop-sort__select:hover {
   border-color: #1D1E1A;
 }
-/* Empty state khi tÃ¬m kiáº¿m khÃ´ng cÃ³ káº¿t quáº£ */
+/* Empty state khi tìm kiếm không có kết quả */
 .fs-shop-empty {
   grid-column: 1 / -1;
   display: flex;
@@ -2949,7 +3064,7 @@
   background: transparent !important;
   box-shadow: none !important;
 }
-/* Tool Cards: BÃ¬nh xá»‹t, Vá»£t Ä‘áº­p, Remaining quantities (standalone) */
+/* Tool Cards: Bình xịt, Vợt đập, Remaining quantities (standalone) */
 .fs-toolbar-tools {
   display: flex;
   flex-wrap: nowrap;
@@ -3249,9 +3364,9 @@
   }
 }
 
-/* Stage: thanh Power Up dá»c á»Ÿ bÃªn trÃ¡i + bÃ n chÆ¡i á»Ÿ giá»¯a.
-   DÃ¹ng flex 3 cá»™t (rail trÃ¡i | bÃ n | rail pháº£i rá»—ng) Ä‘á»ƒ bÃ n chÆ¡i luÃ´n
-   náº±m giá»¯a mÃ n hÃ¬nh, khÃ´ng phá»¥ thuá»™c vá»‹ trÃ­ thanh power up. */
+/* Stage: thanh Power Up dọc ỗ bên trái + bàn chơi ỗ giữa.
+   Dùng flex 3 cột (rail trái | bàn | rail phải rỗng) để bàn chơi luôn
+   năm giữa màn hình, không phụ thuộệ vị trí thanh power up. */
 
 .fs-gameplay-stage {
   position: relative;
@@ -3279,7 +3394,7 @@
   height: 72%;
   min-height: 200px;
 }
-/* Rail pháº£i chá»‰ Ä‘á»ƒ cÃ¢n báº±ng, khÃ´ng hiá»‡n gÃ¬. */
+/* Rail phải chỉ để cân bằng, không hiện gì. */
 .fs-side-rail--right {
   visibility: hidden;
 }
@@ -3297,6 +3412,120 @@
   .fs-side-rail--left .powerup-bar {
     width: 32px;
     min-height: 160px;
+  }
+}
+
+/* --- Ô "đang cầm" (mobile only) --------------------------------------------
+   Trên desktop tool được vẽ bằng .tool-cursor bám theo con trỏ chuột, nên
+   mobile không thấy tool trên tay. Badge này hiện dưới thanh power up để
+   người chơi luôn biết mình đang cầm vũ khí nào. */
+.fs-held-tool {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .fs-side-rail--left {
+    flex-direction: column;
+    gap: 8px;
+  }
+  /* Bỏ height:72% để rail tự chia chỗ cho thanh power up và ô đang cầm. */
+  .fs-side-rail--left .powerup-bar {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 150px;
+  }
+  .fs-held-tool {
+    flex: 0 0 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    /* Chiều cao cố định: nội dung khác nhau (ảnh vuông vs ảnh dọc, tên
+       1 vs 2 dòng) không được làm thay đổi chiều cao thanh power up. */
+    height: 72px;
+    overflow: hidden;
+    width: 44px;
+    padding: 8px 4px;
+    border-radius: 14px;
+    background: radial-gradient(120% 120% at 50% 0%, #fff 0%, #fff7eb 100%);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12), inset 0 0 0 2px #fff;
+    border: 2px solid #ffe2b5;
+    text-align: center;
+  }
+  .fs-held-tool__label {
+    flex: 0 0 auto;
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #8b674d;
+  }
+  .fs-held-tool__img {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  }
+  .fs-held-tool__name {
+    flex: 0 0 auto;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.58rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--brand-red-dark);
+  }
+  .fs-held-tool__placeholder {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #f3e6d2;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #b99a7c;
+  }
+  .fs-held-tool--empty .fs-held-tool__name {
+    color: #a98a6e;
+  }
+  .fs-held-tool.is-powered {
+    border-color: #ffb703;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12), inset 0 0 0 2px #fff, 0 0 16px rgba(255, 159, 26, 0.75);
+  }
+  .fs-held-tool.is-powered .fs-held-tool__img {
+    filter: drop-shadow(0 0 6px #ff9f1a);
+    animation: fsHeldToolPulse 0.9s infinite alternate;
+  }
+}
+
+@keyframes fsHeldToolPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+@media (max-width: 700px) {
+  .fs-held-tool {
+    flex: 0 0 60px;
+    height: 60px;
+    width: 36px;
+    padding: 6px 3px;
+    border-radius: 12px;
+  }
+  .fs-held-tool__img,
+  .fs-held-tool__placeholder {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 380px) {
+  .fs-held-tool__name {
+    display: none;
   }
 }
 
@@ -3391,7 +3620,7 @@
   }
 }
 
-/* Secondary header links (MÃ£ cá»§a tÃ´i / NhÃ¢n viÃªn / Admin).
+/* Secondary header links (Mã của tôi / Nhân viên / Admin).
    They only appear once the horizontal nav is hidden. */
 
 .fs-header__mobile-actions {

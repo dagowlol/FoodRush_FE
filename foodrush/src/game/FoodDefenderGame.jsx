@@ -14,7 +14,7 @@ export default function FoodDefenderGame() {
   const [screen, setScreen] = useState('menu')
   const [runKey, setRunKey] = useState(0)
   const [menuRefreshKey, setMenuRefreshKey] = useState(0)
-  const [user] = useState(() => getStoredUser())
+  const [user, setUser] = useState(() => getStoredUser())
   const [seenTutorial, setSeenTutorial] = useState(() => {
     try {
       return localStorage.getItem(SEEN_KEY) === '1'
@@ -83,6 +83,7 @@ export default function FoodDefenderGame() {
           key={runKey}
           onExit={() => setScreen('menu')}
           onOpenShop={() => setScreen('shop')}
+          onLoggedIn={setUser}
         />
       )}
       {screen === 'shop' && (

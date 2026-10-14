@@ -72,6 +72,21 @@ export const gameApi = {
     }
   },
 
+  // Used by the result screen for guest players: they finished a round without
+  // a JWT, so no session existed. After they log in we open a session for them
+  // and close it right away so the backend can award the coins for that round.
+  async claimScore(result) {
+    if (!apiEnabled()) return null
+    try {
+      const sessionId = await gameApi.startSession()
+      if (!sessionId) return null
+      return await gameApi.finish(sessionId, result)
+    } catch (error) {
+      console.warn('[gameApi] claimScore failed', error)
+      return null
+    }
+  },
+
   async fetchHistory() {
     if (!apiEnabled()) return []
     try {

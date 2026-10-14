@@ -265,7 +265,7 @@ export function useGameEngine(onEvent) {
     resetAll()
     statusRef.current = 'running'
     setStatus('running')
-    pushBanner('Báº¯t Ä‘áº§u! ', 'milestone')
+    pushBanner('Bắt đầu!', 'milestone')
     // Optional backend session (no-op when API/auth is not configured).
     onEventRef.current?.('start')
   }, [pushBanner, resetAll])
@@ -293,12 +293,12 @@ export function useGameEngine(onEvent) {
     if (!bug) return
     const toolId = selectedToolRef.current
     if (!toolId) {
-      addEffect('info', bug.x, bug.y, 'Chá»n cÃ´ng cá»¥ trÆ°á»›c nhÃ©!')
+      addEffect('info', bug.x, bug.y, 'Chọn công cụ đữa nhé!')
       return
     }
     const tool = TOOLS[toolId]
     if (tool.bugType !== bug.type) {
-      addEffect('wrong', bug.x, bug.y, 'Chá»n cÃ´ng cá»¥ khÃ¡c nhÃ©!')
+      addEffect('wrong', bug.x, bug.y, 'Hãy dùng đúng công cụ cho con này nhé!')
       flashBug(bug.id, 'bug--blocked')
       comboRef.current = 0
       setCombo(0)
@@ -332,7 +332,7 @@ export function useGameEngine(onEvent) {
       if (nextVal >= 100) {
         isPowerUpActiveRef.current = true
         setIsPowerUpActive(true)
-        addEffect('crit', FOOD.x, FOOD.y - 70, 'âš¡ 2X DAMAGE!')
+      addEffect('crit', FOOD.x, FOOD.y - 70, '2X SÁT THƯƠNG!')
       }
     }
 

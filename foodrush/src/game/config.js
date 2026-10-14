@@ -14,6 +14,7 @@ export const TOOLS = {
   spray: {
     id: 'spray',
     name: 'Bình xịt',
+    shortName: 'Xịt',
     subtitle: 'Bọ bò (kiến)',
     bugType: BUG_TYPES.GROUND,
     damage: 1,
@@ -22,6 +23,7 @@ export const TOOLS = {
   swatter: {
     id: 'swatter',
     name: 'Vợt đập ruồi',
+    shortName: 'Đập',
     subtitle: 'Ruồi bay',
     bugType: BUG_TYPES.FLYING,
     damage: 1,

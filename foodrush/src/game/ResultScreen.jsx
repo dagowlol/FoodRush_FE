@@ -1,8 +1,23 @@
 import { useEffect, useState } from 'react'
 import { fetchWallet } from './voucherApi'
+import { apiEnabled, gameApi } from './gameApi'
+import AuthModal from './AuthModal'
+import { CoinIcon } from './icons'
 
-export default function ResultScreen({ result, onRestart, onExit, onOpenShop, finishPromise, finishResult }) {
+export default function ResultScreen({
+  result,
+  onRestart,
+  onExit,
+  onOpenShop,
+  finishPromise,
+  finishResult,
+  onLoggedIn,
+}) {
   const [walletBalance, setWalletBalance] = useState(null)
+  const [loggedIn, setLoggedIn] = useState(() => apiEnabled())
+  const [showAuth, setShowAuth] = useState(false)
+  const [claiming, setClaiming] = useState(false)
+  const [claimResult, setClaimResult] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -30,7 +45,42 @@ export default function ResultScreen({ result, onRestart, onExit, onOpenShop, fi
     if (finishResult?.coinBalance != null) setWalletBalance(finishResult.coinBalance)
   }, [finishResult])
 
-  const earnedCoins = Number.isFinite(finishResult?.coinsEarned) ? finishResult.coinsEarned : Math.floor(result.score / 10)
+  // Guest / anonymous players get no session on the backend, so nothing was
+  // credited. They can log in here and claim the coins for the round they just
+  // played by opening a session and finishing it immediately.
+  const claimCoins = async () => {
+    setClaiming(true)
+    try {
+      const data = await gameApi.claimScore(result)
+      if (!data) return
+      setClaimResult(data)
+      if (data.coinBalance != null) setWalletBalance(data.coinBalance)
+      else {
+        const wallet = await fetchWallet()
+        if (wallet) setWalletBalance(wallet.balance)
+      }
+    } finally {
+      setClaiming(false)
+    }
+  }
+
+  const handleAuthSuccess = (loggedUser) => {
+    setShowAuth(false)
+    setLoggedIn(true)
+    onLoggedIn?.(loggedUser)
+    claimCoins()
+  }
+
+  const pendingCoins = Math.floor((result?.score || 0) / 10)
+  const awaitingLogin = !loggedIn && !claimResult
+  const earnedCoins = Number.isFinite(claimResult?.coinsEarned)
+    ? claimResult.coinsEarned
+    : Number.isFinite(finishResult?.coinsEarned)
+      ? finishResult.coinsEarned
+      : pendingCoins
+  const coinSource = claimResult || finishResult
+  const dailySummary =
+    coinSource?.dailyCoinsEarned != null || coinSource?.dailyCoinCap != null ? coinSource : null
 
   return (
     <div className="overlay overlay--result" role="dialog" aria-modal="true">
@@ -47,30 +97,59 @@ export default function ResultScreen({ result, onRestart, onExit, onOpenShop, fi
             <b>{result.bugsKilled}</b>
           </div>
           <div className="result-cell">
-            <span>Coin vừa kiếm</span>
+            <span>{awaitingLogin ? 'Coin chờ nhận' : 'Coin vừa kiếm'}</span>
             <b>+{earnedCoins}</b>
           </div>
         </div>
 
-        <div className="result-section">
-          <div className="result-row">
-            <span className="result-row__label">Coin của bạn</span>
-            <span className="result-row__value">{walletBalance !== null ? walletBalance.toLocaleString('vi-VN') : '...'}</span>
-          </div>
-          {(finishResult?.dailyCoinsEarned != null || finishResult?.dailyCoinCap != null) && (
-            <div className="result-row">
-              <span className="result-row__label">Coin hôm nay</span>
-              <span className="result-row__value">
-                {finishResult?.dailyCoinsEarned != null ? finishResult.dailyCoinsEarned.toLocaleString('vi-VN') : '0'} / {finishResult?.dailyCoinCap != null ? finishResult.dailyCoinCap.toLocaleString('vi-VN') : '∞'}
+        {awaitingLogin && (
+          <div className="result-claim">
+            <div className="result-claim__head">
+              <span className="result-claim__icon">
+                <CoinIcon size={28} />
               </span>
-              <div className="result-row__hint">
-                {finishResult?.dailyCoinCap != null && finishResult.dailyCoinCap > 0
-                  ? `Còn ${Math.max(0, finishResult.dailyCoinCap - (finishResult.dailyCoinsEarned || 0)).toLocaleString('vi-VN')} coin có thể kiếm hôm nay`
-                  : 'Không giới hạn coin hôm nay'}
+              <div className="result-claim__text">
+                <b>Bạn đang chơi ẩn danh</b>
+                <span>
+                  Đăng nhập hoặc tạo tài khoản để nhận {pendingCoins.toLocaleString('vi-VN')} FiveCoin
+                  thật và đổi voucher ngay.
+                </span>
               </div>
             </div>
-          )}
-        </div>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => setShowAuth(true)}
+              disabled={claiming}
+            >
+              Đăng nhập để nhận coin
+            </button>
+          </div>
+        )}
+
+        {!awaitingLogin && (
+          <div className="result-section">
+            <div className="result-row">
+              <span className="result-row__label">Coin của bạn</span>
+              <span className="result-row__value">
+                {walletBalance !== null ? walletBalance.toLocaleString('vi-VN') : '...'}
+              </span>
+            </div>
+            {dailySummary && (
+              <div className="result-row">
+                <span className="result-row__label">Coin hôm nay</span>
+                <span className="result-row__value">
+                  {dailySummary.dailyCoinsEarned != null ? dailySummary.dailyCoinsEarned.toLocaleString('vi-VN') : '0'} / {dailySummary.dailyCoinCap != null ? dailySummary.dailyCoinCap.toLocaleString('vi-VN') : '∞'}
+                </span>
+                <div className="result-row__hint">
+                  {dailySummary.dailyCoinCap != null && dailySummary.dailyCoinCap > 0
+                    ? `Còn ${Math.max(0, dailySummary.dailyCoinCap - (dailySummary.dailyCoinsEarned || 0)).toLocaleString('vi-VN')} coin có thể kiếm hôm nay`
+                    : 'Không giới hạn coin hôm nay'}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="result-actions">
           <button type="button" className="btn btn--primary" onClick={onRestart}>
@@ -86,6 +165,14 @@ export default function ResultScreen({ result, onRestart, onExit, onOpenShop, fi
           </button>
         </div>
       </div>
+
+      {showAuth && (
+        <AuthModal
+          isOpen={showAuth}
+          onClose={() => setShowAuth(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      )}
     </div>
   )
 }
