@@ -46,3 +46,10 @@ export async function fetchMyCoupons() {
     return []
   }
 }
+
+/** Bản ném lỗi — dùng cho ví voucher để hiển thị trạng thái "tải thất bại". */
+export async function fetchMyCouponsStrict() {
+  if (!apiEnabled()) return []
+  const json = await request('/api/coupons/my')
+  return Array.isArray(json?.data) ? json.data : []
+}

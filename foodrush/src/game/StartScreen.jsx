@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   FiveStarLogo,
   CoinIcon,
@@ -12,8 +12,8 @@ import {
   ShieldIcon,
 } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
-import { fetchMyCoupons } from './couponApi'
-import { fetchDailyCoinSummary, fetchMyVouchers } from './voucherApi'
+import { fetchDailyCoinSummary } from './voucherApi'
+import { useMyVouchers } from './useMyVouchers'
 import { gameApi } from './gameApi'
 import { sound } from './sound'
 import CouponList from './CouponList'
@@ -63,40 +63,6 @@ const UPCOMING_GAMES = [
   },
 ]
 
-function parsePercent(discountValue) {
-  if (discountValue == null) return null
-  const match = String(discountValue).match(/(\d+(?:[.,]\d+)?)/)
-  if (!match) return null
-  const value = Number(match[1].replace(',', '.'))
-  return Number.isFinite(value) ? Math.round(value) : null
-}
-
-function normalizeCodes(coupons, issuedVouchers) {
-  const fromCoupons = (coupons || []).map((c) => ({
-    key: `coupon-${c.id ?? c.code}`,
-    code: c.code,
-    name: `Giảm ${c.discountPercent ?? c.percent ?? 0}%`,
-    percent: c.discountPercent ?? c.percent ?? null,
-    discountValue: c.discountValue ?? null,
-    issuedDate: c.issuedDate ?? null,
-    status: c.status ?? 'ACTIVE',
-    usedAt: c.redeemedAt ?? null,
-  }))
-
-  const fromVouchers = (issuedVouchers || []).map((v) => ({
-    key: `voucher-${v.id ?? v.code}`,
-    code: v.code,
-    name: v.voucherName ?? v.name ?? 'Voucher',
-    percent: parsePercent(v.discountValue),
-    discountValue: v.discountValue ?? null,
-    issuedDate: v.redemptionDate ?? v.issuedDate ?? null,
-    status: v.status ?? 'ISSUED',
-    usedAt: v.usedAt ?? null,
-  }))
-
-  return [...fromVouchers, ...fromCoupons]
-}
-
 export default function StartScreen({
   onPlay,
   onTutorial,
@@ -106,11 +72,17 @@ export default function StartScreen({
   const [showAuth, setShowAuth] = useState(false)
   const [showCoupons, setShowCoupons] = useState(false)
   const [selectedComingSoon, setSelectedComingSoon] = useState(null)
-  const [coupons, setCoupons] = useState([])
   const [dailyCoin, setDailyCoin] = useState(null)
   const [bestScore, setBestScore] = useState(0)
 
-  const couponCount = coupons.length
+  const { cards: myCodes, loading: myCodesLoading, error: myCodesError, reload: loadCodes } =
+    useMyVouchers({ enabled: Boolean(user) && !user.isGuest })
+
+  // Badge chỉ đếm mã còn dùng được.
+  const couponCount = useMemo(
+    () => myCodes.filter((c) => c.status === 'usable').length,
+    [myCodes]
+  )
 
   useEffect(() => {
     fetchMeApi().then((freshUser) => {
@@ -121,7 +93,6 @@ export default function StartScreen({
   useEffect(() => {
     let cancelled = false
     if (!user || user.isGuest) {
-      setCoupons([])
       setDailyCoin(null)
       setBestScore(0)
       return () => {
@@ -129,9 +100,6 @@ export default function StartScreen({
       }
     }
 
-    Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) => {
-      if (!cancelled) setCoupons(normalizeCodes(claimed, issued))
-    })
     fetchDailyCoinSummary().then((data) => {
       if (!cancelled) setDailyCoin(data)
     })
@@ -149,7 +117,6 @@ export default function StartScreen({
   const handleLogout = () => {
     clearAuthData()
     setUser(null)
-    setCoupons([])
     setDailyCoin(null)
     setBestScore(0)
   }
@@ -209,7 +176,7 @@ export default function StartScreen({
                 className="fs-nav-link fs-nav-link--badge"
                 onClick={() => setShowCoupons(true)}
               >
-                Mã của tôi{couponCount > 0 ? ` (${couponCount})` : ''}
+                Mã của tôi{couponCount > 0 ? ` · ${couponCount}` : ''}
               </button>
             )}
             {user && user.role === 'ADMIN' && (
@@ -480,13 +447,12 @@ export default function StartScreen({
 
       {showCoupons && (
         <CouponList
-          coupons={coupons}
+          cards={myCodes}
+          loading={myCodesLoading}
+          error={myCodesError}
           onClose={() => setShowCoupons(false)}
-          onRefresh={() =>
-            Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) =>
-              setCoupons(normalizeCodes(claimed, issued))
-            )
-          }
+          onRetry={loadCodes}
+          onOpenShop={onOpenShop}
         />
       )}
 

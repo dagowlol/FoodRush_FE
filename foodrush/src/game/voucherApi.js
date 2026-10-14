@@ -91,6 +91,13 @@ export async function fetchMyVouchers() {
   }
 }
 
+/** Bản ném lỗi — dùng cho ví voucher để hiển thị trạng thái "tải thất bại". */
+export async function fetchMyVouchersStrict() {
+  if (!apiEnabled()) return []
+  const json = await request('/api/my-vouchers')
+  return Array.isArray(json?.data) ? json.data : []
+}
+
 // Admin
 export async function adminListVouchers() {
   if (!apiEnabled()) return []

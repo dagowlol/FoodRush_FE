@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   fetchVouchers,
   fetchWallet,
   fetchRedemptionStatus,
   redeemVoucher,
 } from './voucherApi'
+import { clearAuthData, getStoredUser } from './authApi'
+import { useMyVouchers } from './useMyVouchers'
 import {
   FiveStarLogo,
   CoinIcon,
@@ -13,8 +15,13 @@ import {
   VoucherCardGraphic,
   SearchIcon,
   CloseIcon,
+  TicketIcon,
+  UsersIcon,
+  ShieldIcon,
 } from './icons'
 import { sound } from './sound'
+import CouponList from './CouponList'
+import AuthModal from './AuthModal'
 
 // Voucher mẫu (chỉ dùng khi chưa đăng nhập / API lỗi).
 // remainingStock + sortId giúp sắp xếp hoạt động giống dữ liệu thật.
@@ -99,7 +106,7 @@ function sortVouchers(list, sortBy) {
   }
 }
 
-export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
+export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
   const [vouchers, setVouchers] = useState([])
   const [balance, setBalance] = useState(1250)
   const [status, setStatus] = useState(null)
@@ -110,6 +117,20 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
   const [issued, setIssued] = useState(null)
   const [redeeming, setRedeeming] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  // Header dùng chung cấu trúc với StartScreen.
+  const [user, setUser] = useState(() => getStoredUser())
+  const [showCoupons, setShowCoupons] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+
+  const { cards: myCodes, loading: myCodesLoading, error: myCodesError, reload: loadCodes } =
+    useMyVouchers({ enabled: Boolean(user) && !user.isGuest })
+
+  // Badge đếm số mã CÒN DÙNG ĐƯỢC, không tính mã đã dùng.
+  const couponCount = useMemo(
+    () => myCodes.filter((c) => c.status === 'usable').length,
+    [myCodes]
+  )
+  const isLoggedIn = Boolean(user) && !user.isGuest
 
   const refresh = async () => {
     setLoading(true)
@@ -149,6 +170,14 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
     refresh()
   }, [])
 
+  const handleLogout = () => {
+    sound.play('click')
+    clearAuthData()
+    setUser(null)
+    setBalance(1250)
+    refresh()
+  }
+
   const filteredVouchers = useMemo(() => {
     const list = vouchers.length > 0 ? vouchers : DEFAULT_VOUCHERS
     const kw = keyword.trim().toLowerCase()
@@ -183,8 +212,11 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
     setRedeeming(true)
     try {
       let successVoucher = null
-      if (confirming.id && !confirming.id.startsWith('sample-')) {
-        const res = await redeemVoucher(confirming.id)
+      // Voucher thật từ BE có id là Long (JSON number), voucher mẫu có id
+      // dạng chuỗi 'sample-...'. Luôn ép về string trước khi kiểm tra.
+      const voucherId = confirming.id == null ? '' : String(confirming.id)
+      if (voucherId && !voucherId.startsWith('sample-')) {
+        const res = await redeemVoucher(voucherId)
         if (res.ok) {
           successVoucher = res.voucher
         } else {
@@ -204,6 +236,8 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
       setBalance((b) => Math.max(0, b - confirming.priceCoins))
       setIssued(successVoucher)
       setConfirming(null)
+      // Vừa đổi xong thì "Mã của tôi" phải có mã mới ngay.
+      loadCodes()
       sound.play('success')
       onRedeemed?.()
     } catch (err) {
@@ -236,25 +270,114 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
             >
               Đổi thưởng
             </button>
-            {/* <button
-              type="button"
-              className="fs-nav-link"
-              onClick={() => onNavigate?.('tutorial')}
-            >
-              Cách chơi
-            </button> */}
+            {isLoggedIn && (
+              <button
+                type="button"
+                className="fs-nav-link fs-nav-link--badge"
+                onClick={() => {
+                  sound.play('click')
+                  setShowCoupons(true)
+                }}
+              >
+                Mã của tôi{couponCount > 0 ? ` · ${couponCount}` : ''}
+              </button>
+            )}
+            {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
+              <button
+                type="button"
+                className="fs-nav-link"
+                onClick={() => window.location.assign('/staff')}
+              >
+                Nhân viên
+              </button>
+            )}
+            {user && user.role === 'ADMIN' && (
+              <button
+                type="button"
+                className="fs-nav-link"
+                onClick={() => window.location.assign('/admin')}
+              >
+                Admin
+              </button>
+            )}
           </nav>
 
           <div className="fs-header__actions">
-            <div className="fs-wallet-pill fs-wallet-pill--static">
-              <CoinIcon size={22} />
-              <div className="fs-wallet-pill__text">
-                <span className="fs-wallet-pill__label">SỐ DƯ</span>
-                <span className="fs-wallet-pill__val">
-                  {balance.toLocaleString('vi-VN')}
-                </span>
-              </div>
+            {/* Khi header nav bị ẩn (<=760px), các link phụ chuyển xuống đây
+                dưới dạng nút icon gọn để không mất chức năng nào trên mobile. */}
+            <div className="fs-header__mobile-actions">
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => {
+                    sound.play('click')
+                    setShowCoupons(true)
+                  }}
+                  title="Mã của tôi"
+                  aria-label={`Mã của tôi${couponCount > 0 ? ` (${couponCount})` : ''}`}
+                >
+                  <TicketIcon size={20} />
+                  {couponCount > 0 && <span className="fs-header__icon-dot">{couponCount}</span>}                </button>
+              )}
+              {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => window.location.assign('/staff')}
+                  title="Nhân viên"
+                  aria-label="Trang nhân viên"
+                >
+                  <UsersIcon size={20} />
+                </button>
+              )}
+              {user && user.role === 'ADMIN' && (
+                <button
+                  type="button"
+                  className="fs-header__icon-btn"
+                  onClick={() => window.location.assign('/admin')}
+                  title="Admin"
+                  aria-label="Trang quản trị"
+                >
+                  <ShieldIcon size={20} />
+                </button>
+              )}
             </div>
+
+            {isLoggedIn && (
+              <div className="fs-wallet-pill fs-wallet-pill--static">
+                <CoinIcon size={22} />
+                <div className="fs-wallet-pill__text">
+                  <span className="fs-wallet-pill__label">SỐ DƯ</span>
+                  <span className="fs-wallet-pill__val">
+                    {balance.toLocaleString('vi-VN')}
+                  </span>
+                </div>
+              </div>
+            )}
+            {user ? (
+              <div className="fs-user-badge">
+                <span className="fs-user-badge__name" title={user.displayName || user.username}>
+                  {user.displayName || user.username}
+                </span>
+                <button
+                  type="button"
+                  className="fs-user-badge__logout"
+                  onClick={handleLogout}
+                  title="Đăng xuất"
+                >
+                  Thoát
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="fs-btn-login"
+                onClick={() => setShowAuth(true)}
+              >
+                Đăng nhập
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -494,7 +617,6 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
               <h4>{issued.name}</h4>
               <p>Mã voucher của bạn đã sẵn sàng sử dụng tại quầy:</p>
               <div className="fs-issued-code">{issued.code}</div>
-              <small>Voucher có hiệu lực trong 30 ngày kể từ hôm nay.</small>
             </div>
 
             <div className="fs-modal-footer">
@@ -508,6 +630,31 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mã của tôi */}
+      {showCoupons && (
+        <CouponList
+          cards={myCodes}
+          loading={myCodesLoading}
+          error={myCodesError}
+          onClose={() => setShowCoupons(false)}
+          onRetry={loadCodes}
+        />
+      )}
+
+      {/* Đăng nhập / đăng ký */}
+      {showAuth && (
+        <AuthModal
+          isOpen={showAuth}
+          onClose={() => setShowAuth(false)}
+          onSuccess={(loggedUser) => {
+            setShowAuth(false)
+            setUser(loggedUser)
+            refresh()
+            loadCodes()
+          }}
+        />
       )}
     </div>
   )
