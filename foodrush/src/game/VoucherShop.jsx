@@ -236,13 +236,13 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed, user }) {
             >
               Đổi thưởng
             </button>
-            <button
+            {/* <button
               type="button"
               className="fs-nav-link"
               onClick={() => onNavigate?.('tutorial')}
             >
               Cách chơi
-            </button>
+            </button> */}
           </nav>
 
           <div className="fs-header__actions">
