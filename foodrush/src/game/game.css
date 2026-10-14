@@ -981,6 +981,27 @@
   padding: 13px;
   font-size: 1.05rem;
 }
+
+/* "hoặc" divider between the auth form and the Google button */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 12px;
+  color: #9d806d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eedfcb;
+}
+.auth-divider span {
+  padding: 0 10px;
+}
+
 /* OTP input & actions */
 .form-input--otp {
   text-align: center;
