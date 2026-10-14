@@ -1,4 +1,4 @@
-// Clean, original vector SVGs for FiveStar Rush. No emoji used as interface icons.
+﻿// Clean, original vector SVGs for FiveStar Rush. No emoji used as interface icons.
 import bugImg from '../assets/bug.png'
 import flyImg from '../assets/fly.png'
 import bugsprayImg from '../assets/bugspray.png'
@@ -325,124 +325,6 @@ export function LightbulbIcon({ size = 16, className = '' }) {
   )
 }
 
-/* Original Vector Artwork for Burger Dash Hero Card */
-export function BurgerIllustration({ className = '' }) {
-  return (
-    <svg
-      viewBox="0 0 220 200"
-      width="100%"
-      height="100%"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`hero-burger-svg ${className}`}
-    >
-      {/* Top Bun */}
-      <path
-        d="M20 90C20 40 50 15 110 15C170 15 200 40 200 90H20Z"
-        fill="#E85D3B"
-      />
-      {/* Sesame Seeds */}
-      <circle cx="80" cy="45" r="2.5" fill="#FFE3A8" />
-      <circle cx="110" cy="35" r="2.5" fill="#FFE3A8" />
-      <circle cx="140" cy="48" r="2.5" fill="#FFE3A8" />
-      <circle cx="65" cy="65" r="2.5" fill="#FFE3A8" />
-      <circle cx="155" cy="68" r="2.5" fill="#FFE3A8" />
-      <circle cx="115" cy="60" r="2.5" fill="#FFE3A8" />
-
-      {/* Melted Cheese Slice */}
-      <rect x="15" y="94" width="190" height="14" rx="4" fill="#F3BE4D" />
-
-      {/* Fresh Green Lettuce */}
-      <path
-        d="M16 112C28 110 38 116 52 112C66 108 76 116 90 112C104 108 116 116 130 112C144 108 154 116 168 112C182 108 194 114 204 112V124H16V112Z"
-        fill="#43A047"
-      />
-
-      {/* Tomato / Sauce Zigzag accent */}
-      <path
-        d="M20 128L35 138L50 128L65 138L80 128L95 138L110 128L125 138L140 128L155 138L170 128L185 138L200 128"
-        stroke="#D32F2F"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Juicy Beef Patty */}
-      <rect x="18" y="142" width="184" height="20" rx="7" fill="#6D3F28" />
-
-      {/* Bottom Bun */}
-      <path
-        d="M20 166H200C200 182 185 194 165 194H55C35 194 20 182 20 166Z"
-        fill="#E8963E"
-      />
-    </svg>
-  )
-}
-
-/* Mascot "Rush" matching the sample drawing */
-export function RushMascotIllustration({ className = '' }) {
-  return (
-    <svg
-      viewBox="0 0 160 220"
-      width="100%"
-      height="100%"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`hero-mascot-svg ${className}`}
-    >
-      {/* Legs & Sneakers */}
-      <line x1="60" y1="180" x2="52" y2="204" stroke="#1D1E1A" strokeWidth="6" strokeLinecap="round" />
-      <line x1="100" y1="180" x2="108" y2="204" stroke="#1D1E1A" strokeWidth="6" strokeLinecap="round" />
-      {/* Shoes */}
-      <rect x="36" y="200" width="24" height="10" rx="4" fill="#FFFFFF" stroke="#1D1E1A" strokeWidth="3" />
-      <rect x="100" y="200" width="24" height="10" rx="4" fill="#FFFFFF" stroke="#1D1E1A" strokeWidth="3" />
-
-      {/* Waving Arms */}
-      <path
-        d="M38 135C24 140 12 148 6 156"
-        stroke="#E94B33"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-      <path
-        d="M122 135C136 140 148 148 154 156"
-        stroke="#E94B33"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-
-      {/* Sausage Body */}
-      <rect x="38" y="70" width="84" height="114" rx="42" fill="#E94B33" />
-
-      {/* Mascot Chef Helmet */}
-      <path
-        d="M40 76C40 40 54 26 80 26C106 26 120 40 120 76H40Z"
-        fill="#FDF8F0"
-        stroke="#E6DFD3"
-        strokeWidth="2"
-      />
-      {/* Star emblem on helmet */}
-      <circle cx="80" cy="56" r="14" fill="#F3BE4D" />
-      <path
-        d="M80 47L82.2 53.6H89.2L83.5 57.6L85.7 64.2L80 60.2L74.3 64.2L76.5 57.6L70.8 53.6H77.8L80 47Z"
-        fill="#E94B33"
-      />
-
-      {/* Eyes */}
-      <ellipse cx="64" cy="116" rx="4" ry="5" fill="#1D1E1A" />
-      <ellipse cx="96" cy="116" rx="4" ry="5" fill="#1D1E1A" />
-
-      {/* Smile */}
-      <path
-        d="M72 130C74 135 86 135 88 130"
-        stroke="#1D1E1A"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
 /* Upcoming Card Banners */
 export function CardArtStackAttack() {
   return (
@@ -518,24 +400,7 @@ export function VoucherCardGraphic({ theme = 'yellow', letter = '5' }) {
   )
 }
 
-/* In-game entities and legacy exports */
-export function StarLogo({ className = '' }) {
-  return (
-    <span className={`star-logo ${className}`}>
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path
-          d="M24 3l6.3 12.8 14.1 2-10.2 10 2.4 14-12.6-6.6L11.4 41.8l2.4-14-10.2-10 14.1-2z"
-          fill="#ffc531"
-          stroke="#e2452f"
-          strokeWidth="2.6"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <b>Five Star</b>
-    </span>
-  )
-}
-
+/* In-game entities */
 export function AntIcon({ className = '' }) {
   return <img src={bugImg} alt="" className={`art art--ant ${className}`} draggable={false} />
 }

@@ -97,11 +97,3 @@ export const sound = {
     })
   },
 }
-
-export function preloadToolSounds() {
-  sound.preload()
-}
-
-export function playToolSound(toolId) {
-  sound.play(toolId)
-}

@@ -9,7 +9,8 @@ function getToken() {
   }
 }
 
-export function apiEnabled() {
+/** Internal helper - nothing outside this module needs it. */
+function apiEnabled() {
   const token = getToken()
   return Boolean(token) && !String(token).startsWith('mock_token_')
 }
@@ -43,43 +44,5 @@ export async function fetchMyCoupons() {
     return Array.isArray(json?.data) ? json.data : []
   } catch {
     return []
-  }
-}
-
-export async function fetchRewardEligibility() {
-  if (!apiEnabled()) return null
-  try {
-    const json = await request('/api/rewards/eligibility')
-    return json?.data || null
-  } catch {
-    return null
-  }
-}
-
-export async function claimCouponBackend(discountPercent) {
-  if (!apiEnabled()) {
-    return { ok: false, reason: 'unauthenticated', coupon: null, error: 'Bạn cần đăng nhập để nhận mã.' }
-  }
-  try {
-    const json = await request('/api/coupons/claim', {
-      method: 'POST',
-      body: JSON.stringify(
-        discountPercent ? { discountPercent } : {}
-      ),
-    })
-    return { ok: true, coupon: json?.data || null }
-  } catch (err) {
-    let coupon = null
-    if (err.status === 409) {
-      try {
-        const coupons = await fetchMyCoupons()
-        const today = new Date()
-        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-        coupon = coupons.find((c) => c.issuedDate === todayKey) || null
-      } catch {
-        coupon = null
-      }
-    }
-    return { ok: false, reason: err.status === 409 ? 'daily' : 'error', coupon, error: err.message }
   }
 }

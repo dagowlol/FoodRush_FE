@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   BUG_TYPES,
   COUPON_TIERS,
@@ -49,7 +49,6 @@ export function useGameEngine(onEvent) {
   const [bugsKilled, setBugsKilled] = useState(0)
   const [lives, setLives] = useState(LIVES)
   const [elapsed, setElapsed] = useState(0)
-  const [toolQuantities, setToolQuantities] = useState({ spray: 30, swatter: 30 })
   const [foodType, setFoodType] = useState(FOOD_TYPES[0])
   const [foodHitKey, setFoodHitKey] = useState(0)
   const [selectedTool, setSelectedTool] = useState(null)
@@ -68,7 +67,6 @@ export function useGameEngine(onEvent) {
   const comboRef = useRef(0)
   const bugsKilledRef = useRef(0)
   const livesRef = useRef(LIVES)
-  const toolQuantitiesRef = useRef({ spray: 30, swatter: 30 })
   const powerUpRef = useRef(0)
   const isPowerUpActiveRef = useRef(false)
   const foodTypeRef = useRef(FOOD_TYPES[0])
@@ -234,7 +232,6 @@ export function useGameEngine(onEvent) {
     comboRef.current = 0
     bugsKilledRef.current = 0
     livesRef.current = LIVES
-    toolQuantitiesRef.current = { spray: 30, swatter: 30 }
     foodTypeRef.current = FOOD_TYPES[0]
     foodHitKeyRef.current = 0
     contaminatedOnceRef.current = false
@@ -254,7 +251,6 @@ export function useGameEngine(onEvent) {
     setBugsKilled(0)
     setLives(LIVES)
     setElapsed(0)
-    setToolQuantities({ spray: 30, swatter: 30 })
     setPowerUp(0)
     setIsPowerUpActive(false)
     setFoodType(FOOD_TYPES[0])
@@ -269,7 +265,7 @@ export function useGameEngine(onEvent) {
     resetAll()
     statusRef.current = 'running'
     setStatus('running')
-    pushBanner('Bắt đầu! ', 'milestone')
+    pushBanner('Báº¯t Ä‘áº§u! ', 'milestone')
     // Optional backend session (no-op when API/auth is not configured).
     onEventRef.current?.('start')
   }, [pushBanner, resetAll])
@@ -297,12 +293,12 @@ export function useGameEngine(onEvent) {
     if (!bug) return
     const toolId = selectedToolRef.current
     if (!toolId) {
-      addEffect('info', bug.x, bug.y, 'Chọn công cụ trước nhé!')
+      addEffect('info', bug.x, bug.y, 'Chá»n cÃ´ng cá»¥ trÆ°á»›c nhÃ©!')
       return
     }
     const tool = TOOLS[toolId]
     if (tool.bugType !== bug.type) {
-      addEffect('wrong', bug.x, bug.y, 'Chọn công cụ khác nhé!')
+      addEffect('wrong', bug.x, bug.y, 'Chá»n cÃ´ng cá»¥ khÃ¡c nhÃ©!')
       flashBug(bug.id, 'bug--blocked')
       comboRef.current = 0
       setCombo(0)
@@ -336,7 +332,7 @@ export function useGameEngine(onEvent) {
       if (nextVal >= 100) {
         isPowerUpActiveRef.current = true
         setIsPowerUpActive(true)
-        addEffect('crit', FOOD.x, FOOD.y - 70, '⚡ 2X DAMAGE!')
+        addEffect('crit', FOOD.x, FOOD.y - 70, 'âš¡ 2X DAMAGE!')
       }
     }
 
@@ -440,7 +436,6 @@ export function useGameEngine(onEvent) {
     lives,
     maxLives: LIVES,
     elapsed,
-    toolQuantities,
     powerUp,
     isPowerUpActive,
     foodType,

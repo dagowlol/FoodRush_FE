@@ -9,7 +9,3 @@ export function tierForScore(score) {
   }
   return best
 }
-
-export function nextTierForScore(score) {
-  return COUPON_TIERS.find((tier) => score < tier.minScore) || null
-}

@@ -9,14 +9,12 @@ export default function ToolBar({
   hasGround,
   hasFlying,
   disabled,
-  quantities = { spray: 30, swatter: 30 },
 }) {
   return (
     <div className="fs-toolbar-tools" role="group" aria-label="Bộ công cụ diệt côn trùng">
       {TOOL_LIST.map((tool) => {
         const present = tool.bugType === BUG_TYPES.GROUND ? hasGround : hasFlying
         const active = selectedTool === tool.id
-        const remaining = quantities?.[tool.id] ?? 30
 
         return (
           <button

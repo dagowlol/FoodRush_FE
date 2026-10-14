@@ -12,7 +12,7 @@ import {
   ShieldIcon,
 } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
-import { fetchMyCoupons, fetchRewardEligibility } from './couponApi'
+import { fetchMyCoupons } from './couponApi'
 import { fetchDailyCoinSummary, fetchMyVouchers } from './voucherApi'
 import { gameApi } from './gameApi'
 import { sound } from './sound'
@@ -101,16 +101,12 @@ export default function StartScreen({
   onPlay,
   onTutorial,
   onOpenShop,
-  onOpenMyVouchers,
-  onOpenAdmin,
-  user: userProp,
 }) {
   const [user, setUser] = useState(() => getStoredUser())
   const [showAuth, setShowAuth] = useState(false)
   const [showCoupons, setShowCoupons] = useState(false)
   const [selectedComingSoon, setSelectedComingSoon] = useState(null)
   const [coupons, setCoupons] = useState([])
-  const [eligibility, setEligibility] = useState(null)
   const [dailyCoin, setDailyCoin] = useState(null)
   const [bestScore, setBestScore] = useState(0)
 
@@ -126,7 +122,6 @@ export default function StartScreen({
     let cancelled = false
     if (!user || user.isGuest) {
       setCoupons([])
-      setEligibility(null)
       setDailyCoin(null)
       setBestScore(0)
       return () => {
@@ -136,9 +131,6 @@ export default function StartScreen({
 
     Promise.all([fetchMyCoupons(), fetchMyVouchers()]).then(([claimed, issued]) => {
       if (!cancelled) setCoupons(normalizeCodes(claimed, issued))
-    })
-    fetchRewardEligibility().then((data) => {
-      if (!cancelled) setEligibility(data)
     })
     fetchDailyCoinSummary().then((data) => {
       if (!cancelled) setDailyCoin(data)
@@ -158,7 +150,6 @@ export default function StartScreen({
     clearAuthData()
     setUser(null)
     setCoupons([])
-    setEligibility(null)
     setDailyCoin(null)
     setBestScore(0)
   }

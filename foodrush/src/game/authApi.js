@@ -1,7 +1,8 @@
 const TOKEN_KEY = 'foodrush_token'
 const USER_KEY = 'foodrush_user'
 
-export function getStoredToken() {
+/** Internal helper - only this module reads the token. */
+function getStoredToken() {
   try {
     return localStorage.getItem(TOKEN_KEY)
   } catch {
@@ -105,33 +106,6 @@ export async function verifyOtpApi({ email, otp, username, password, displayName
     const data = await res.json()
     if (!res.ok) {
       throw new Error(data.message || data.error || 'Xác thực OTP không thành công.')
-    }
-    const auth = data.data
-    setAuthData(auth.token, auth.user)
-    return auth.user
-  } catch (err) {
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      throw new Error('Không thể kết nối đến máy chủ backend (port 8080). Vui lòng thử lại!')
-    }
-    throw err
-  }
-}
-
-/** Legacy register without OTP (kept for backward compatibility) */
-export async function registerApi({ username, password, displayName }) {
-  try {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username,
-        password,
-        displayName: displayName || username,
-      }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      throw new Error(data.message || data.error || 'Đăng ký tài khoản không thành công.')
     }
     const auth = data.data
     setAuthData(auth.token, auth.user)

@@ -3,8 +3,6 @@ import StartScreen from './StartScreen'
 import Tutorial from './Tutorial'
 import GameScreen from './GameScreen'
 import VoucherShop from './VoucherShop'
-import MyVouchers from './MyVouchers'
-import AdminPortal from './AdminPortal'
 import MobileNavBar from './MobileNavBar'
 import { getStoredUser } from './authApi'
 import { sound } from './sound'
@@ -15,11 +13,8 @@ const SEEN_KEY = 'fdf_tutorial_seen'
 export default function FoodDefenderGame() {
   const [screen, setScreen] = useState('menu')
   const [runKey, setRunKey] = useState(0)
-  const [showShop, setShowShop] = useState(false)
-  const [showMyVouchers, setShowMyVouchers] = useState(false)
-  const [showAdmin, setShowAdmin] = useState(false)
   const [menuRefreshKey, setMenuRefreshKey] = useState(0)
-  const [user, setUser] = useState(() => getStoredUser())
+  const [user] = useState(() => getStoredUser())
   const [seenTutorial, setSeenTutorial] = useState(() => {
     try {
       return localStorage.getItem(SEEN_KEY) === '1'
@@ -73,8 +68,6 @@ export default function FoodDefenderGame() {
           onPlay={handlePlay}
           onTutorial={() => setScreen('tutorial')}
           onOpenShop={() => setScreen('shop')}
-          onOpenMyVouchers={() => setShowMyVouchers(true)}
-          onOpenAdmin={() => setShowAdmin(true)}
           user={user}
         />
       )}
@@ -100,8 +93,6 @@ export default function FoodDefenderGame() {
           user={user}
         />
       )}
-      {showMyVouchers && <MyVouchers onClose={() => setShowMyVouchers(false)} />}
-      {showAdmin && <AdminPortal user={user} onClose={() => setShowAdmin(false)} />}
 
       {/* Bottom navigation for narrow screens (hidden on desktop) */}
       {showMobileNav && (

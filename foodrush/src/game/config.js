@@ -46,8 +46,6 @@ export const COUPON_TIERS = [
   { minScore: 500, percent: 15 },
 ]
 
-export const MAX_COUPON_SCORE = 500
-
 export const SCORE = {
   ground: 10,
   flying: 15,
@@ -89,28 +87,12 @@ export function getDifficulty(score = 0) {
   }
 }
 
-// Retained for backward compatibility
-export const WAVES = [
-  { ground: 4, flying: 0, spawnMs: 1250, groundSpeed: 64, flyingSpeed: 0, hp: 1 },
-]
-export const TOTAL_WAVES = COUPON_TIERS.length
-
 // Vertical bands used for spawn hints and rules of thumb.
-export const GROUND_BAND = { minY: 800, maxY: 980 }
-export const FLYING_BAND = { minY: 60, maxY: 380 }
+// Module-private: nothing outside config.js needs them.
+const GROUND_BAND = { minY: 800, maxY: 980 }
+const FLYING_BAND = { minY: 60, maxY: 380 }
 
 export const rand = (min, max) => min + Math.random() * (max - min)
-
-export function buildWaveQueue(cfg) {
-  const queue = []
-  for (let i = 0; i < (cfg?.ground || 0); i += 1) queue.push(BUG_TYPES.GROUND)
-  for (let i = 0; i < (cfg?.flying || 0); i += 1) queue.push(BUG_TYPES.FLYING)
-  for (let i = queue.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[queue[i], queue[j]] = [queue[j], queue[i]]
-  }
-  return queue
-}
 
 // Ground bugs always enter from the sides or the bottom edge, far away from the
 // centered dish, so they crawl slowly across the field before arriving.

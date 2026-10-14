@@ -9,7 +9,7 @@ import ToolBar from './ToolBar'
 import GameHUD from './GameHUD'
 import PowerUpBar from './PowerUpBar'
 import ResultScreen from './ResultScreen'
-import { LightbulbIcon, PlayIcon, ArrowRightIcon } from './icons'
+import { LightbulbIcon, PlayIcon } from './icons'
 import bugsprayImg from '../assets/bugspray.png'
 import swatterImg from '../assets/swatter.png'
 
@@ -227,7 +227,6 @@ export default function GameScreen({ onExit, onOpenShop }) {
           hasGround={hasGround}
           hasFlying={hasFlying}
           disabled={!running}
-          quantities={engine.toolQuantities}
         />
 
         {/* Small gameplay tip below the board */}
