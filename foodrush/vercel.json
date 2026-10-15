@@ -11,6 +11,10 @@
     {
       "source": "/login/oauth2/:path*",
       "destination": "https://api.foodrush.id.vn/login/oauth2/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
