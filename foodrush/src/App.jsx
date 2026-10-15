@@ -1,7 +1,26 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import FoodDefenderGame from './game/FoodDefenderGame'
-import GoogleCallback from './auth/GoogleCallback'
-import OperationsDashboard from './pages/OperationsDashboard'
+
+// Lazy load: chỉ tải khi user truy cập /admin, /staff, /auth/callback
+const GoogleCallback = lazy(() => import('./auth/GoogleCallback'))
+const OperationsDashboard = lazy(() => import('./pages/OperationsDashboard'))
+
+function LoadingScreen() {
+  return (
+    <div style={{
+      minHeight: '100dvh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#F7F3E9',
+      fontFamily: 'sans-serif',
+      color: '#77736B',
+      fontSize: '1rem',
+    }}>
+      Đang tải...
+    </div>
+  )
+}
 
 function App() {
   const [path, setPath] = useState(window.location.pathname)
@@ -13,15 +32,27 @@ function App() {
   }, [])
 
   if (path === '/auth/callback' || path.startsWith('/auth/callback?')) {
-    return <GoogleCallback />
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <GoogleCallback />
+      </Suspense>
+    )
   }
 
   if (path === '/admin' || path.startsWith('/admin/')) {
-    return <OperationsDashboard initialTab="overview" />
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <OperationsDashboard initialTab="overview" />
+      </Suspense>
+    )
   }
 
   if (path === '/staff' || path.startsWith('/staff/')) {
-    return <OperationsDashboard initialTab="redeem" />
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <OperationsDashboard initialTab="redeem" />
+      </Suspense>
+    )
   }
 
   return <FoodDefenderGame />
