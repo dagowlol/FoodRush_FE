@@ -10,6 +10,7 @@ import {
   TicketIcon,
   UsersIcon,
   ShieldIcon,
+  DashboardGridIcon,
 } from './icons'
 import { clearAuthData, fetchMeApi, getStoredUser } from './authApi'
 import { fetchDailyCoinSummary } from './voucherApi'
@@ -164,15 +165,6 @@ export default function StartScreen({
             >
               Đổi thưởng
             </button>
-            {(user && (user.role === 'ADMIN' || user.role === 'STAFF')) && (
-              <button
-                type="button"
-                className="fs-nav-link"
-                onClick={() => window.location.assign('/staff')}
-              >
-                Nhân viên
-              </button>
-            )}
             {user && !user.isGuest && (
               <button
                 type="button"
@@ -182,13 +174,14 @@ export default function StartScreen({
                 Mã của tôi{couponCount > 0 ? ` · ${couponCount}` : ''}
               </button>
             )}
-            {user && user.role === 'ADMIN' && (
+            {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
               <button
                 type="button"
-                className="fs-nav-link"
+                className="fs-nav-link fs-nav-link--dashboard"
                 onClick={() => window.location.assign('/admin')}
               >
-                Admin
+                <DashboardGridIcon size={16} />
+                <span>Bảng điều khiển</span>
               </button>
             )}
           </nav>
@@ -216,22 +209,11 @@ export default function StartScreen({
                 <button
                   type="button"
                   className="fs-header__icon-btn"
-                  onClick={() => window.location.assign('/staff')}
-                  title="Nhân viên"
-                  aria-label="Trang nhân viên"
-                >
-                  <UsersIcon size={20} />
-                </button>
-              )}
-              {user && user.role === 'ADMIN' && (
-                <button
-                  type="button"
-                  className="fs-header__icon-btn"
                   onClick={() => window.location.assign('/admin')}
-                  title="Admin"
-                  aria-label="Trang quản trị"
+                  title="Bảng điều khiển"
+                  aria-label="Bảng điều khiển"
                 >
-                  <ShieldIcon size={20} />
+                  <DashboardGridIcon size={20} />
                 </button>
               )}
             </div>

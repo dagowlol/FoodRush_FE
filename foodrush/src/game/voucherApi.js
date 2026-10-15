@@ -52,6 +52,16 @@ export async function fetchDailyCoinSummary() {
   }
 }
 
+export async function fetchWalletTransactions() {
+  if (!apiEnabled()) return []
+  try {
+    const json = await request('/api/wallet/transactions')
+    return Array.isArray(json?.data) ? json.data : []
+  } catch {
+    return []
+  }
+}
+
 export async function fetchVouchers() {
   if (!apiEnabled()) return []
   try {

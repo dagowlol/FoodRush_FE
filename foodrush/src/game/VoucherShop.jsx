@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   fetchVouchersStrict,
   fetchWallet,
@@ -18,6 +18,7 @@ import {
   TicketIcon,
   UsersIcon,
   ShieldIcon,
+  DashboardGridIcon,
 } from './icons'
 import { sound } from './sound'
 import VoucherThumbnail from './VoucherThumbnail'
@@ -252,19 +253,11 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
             {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
               <button
                 type="button"
-                className="fs-nav-link"
-                onClick={() => window.location.assign('/staff')}
-              >
-                Nhân viên
-              </button>
-            )}
-            {user && user.role === 'ADMIN' && (
-              <button
-                type="button"
-                className="fs-nav-link"
+                className="fs-nav-link fs-nav-link--dashboard"
                 onClick={() => window.location.assign('/admin')}
               >
-                Admin
+                <DashboardGridIcon size={16} />
+                <span>Bảng điều khiển</span>
               </button>
             )}
           </nav>
@@ -285,28 +278,18 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
                   aria-label={`Mã của tôi${couponCount > 0 ? ` (${couponCount})` : ''}`}
                 >
                   <TicketIcon size={20} />
-                  {couponCount > 0 && <span className="fs-header__icon-dot">{couponCount}</span>}                </button>
+                  {couponCount > 0 && <span className="fs-header__icon-dot">{couponCount}</span>}
+                </button>
               )}
               {user && (user.role === 'ADMIN' || user.role === 'STAFF') && (
                 <button
                   type="button"
                   className="fs-header__icon-btn"
-                  onClick={() => window.location.assign('/staff')}
-                  title="Nhân viên"
-                  aria-label="Trang nhân viên"
-                >
-                  <UsersIcon size={20} />
-                </button>
-              )}
-              {user && user.role === 'ADMIN' && (
-                <button
-                  type="button"
-                  className="fs-header__icon-btn"
                   onClick={() => window.location.assign('/admin')}
-                  title="Admin"
-                  aria-label="Trang quản trị"
+                  title="Bảng điều khiển"
+                  aria-label="Bảng điều khiển"
                 >
-                  <ShieldIcon size={20} />
+                  <DashboardGridIcon size={20} />
                 </button>
               )}
             </div>

@@ -1952,6 +1952,23 @@
   background: #E94B33;
   border-radius: 999px;
 }
+.fs-nav-link--dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(233, 75, 51, 0.08);
+  color: #d83d25;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid rgba(233, 75, 51, 0.2);
+  transition: all 0.2s ease;
+}
+.fs-nav-link--dashboard:hover {
+  background: #E94B33;
+  color: #fff;
+  border-color: #E94B33;
+}
 .fs-header__actions {
   display: flex;
   align-items: center;
