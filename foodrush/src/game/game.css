@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    Five Star: Food Defender â€” cartoon theme
    Brand accents: red #e2452f, yellow #ffc531, cream, sky blue, grass green
    ========================================================================== */
@@ -1008,6 +1008,7 @@
 .fs-auth-dialog {
   display: grid;
   grid-template-columns: 40% 60%;
+  grid-template-rows: minmax(0, 1fr);
   width: min(100%, 840px);
   max-height: calc(100vh - 48px);
   max-height: calc(100dvh - 48px);
@@ -1113,6 +1114,7 @@
   background: rgba(255, 255, 255, 0.18);
   color: #FFD15C;
 }
+
 
 .fs-auth-bonus {
   margin-top: auto;
@@ -1438,13 +1440,14 @@
   }
 
   .fs-auth-dialog {
-    grid-template-columns: 1fr;      /* promo column is dropped */
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    max-height: 100vh;
-    max-height: 100svh;
+    max-height: 92vh;
+    max-height: 92dvh;
     border-radius: 24px 24px 0 0;   /* only the upper corners are rounded */
     border-bottom: none;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow: hidden;
   }
 
   .fs-auth-promo {
@@ -1454,8 +1457,13 @@
   .fs-auth-panel {
     /* The sheet itself sits above .fs-mobile-nav (overlay z-index 400 > nav
        150), so the bottom nav can never sit on top of the submit button. */
-    padding: 20px 20px 18px;
-    gap: 11px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
   }
 
   .fs-auth-close {
@@ -1469,12 +1477,13 @@
   .fs-auth-sub { font-size: 0.82rem; }
   .fs-auth-head { padding-right: 44px; }
 
-  .fs-auth-tab { min-height: 42px; }
+  .fs-auth-tab { min-height: 40px; }
 
-  .fs-auth-form { gap: 12px; }
-  .fs-auth-input { height: 44px; }
+  .fs-auth-form { gap: 10px; }
+  .fs-auth-field { gap: 4px; }
+  .fs-auth-input { height: 42px; }
   .fs-auth-submit,
-  .fs-auth-google { height: 46px; }
+  .fs-auth-google { height: 44px; }
 
   .fs-auth-otp-actions { grid-template-columns: 1fr; }
 }
@@ -1482,19 +1491,19 @@
 /* Narrow phones (320-380px): trim non-essential spacing, keep every label. */
 @media (max-width: 380px) {
   .fs-auth-panel {
-    padding: 18px 16px 16px;
-    gap: 10px;
+    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    gap: 9px;
   }
-  .fs-auth-title { font-size: 1.1rem; }
+  .fs-auth-title { font-size: 1.05rem; }
   .fs-auth-sub { display: none; }        /* optional copy only */
-  .fs-auth-form { gap: 10px; }
-  .fs-auth-input { height: 42px; padding: 0 11px; }
+  .fs-auth-form { gap: 8px; }
+  .fs-auth-input { height: 40px; padding: 0 11px; }
   /* Helper copy is nice-to-have; the labels and fields are not. */
   .fs-auth-hint { display: none; }
   .fs-auth-input--otp { height: 48px; font-size: 1.25rem; letter-spacing: 0.3em; }
   .fs-auth-submit,
-  .fs-auth-google { height: 44px; }
-  .fs-auth-tab { min-height: 40px; font-size: 0.85rem; }
+  .fs-auth-google { height: 42px; }
+  .fs-auth-tab { min-height: 38px; font-size: 0.85rem; }
   .fs-auth-terms { font-size: 0.7rem; }
 }
 

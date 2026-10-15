@@ -302,13 +302,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
             </li>
           </ul>
 
-          <div className="fs-auth-bonus">
-            <span className="fs-auth-bonus__spark"><SparkIcon size={14} /></span>
-            <div className="fs-auth-bonus__text">
-              <strong>+100 FiveCoin</strong>
-              <span>Quà chào mừng thành viên mới</span>
-            </div>
-          </div>
         </aside>
 
         {/* ---------- Right: the form ---------- */}
