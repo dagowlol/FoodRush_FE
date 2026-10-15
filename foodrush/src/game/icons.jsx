@@ -1,11 +1,11 @@
 // Clean, original vector SVGs for FiveStar Rush. No emoji used as interface icons.
-import bugImg from '../assets/bug.png'
-import flyImg from '../assets/fly.png'
-import bugsprayImg from '../assets/bugspray.png'
-import swatterImg from '../assets/swatter.png'
-import burgerImg from '../assets/burger.png'
-import friedChickenImg from '../assets/fried_chicken.png'
-import friesImg from '../assets/friess.png'
+import bugImg from '../assets/webg/bug.webp'
+import flyImg from '../assets/webg/fly.webp'
+import bugsprayImg from '../assets/webg/bugspray.webp'
+import swatterImg from '../assets/webg/swatter.webp'
+import burgerImg from '../assets/webg/burger.webp'
+import friedChickenImg from '../assets/webg/fried_chicken.webp'
+import friesImg from '../assets/webg/friess.webp'
 
 export function FiveStarLogo({ className = '', onClick }) {
   return (

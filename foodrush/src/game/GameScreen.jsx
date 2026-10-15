@@ -11,8 +11,8 @@ import PowerUpBar from './PowerUpBar'
 import HeldToolBadge from './HeldToolBadge'
 import ResultScreen from './ResultScreen'
 import { LightbulbIcon, PlayIcon } from './icons'
-import bugsprayImg from '../assets/bugspray.png'
-import swatterImg from '../assets/swatter.png'
+import bugsprayImg from '../assets/webg/bugspray.webp'
+import swatterImg from '../assets/webg/swatter.webp'
 
 function PauseOverlay({ onResume, onRestart, onExit }) {
   return (

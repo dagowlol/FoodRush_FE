@@ -20,10 +20,10 @@ import { sound } from './sound'
 import CouponList from './CouponList'
 import AuthModal from './AuthModal'
 import ComingSoonModal from './ComingSoonModal'
-import bgFoodDefend from '../assets/bg_fooddefendd.png'
-import stackAttackImg from '../assets/stack_attack.png'
-import speedyChefImg from '../assets/speedy_chef.png'
-import flavorMatchImg from '../assets/flavor_match.png'
+import bgFoodDefend from '../assets/webg/bg_fooddefendd.webp'
+import stackAttackImg from '../assets/webg/stack_attack.webp'
+import speedyChefImg from '../assets/webg/speedy_chef.webp'
+import flavorMatchImg from '../assets/webg/flavor_match.webp'
 
 const UPCOMING_GAMES = [
   {

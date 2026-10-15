@@ -1,8 +1,7 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import FoodDefenderGame from './game/FoodDefenderGame'
 import GoogleCallback from './auth/GoogleCallback'
-import AdminVouchersPage from './pages/AdminVouchersPage'
-import StaffCouponsPage from './pages/StaffCouponsPage'
+import OperationsDashboard from './pages/OperationsDashboard'
 
 function App() {
   const [path, setPath] = useState(window.location.pathname)
@@ -18,11 +17,11 @@ function App() {
   }
 
   if (path === '/admin' || path.startsWith('/admin/')) {
-    return <AdminVouchersPage />
+    return <OperationsDashboard initialTab="overview" />
   }
 
   if (path === '/staff' || path.startsWith('/staff/')) {
-    return <StaffCouponsPage />
+    return <OperationsDashboard initialTab="redeem" />
   }
 
   return <FoodDefenderGame />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import couponDefault from '../assets/coupon_default.png'
+import couponDefault from '../assets/webg/coupon_default.webp'
 
 /**
  * Ảnh voucher.

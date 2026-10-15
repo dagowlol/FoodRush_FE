@@ -1,6 +1,6 @@
 import { TOOLS } from './config'
-import bugsprayImg from '../assets/bugspray.png'
-import swatterImg from '../assets/swatter.png'
+import bugsprayImg from '../assets/webg/bugspray.webp'
+import swatterImg from '../assets/webg/swatter.webp'
 
 const TOOL_IMAGES = {
   [TOOLS.spray.id]: bugsprayImg,
