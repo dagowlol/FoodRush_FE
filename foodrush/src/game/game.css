@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Five Star: Food Defender â€” cartoon theme
    Brand accents: red #e2452f, yellow #ffc531, cream, sky blue, grass green
    ========================================================================== */
@@ -392,19 +392,33 @@
   background: #ffeec2;
 }
 /* ------------------------------- Overlays ------------------------------- */
+/* Mọi overlay (kết quả, hướng dẫn, coming soon, mã của tôi) đều cao hơn
+   thanh điều hướng dưới (--z-mobile-nav) và có thể cuộn riêng. `margin:auto`
+   trên phần tử con giữ cho nội dung không bị cắt ở đầu khi thẻ cao hơn
+   vùng hiển thị. */
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
+  z-index: var(--z-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
   background: rgba(46, 27, 15, 0.5);
   backdrop-filter: blur(3px);
   animation: fadeIn 0.18s ease;
 }
+.overlay > * {
+  margin: auto;
+}
 .result-card, .tutorial-card, .coupon-card {
   width: min(94vw, 480px);
+  /* Không bao giờ cao quá khung nhìn: nội dung dài cuộn bên trong thẻ. */
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 28px;
   background: radial-gradient(140% 140% at 50% 0%, #fffaf0 0%, var(--cream) 100%);
   box-shadow: 0 16px 0 rgba(0, 0, 0, 0.18), inset 0 0 0 6px #fff;
@@ -570,19 +584,28 @@
   font-size: 1.05rem;
   color: var(--ink);
   overflow-wrap: anywhere;
+  word-break: break-word;
+}
+/* Flexible grid children need min-width:0, otherwise a long code makes the
+   column wider than the row and pushes the copy button out of the card. */
+.coupon-code__percent,
+.coupon-code__copy {
+  min-width: 0;
 }
 .coupon-code__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 6px;
   font-size: 0.76rem;
   font-weight: 800;
   color: var(--brand-red-dark);
   white-space: nowrap;
 }
+
 .overlay--coupons {
   background: rgba(46, 27, 15, 0.62);
-}
-.coupon-card {
-  max-height: 88vh;
-  overflow-y: auto;
 }
 .coupon-title {
   margin-bottom: 4px;
@@ -669,8 +692,10 @@
   min-width: 140px;
 }
 /* ------------------------- Modal confirm dialogs ----------------------- */
+/* Blocking confirm dialogs (redeem confirm, issue, pause...) sit one step
+   above plain overlays so they can layer on top of another overlay. */
 .overlay--modal {
-  z-index: 60;
+  z-index: var(--z-dialog);
   background: rgba(46, 27, 15, 0.55);
   backdrop-filter: blur(2px);
 }
@@ -987,16 +1012,21 @@
 .fs-auth-overlay {
   position: fixed;
   inset: 0;
-  /* Above the mobile bottom nav (z-index 150) so the sheet is never covered. */
-  z-index: 400;
+  /* Above the mobile bottom nav (--z-mobile-nav) so the sheet is never covered. */
+  z-index: var(--z-blocking-dialog);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   background: rgba(29, 30, 26, 0.55);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   animation: fsAuthFade 0.18s ease;
+}
+.fs-auth-overlay > * {
+  margin: auto;
 }
 
 @keyframes fsAuthFade {
@@ -1006,10 +1036,13 @@
 
 /* -------------------------------- Panel ----------------------------------- */
 .fs-auth-dialog {
+  position: relative;   /* neo nút đóng vào chính sheet, không neo vào backdrop */
   display: grid;
   grid-template-columns: 40% 60%;
   grid-template-rows: minmax(0, 1fr);
   width: min(100%, 840px);
+  /* 100dvh follows the collapsing on-screen keyboard; the vh line is only a
+     fallback for engines without dvh support. */
   max-height: calc(100vh - 48px);
   max-height: calc(100dvh - 48px);
   overflow: hidden;
@@ -1436,18 +1469,33 @@
 @media (max-width: 760px) {
   .fs-auth-overlay {
     align-items: flex-end;
-    padding: 0;
+    padding: 0 0 var(--dialog-inset-nav);
+  }
+  body[data-modal-open] .fs-auth-overlay {
+    padding-bottom: var(--dialog-inset);
+  }
+  /* `margin-top:auto` giữ sheet ở đáy mà vẫn cuộn tới được phần bị tràn ở
+     trên (margin auto trên trục dọc hấp thụ toàn bộ khoảng trống, nên khi
+     nội dung cao hơn khung nhìn nó trở về 0 và cuộn bình thường). */
+  .fs-auth-overlay > * {
+    margin: auto 0 0;
   }
 
   .fs-auth-dialog {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-height: 92vh;
-    max-height: 92dvh;
+    /* Chừa chỗ cho thanh điều hướng dưới khi nó còn hiện; `dvh` co theo bàn
+       phím ảo nên nút đăng nhập không bị đẩy khỏi màn hình khi người dùng gõ. */
+    max-height: calc(100vh - var(--dialog-inset-nav));
+    max-height: calc(100dvh - var(--dialog-inset-nav));
     border-radius: 24px 24px 0 0;   /* only the upper corners are rounded */
     border-bottom: none;
     overflow: hidden;
+  }
+  body[data-modal-open] .fs-auth-dialog {
+    max-height: calc(100vh - var(--dialog-inset));
+    max-height: calc(100dvh - var(--dialog-inset));
   }
 
   .fs-auth-promo {
@@ -1455,8 +1503,9 @@
   }
 
   .fs-auth-panel {
-    /* The sheet itself sits above .fs-mobile-nav (overlay z-index 400 > nav
-       150), so the bottom nav can never sit on top of the submit button. */
+    /* The sheet sits above .fs-mobile-nav (--z-blocking-dialog > --z-mobile-nav)
+       and the bar is hidden while the dialog is open, so the submit button
+       can never sit under the bar. */
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -1467,10 +1516,10 @@
   }
 
   .fs-auth-close {
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
   }
 
   .fs-auth-title { font-size: 1.18rem; }
@@ -1515,6 +1564,9 @@
 
 .coming-soon-card {
   position: relative;
+  /* Flex column để nút đóng (sticky) bám mép trên khi thẻ phải cuộn. */
+  display: flex;
+  flex-direction: column;
   width: min(100%, 460px);
   background: #fff;
   border-radius: 28px;
@@ -1523,6 +1575,15 @@
   box-sizing: border-box;
   animation: cardPop 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
   text-align: center;
+}
+.coming-soon-card .auth-close-btn {
+  /* absolute bên trong vùng cuộn sẽ trôi mất khi cuộn -> sticky giữ nút đóng
+     luôn ở góc trên bên phải. */
+  position: sticky;
+  top: 8px;
+  align-self: flex-end;
+  z-index: 3;
+  margin: -18px 10px 0 0;
 }
 .coming-soon-hero {
   display: flex;
@@ -2815,16 +2876,28 @@
   inset: 0;
   background: rgba(29, 30, 26, 0.45);
   backdrop-filter: blur(4px);
-  z-index: 200;
-  display: grid;
-  place-items: center;
+  z-index: var(--z-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px;
+}
+.fs-modal-backdrop > * {
+  margin: auto;
 }
 .fs-modal-dialog {
   background: #FFFFFF;
   border-radius: 24px;
   width: 100%;
   max-width: 440px;
+  /* dvh: hộp thoại co lại theo bàn phím, không tràn ra ngoài màn hình khi
+     người dùng đang gõ. Nội dung dài cuộn bên trong hộp thoại. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
   display: flex;
@@ -2834,8 +2907,9 @@
 }
 .fs-modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
 }
 .fs-modal-header h3 {
   font-family: var(--font-heading, 'Manrope', sans-serif);
@@ -2843,8 +2917,13 @@
   font-weight: 800;
   color: #1D1E1A;
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .fs-btn-close {
+  flex: 0 0 auto;
+  min-width: 40px;
+  min-height: 40px;
   color: #77736B;
   padding: 6px;
   border-radius: 8px;
@@ -2860,6 +2939,7 @@
   font-size: 0.95rem;
   line-height: 1.55;
   color: #1D1E1A;
+  overflow-wrap: anywhere;
 }
 .fs-modal-balance-hint {
   margin-top: 12px;
@@ -2874,6 +2954,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .fs-btn-cancel {
   background: transparent;
@@ -2901,6 +2982,10 @@
   border-radius: 12px;
   padding: 12px 20px;
   margin: 14px 0;
+  /* Mã dài không được đẩy hộp thoại rộng ra ngoài viewport. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 /* ------------------------------- 4. Burger Dash Gameplay ----------------- */
 .fs-gameplay-wrapper {
@@ -3192,10 +3277,16 @@
   inset: 0;
   background: rgba(29, 30, 26, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 100;
-  display: grid;
-  place-items: center;
+  z-index: var(--z-blocking-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px;
+}
+.fs-pause-backdrop > * {
+  margin: auto;
 }
 .fs-pause-card {
   background: #FFFFFF;
@@ -3203,6 +3294,9 @@
   padding: 32px;
   max-width: 380px;
   width: 100%;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -3566,10 +3660,11 @@
   position: fixed;
   left: 12px;
   right: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  /* Above all page content (header is 100) but below modal backdrops (200),
-     so the bar can never float on top of a dialog. */
-  z-index: 150;
+  bottom: calc(var(--mobile-nav-gap) + env(safe-area-inset-bottom, 0px));
+  /* Above all page content (--z-page-header) but below every dialog
+     backdrop, so the bar can never float on top of a dialog or swallow a
+     tap meant for it. useModalLock() also hides it while a dialog is open. */
+  z-index: var(--z-mobile-nav);
   padding: 6px;
   gap: 4px;
   grid-template-columns: repeat(3, 1fr);
@@ -3579,6 +3674,14 @@
   border: 1px solid #D8D1C4;
   border-radius: 18px;
   box-shadow: 0 6px 20px rgba(29, 30, 26, 0.12);
+}
+
+/* Blocking dialog open -> the bar steps aside entirely: no overlap, no
+   accidental taps on the bar while the dialog owns the screen. */
+@media (max-width: 760px) {
+  body[data-modal-open] .fs-mobile-nav {
+    display: none !important;
+  }
 }
 .fs-mobile-nav__tab {
   /* ~48px touch target, comfortably above the 44px minimum. */
@@ -3634,15 +3737,70 @@
     display: grid;
   }
 
-  /* Keep the bottom bar from covering the last bit of content. */
+  /* Keep the bottom bar from covering the last bit of content. Dùng đúng
+     biến đo chiều cao thật của thanh + safe-area thay vì số ma thuật. */
 
   .fs-main-content, .fs-shop-container {
-    padding-bottom: 104px;
+    padding-bottom: var(--mobile-nav-reserved);
   }
 
   .fs-home, .fs-shop-page {
     /* Prevents the page itself from scrolling under the fixed bar. */
-    scroll-padding-bottom: 104px;
+    scroll-padding-bottom: var(--mobile-nav-reserved);
+  }
+
+  /* Overlay dạng thẻ (kết quả, hướng dẫn, coming soon) không dùng cơ chế
+     ẩn thanh điều hướng ở mọi nơi, nên chừa sẵn chỗ cho thanh fixed. */
+  .overlay {
+    padding: 12px 12px var(--dialog-inset-nav);
+  }
+  body[data-modal-open] .overlay {
+    padding: 12px 12px var(--dialog-inset);
+  }
+  .result-card, .tutorial-card, .coupon-card {
+    max-height: calc(100vh - var(--dialog-inset-nav) - 24px);
+    max-height: calc(100dvh - var(--dialog-inset-nav) - 24px);
+  }
+  body[data-modal-open] .result-card,
+  body[data-modal-open] .tutorial-card,
+  body[data-modal-open] .coupon-card {
+    max-height: calc(100vh - var(--dialog-inset) - 24px);
+    max-height: calc(100dvh - var(--dialog-inset) - 24px);
+  }
+  .coming-soon-card {
+    max-height: calc(100vh - var(--dialog-inset-nav) - 24px);
+    max-height: calc(100dvh - var(--dialog-inset-nav) - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  body[data-modal-open] .coming-soon-card {
+    max-height: calc(100vh - var(--dialog-inset) - 24px);
+    max-height: calc(100dvh - var(--dialog-inset) - 24px);
+  }
+  /* Nút đóng của hộp thoại "sắp ra mắt" phải neo trong thẻ, không trôi lên
+     trên backdrop khi thẻ ngắn hơn màn hình. */
+  .coming-soon-card .auth-close-btn {
+    min-width: 40px;
+    min-height: 40px;
+    top: 8px;
+  }
+  .coming-soon-title {
+    padding-right: 28px;
+  }
+  /* Xác nhận đổi voucher: chừa chỗ thanh điều hướng nếu hook chưa chạy. */
+  .fs-modal-backdrop {
+    padding: 18px 18px var(--dialog-inset-nav);
+  }
+  body[data-modal-open] .fs-modal-backdrop {
+    padding-bottom: var(--dialog-inset);
+  }
+  .fs-modal-dialog {
+    max-height: calc(100vh - var(--dialog-inset-nav));
+    max-height: calc(100dvh - var(--dialog-inset-nav));
+  }
+  body[data-modal-open] .fs-modal-dialog {
+    max-height: calc(100vh - var(--dialog-inset));
+    max-height: calc(100dvh - var(--dialog-inset));
   }
 }
 
@@ -3731,13 +3889,19 @@
 .vw-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: center;
+  z-index: var(--z-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   background: rgba(29, 30, 26, 0.45);
   backdrop-filter: blur(3px);
   animation: fadeIn 0.18s ease;
+}
+.vw-backdrop > * {
+  margin: auto;
 }
 
 .vw-sheet {
@@ -3745,6 +3909,7 @@
   flex-direction: column;
   width: min(100%, 760px);
   max-height: min(86vh, 760px);
+  max-height: min(86dvh, 760px);
   overflow: hidden;
   border-radius: 20px;
   background: #fffdf8;
@@ -3870,6 +4035,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px 18px;
   -webkit-overflow-scrolling: touch;
 }
@@ -3901,6 +4067,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .vw-card__reward {
   font-family: var(--font-display, 'Manrope', sans-serif);
@@ -4130,34 +4297,60 @@
   outline-offset: 2px;
 }
 
-/* --- Mobile: bottom sheet --- */
+/* --- Mobile: bottom sheet ------------------------------------------------
+   Thanh điều hướng dưới bị ẩn khi hộp thoại mở (body[data-modal-open]),
+   nên sheet được phép dùng gần hết chiều cao khung nhìn. `dvh` giúp sheet
+   co lại theo bàn phím ảo thay vì tràn ra ngoài màn hình. */
 @media (max-width: 760px) {
   .vw-backdrop {
-    padding: 0;
+    /* Chừa sẵn dải của thanh điều hướng: kể cả sheet ngắn hơn vùng hiển
+       thị, nó cũng nằm TRÊN thanh chứ không đè lên nó. */
+    padding: 0 0 var(--dialog-inset-nav);
     align-items: flex-end;
-    place-items: end stretch;
+    justify-content: stretch;
+  }
+  body[data-modal-open] .vw-backdrop {
+    padding-bottom: var(--dialog-inset);
+  }
+  .vw-backdrop > * {
+    margin: auto 0 0;
   }
   .vw-sheet {
     width: 100%;
-    max-height: 88svh;
+    max-height: calc(100vh - var(--dialog-inset-nav));
+    max-height: calc(100dvh - var(--dialog-inset-nav));
     border-radius: 20px 20px 0 0;
     border-left: 0;
     border-right: 0;
     border-bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom);
   }
-  .vw-list { grid-template-columns: 1fr; }
-  .vw-head { padding: 14px 14px; }
+  /* Thanh điều hướng đang ẩn -> sheet dùng được gần hết chiều cao. */
+  body[data-modal-open] .vw-sheet {
+    max-height: calc(100vh - var(--dialog-inset));
+    max-height: calc(100dvh - var(--dialog-inset));
+  }
+  .vw-list { grid-template-columns: minmax(0, 1fr); }
+  .vw-head { padding: 14px 14px; gap: 10px; }
   .vw-tabs { padding: 10px 14px; }
-  .vw-body { padding: 14px; }
+  /* safe-area nằm ở vùng cuộn, không ở padding của sheet: nếu đặt ở sheet
+     thì nó không cộng dồn với chiều cao cuộn thực tế. */
+  .vw-body { padding: 14px 14px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .vw-tab { min-height: 40px; }
   .vw-head__btn { width: 44px; height: 44px; }
   .vw-card__toggle { min-height: 40px; }
+  /* Nút đóng luôn ở góc phải, tiêu đề co lại thay vì đè lên nút. */
+  .vw-head__title { font-size: 1.05rem; overflow-wrap: anywhere; }
+  .vw-head__sub { font-size: 0.76rem; }
 }
 
-@media (max-width: 360px) {
-  .vw-card__copy-row { flex-direction: column; }
+@media (max-width: 380px) {
+  /* 320–380px: hộp mã + nút sao chép không cùng một hàng nữa. */
+  .vw-card__code-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .vw-copy-btn { width: 100%; }
+  .vw-head__icon { display: none; }
   .vw-empty { padding: 22px 10px; }
 }
 
@@ -4347,7 +4540,9 @@
 /* --- Báo trạng thái kết nối mạng ---------------------------------------- */
 .fs-net-banner {
   position: fixed;
-  z-index: 80;
+  /* Above the sticky header (--z-page-header) and the bottom bar, but below
+     every dialog backdrop. */
+  z-index: var(--z-toast);
   top: calc(12px + env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
@@ -4397,6 +4592,7 @@
    cắt bằng ellipsis như trước). */
 .vw-card__reward {
   min-width: 0;
+  flex: 1 1 auto;
   font-family: var(--font-display, 'Manrope', sans-serif);
   font-size: 1rem;
   font-weight: 800;
@@ -4406,3 +4602,249 @@
 }
 .vw-card.is-used .vw-card__reward,
 .vw-card.is-expired .vw-card__reward { color: #8c867a; }
+
+/* Lưới an toàn: nếu còn phần tử nào rộng hơn viewport, trang không được
+   cuộn ngang theo (clip không tạo scroll container nên sticky vẫn chạy). */
+.fd-root {
+  overflow-x: clip;
+}
+
+/* ==========================================================================
+   Điện thoại nhỏ — một lượt sửa thống nhất cho toàn bộ giao diện khách.
+   Mục tiêu: 320–430px không có cuộn ngang ngoài ý muốn, không nội dung nào
+   bị cắt, và mọi vùng chạm giữ ≥ 40px. Chữ không bị thu nhỏ quá đọc được.
+   ========================================================================== */
+
+@media (max-width: 430px) {
+  /* --- Header: brand + ví + nút phụ phải vừa trong 320px --- */
+  .fs-header__container {
+    height: 60px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .fs-brand {
+    /* Brand là phần tử co lại đầu tiên khi ví + nút phụ + tên người dùng
+       không còn chỗ ở 320–340px. */
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    gap: 6px;
+  }
+  .fs-brand__name {
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fs-header__actions {
+    flex: 0 0 auto;
+    min-width: 0;
+    gap: 8px;
+  }
+  .fs-header__mobile-actions {
+    gap: 4px;
+  }
+  .fs-header__icon-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+  .fs-wallet-pill {
+    gap: 6px;
+    padding: 5px 10px;
+  }
+  .fs-wallet-pill__val {
+    font-size: 0.9rem;
+  }
+  .fs-user-badge {
+    padding: 2px 8px;
+    gap: 6px;
+  }
+  .fs-user-badge__logout {
+    min-height: 36px;
+    padding: 0 6px;
+    border-radius: 8px;
+  }
+  .fs-btn-login {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  /* --- Nội dung trang: giữ khoảng trống cho thanh điều hướng dưới --- */
+  .fs-main-content,
+  .fs-shop-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .fs-hero__title {
+    font-size: 1.85rem;
+  }
+
+  /* --- Ô tìm kiếm: width cố định 280px làm tràn ngang ở 320px --- */
+  .fs-shop-search {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .fs-shop-controls {
+    width: 100%;
+  }
+  .fs-shop-sort {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .fs-shop-sort__select {
+    width: 100%;
+    min-height: 42px;
+  }
+  .fs-shop-sort__label {
+    min-width: 0;
+  }
+
+  /* --- Thẻ voucher: hạn nhẹ khoảng cách, giữ vùng chạm ≥ 40px --- */
+  .fs-voucher-card__footer {
+    gap: 8px;
+  }
+  .fs-btn-redeem {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+  .fs-btn-back {
+    min-height: 40px;
+  }
+
+  /* --- HUD gameplay: số liệu không được chen vào nút --- */
+  .fs-game-hud {
+    /* height cố định + nội dung xuống dòng = tràn khỏi HUD. */
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding: 8px 12px;
+  }
+  .fs-game-hud__stats {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .fs-hud-btn--close {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* --- Bàn chơi + thanh công cụ: xuống dòng để nút không bị bóp --- */
+  .fs-toolbar-tools {
+    width: 100%;
+    gap: 8px;
+  }
+  .fs-tool-card {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 6px;
+    text-align: center;
+    min-height: 60px;
+  }
+  .fs-tool-card__target {
+    display: none;
+  }
+
+  /* --- Hộp thoại xác nhận đổi: hai nút xuống hàng khi không vừa --- */
+  .fs-modal-dialog {
+    padding: 18px 16px;
+    gap: 14px;
+  }
+  .fs-modal-header h3 {
+    font-size: 1.08rem;
+  }
+  .fs-issued-code {
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* HUD một hàng: giảm khoảng cách + cỡ chữ thay vì để nó wrap xuống 2
+     hàng (mất ~44px quý giá trên màn thấp). */
+  .fs-game-hud {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .fs-game-hud__left {
+    gap: 8px;
+  }
+  .fs-game-hud__stats {
+    gap: 10px;
+  }
+  .fs-hud-stat__val {
+    font-size: 1.05rem;
+  }
+  .fs-hud-stat__label {
+    font-size: 0.58rem;
+  }
+  .fs-hud-btn--pause {
+    padding: 6px 10px;
+    min-height: 40px;
+  }
+
+  .fs-modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .fs-modal-footer .btn,
+  .fs-modal-footer .fs-btn-cancel,
+  .fs-modal-footer .fs-btn-primary {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Thẻ voucher 2 cột quá chật ở 320–360px -> 1 cột. */
+  .fs-voucher-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fs-featured-card__media {
+    min-height: 200px;
+  }
+  .fs-voucher-card__desc {
+    /* Ở 1 cột, mô tả vẫn đọc được nên không ẩn nữa. */
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   Màn hình thấp (320x568, 360x640...): vừa ngang chưa đủ, phải vừa cả chiều cao.
+   Ở đây chỉ rút ngắn những thứ "trang trí" (ảnh min-height, khoảng đệm) và
+   chừa chỗ cho thanh điều hướng dưới — không ẩn nội dung bắt buộc.
+   ========================================================================== */
+@media (max-width: 760px) and (max-height: 700px) {
+  .fs-featured-card__media {
+    min-height: 180px;
+  }
+  .fs-shop-empty {
+    padding: 32px 16px;
+  }
+  .fs-board-wrapper {
+    min-height: 260px;
+  }
+  /* Bàn chơi không được đẩy thanh công cụ ra khỏi màn hình thấp. */
+  .fs-gameplay-main {
+    gap: 10px;
+  }
+  .fs-mission-panel {
+    padding: 8px 12px;
+  }
+}
+
+/* Bàn phím ảo mở -> vùng hiển thị co lại; hộp thoại dùng dvh nên co theo,
+   nhưng trang phía sau vẫn cần cuộn được về đúng chỗ khi bàn phím đóng. */
+@media (max-width: 760px) {
+  .fs-home,
+  .fs-shop-page,
+  .fs-gameplay-wrapper {
+    min-height: 100dvh;
+  }
+  .fd-root {
+    min-height: 100dvh;
+  }
+}

@@ -10,11 +10,14 @@ import GameHUD from './GameHUD'
 import PowerUpBar from './PowerUpBar'
 import HeldToolBadge from './HeldToolBadge'
 import ResultScreen from './ResultScreen'
+import useModalLock from './useModalLock'
 import { LightbulbIcon, PlayIcon } from './icons'
 import bugsprayImg from '../assets/webg/bugspray.webp'
 import swatterImg from '../assets/webg/swatter.webp'
 
 function PauseOverlay({ onResume, onRestart, onExit }) {
+  useModalLock(true)
+
   return (
     <div className="fs-pause-backdrop" role="dialog" aria-modal="true">
       <div className="fs-pause-card">

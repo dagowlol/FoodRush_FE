@@ -32,7 +32,8 @@
   background: var(--dash-bg);
   color: var(--dash-text-body);
   font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
+  /* Lưới an toàn: bảng cuộn ngang trong wrapper, còn trang thì không. */
+  overflow-x: clip;
 }
 
 /* --------------------------------------------------------------------------
@@ -111,6 +112,28 @@
   gap: 6px;
   margin-top: 12px;
   flex: 1;
+  min-width: 0;
+}
+
+/* Nav của dashboard không được kế thừa bất kỳ style nào của thanh điều
+   hướng dưới của giao diện khách (`.fs-mobile-nav`): reset tường minh để
+   pseudo-element/position của rule khác không "lai" vào đây. */
+.dash-sidebar__nav,
+.dash-sidebar__nav::before,
+.dash-sidebar__nav::after,
+.dash-sidebar__nav-item,
+.dash-sidebar__nav-item::before,
+.dash-sidebar__nav-item::after {
+  position: static;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  text-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.dash-sidebar__nav-item.is-active {
+  background: var(--dash-sidebar-active);
 }
 
 .dash-sidebar__nav-item {
@@ -397,6 +420,13 @@
 .dash-btn-ghost:hover {
   background: #F5EFE4;
   border-color: #D6CCA8;
+}
+
+/* Nút "Về trang chính" trên header: chỉ hiện ở mobile, vì desktop đã có nó
+   trong user card của sidebar. Đặt SAU .dash-btn-ghost để không bị rule
+   cùng độ ưu tiên kia ghi đè. */
+.dash-header__back-home {
+  display: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -734,7 +764,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
+  flex: 1 1 320px;
+  /* min-width:0 + wrap: ô tìm kiếm co lại được, bộ lọc xuống dòng thay vì
+     đẩy trang rộng ra ngoài viewport. */
+  min-width: 0;
+  flex-wrap: wrap;
   max-width: 600px;
 }
 
@@ -746,7 +780,8 @@
   border: 1px solid var(--dash-card-border);
   border-radius: var(--dash-radius-btn);
   padding: 10px 16px;
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -760,6 +795,7 @@
   border: none;
   background: transparent;
   width: 100%;
+  min-width: 0;
   font-family: inherit;
   font-size: 14px;
   color: var(--dash-text-heading);
@@ -782,6 +818,8 @@
   outline: none;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dash-select-box:focus {
@@ -793,7 +831,12 @@
    -------------------------------------------------------------------------- */
 .dash-table-wrap {
   width: 100%;
+  /* Bảng rộng hơn màn hình -> cuộn ngang TRONG wrapper, không phải cả trang. */
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   border-radius: var(--dash-radius-card);
   background: var(--dash-card-bg);
   border: 1px solid var(--dash-card-border);
@@ -801,7 +844,9 @@
 }
 
 .dash-table {
+  /* min-width giữ cột đầu tiên đọc được; bảng cuộn ngang trong wrapper. */
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13.5px;
@@ -824,6 +869,24 @@
   border-bottom: 1px solid #F4EFE6;
   color: var(--dash-text-body);
   vertical-align: middle;
+  /* Mã giao dịch / mã voucher dài phải xuống dòng được thay vì nới bảng. */
+  overflow-wrap: anywhere;
+}
+
+/* Cột đầu tiên (tên người chơi, mã giao dịch) không bị bóp. */
+.dash-table th:first-child,
+.dash-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #FFFFFF;
+  min-width: 150px;
+}
+.dash-table thead th:first-child {
+  background: #FAF7F0;
+}
+.dash-table tbody tr:hover td:first-child {
+  background: #FCFBF7;
 }
 
 .dash-table tbody tr {
@@ -971,10 +1034,14 @@
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .dash-redeem-input-wrap {
-  flex: 1;
+  flex: 1 1 220px;
+  /* min-width:0 để ô nhập co lại được, nếu không nó giữ độ rộng nội dung và
+     đẩy nút "Kiểm tra mã" ra ngoài viewport ở màn 320px. */
+  min-width: 0;
   display: flex;
   align-items: center;
   background: #FFFFFF;
@@ -991,6 +1058,7 @@
 
 .dash-redeem-input {
   width: 100%;
+  min-width: 0;
   border: none;
   background: transparent;
   font-family: inherit;
@@ -1009,7 +1077,11 @@
 .dash-redeem-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  /* Vùng chạm ≥ 44px và không bị bóp bởi ô nhập bên cạnh. */
+  flex: 0 1 auto;
+  min-height: 48px;
   padding: 0 28px;
   background: var(--dash-accent);
   color: #FFFFFF;
@@ -1068,12 +1140,15 @@
 
 .dash-validation-fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 14px;
   margin: 14px 0 18px;
   background: rgba(255, 255, 255, 0.6);
   padding: 14px 18px;
   border-radius: 10px;
+}
+.dash-validation-field {
+  min-width: 0;
 }
 
 .dash-validation-field span {
@@ -1088,16 +1163,20 @@
 .dash-validation-field strong {
   font-size: 14.5px;
   color: var(--dash-text-heading);
+  overflow-wrap: anywhere;
 }
 
 .dash-redeem-actions {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .dash-redeem-actions input {
-  flex: 1;
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 44px;
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid var(--dash-card-border);
@@ -1115,18 +1194,29 @@
   background: rgba(20, 19, 18, 0.6);
   backdrop-filter: blur(4px);
   z-index: 100;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Bàn phím mở làm khung nhìn co lại: backdrop phải cuộn được để modal
+     không bị cắt ở trên. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px;
   box-sizing: border-box;
+}
+.dash-modal-backdrop > * {
+  margin: auto;
 }
 
 .dash-modal {
   background: #FFFFFF;
   border-radius: 20px;
   width: min(560px, 100%);
-  max-height: 90vh;
+  /* dvh: co theo bàn phím ảo, nội dung dài cuộn bên trong modal. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   border: 1px solid var(--dash-card-border);
   display: flex;
@@ -1134,18 +1224,26 @@
 }
 
 .dash-modal__header {
+  /* Sticky trong modal: tiêu đề + nút đóng luôn tới được khi cuộn form dài. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 20px 24px;
+  background: #FFFFFF;
   border-bottom: 1px solid var(--dash-card-border);
 }
 
 .dash-modal__header h2 {
   margin: 0;
+  min-width: 0;
   font-size: 18px;
   font-weight: 800;
   color: var(--dash-text-heading);
+  overflow-wrap: anywhere;
 }
 
 .dash-modal__body {
@@ -1156,19 +1254,41 @@
 }
 
 .dash-modal__footer {
+  /* Sticky trong modal: hành động chính không bị đẩy khỏi tầm nhìn. */
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   padding: 18px 24px;
   border-top: 1px solid var(--dash-card-border);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
   background: #FAF7F0;
   border-radius: 0 0 20px 20px;
+}
+.dash-modal__footer .dash-btn-primary,
+.dash-modal__footer .dash-btn-ghost {
+  min-height: 44px;
+  justify-content: center;
+}
+
+/* Hai trường cạnh nhau trong form modal. Dùng class thay vì style inline để
+   có thể gộp lại 1 cột khi màn hình hẹp. */
+.dash-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.dash-grid-2 > * {
+  min-width: 0;
 }
 
 .dash-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .dash-form-group label {
@@ -1270,12 +1390,23 @@
     border-right: none;
     border-bottom: 1px solid var(--dash-sidebar-border);
   }
+  .dash-sidebar__brand {
+    padding-bottom: 12px;
+  }
   .dash-sidebar__nav {
     flex-direction: row;
     overflow-x: auto;
+    /* Tab cuộn ngang trong chính nó, không kéo cả trang. */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
     padding-bottom: 6px;
+    margin-top: 0;
   }
+  .dash-sidebar__nav::-webkit-scrollbar { display: none; }
   .dash-sidebar__nav-item {
+    flex: 0 0 auto;
+    min-height: 44px;
     white-space: nowrap;
     padding: 8px 12px;
     font-size: 13px;
@@ -1293,6 +1424,171 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  .dash-header__title {
+    font-size: 26px;
+  }
+  /* Nút chính + chuông + ngày: xuống dòng thay vì đè lên tiêu đề. */
+  .dash-header__actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  /* Mobile mới có nút quay lại ở đây (sidebar đã bị ẩn). */
+  .dash-header__back-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .dash-filter-bar {
+    gap: 10px;
+  }
+  .dash-filter-bar__left {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .dash-search-box {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+  .dash-select-box {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+  }
+  /* Bảng: cuộn ngang trong wrapper, cột đầu dính để luôn đọc được. */
+  .dash-table th,
+  .dash-table td {
+    padding: 12px 14px;
+  }
+  .dash-card {
+    padding: 20px 16px;
+  }
+  .dash-redeem-panel {
+    padding: 20px 16px;
+  }
+  .dash-redeem-panel__head {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .dash-pagination {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .dash-modal__header,
+  .dash-modal__body,
+  .dash-modal__footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* Điện thoại nhỏ: ưu tiên đọc và bấm trước, giảm khoảng đệm trước. */
+@media (max-width: 480px) {
+  .dash-main {
+    padding: 16px 12px 32px;
+  }
+  .dash-sidebar {
+    padding: 12px;
+  }
+  .dash-header__title {
+    font-size: 22px;
+  }
+  .dash-header__actions {
+    width: 100%;
+  }
+  /* Nút chính chiếm hết hàng: không đè lên nút chuông. */
+  .dash-header__actions .dash-btn-primary {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+  /* Nút quay lại trang chính chiếm một hàng riêng, không chen vào chuông. */
+  .dash-header__back-home {
+    flex: 1 1 auto;
+    order: -1;
+  }
+  .dash-stat-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .dash-stat-card__val {
+    font-size: 21px;
+  }
+  .dash-stat-card__icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .dash-card {
+    padding: 16px 12px;
+  }
+  .dash-redeem-panel {
+    padding: 16px 12px;
+  }
+  .dash-redeem-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dash-redeem-input-wrap {
+    flex: 0 0 auto;
+  }
+  /* Nút kiểm tra / xác nhận xuống dòng, đủ 44px, không tràn ngang. */
+  .dash-redeem-btn {
+    width: 100%;
+    padding: 0 16px;
+  }
+  .dash-redeem-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dash-redeem-actions .dash-btn-primary {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+  .dash-validation-box {
+    padding: 14px 12px;
+  }
+  .dash-validation-fields {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+  /* Hai trường trong modal -> một cột. */
+  .dash-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dash-modal-backdrop {
+    padding: 12px;
+  }
+  .dash-modal {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .dash-modal__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .dash-modal__footer .dash-btn-primary,
+  .dash-modal__footer .dash-btn-ghost {
+    width: 100%;
+  }
+  .dash-btn-quick-redeem {
+    padding: 8px 12px;
+    min-height: 40px;
+  }
+  .dash-code-badge {
+    /* Mã dài phải xuống dòng, không kéo bảng rộng vô tội vạ. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .dash-pagination {
+    justify-content: center;
+  }
+  .dash-bar-chart {
+    gap: 6px;
   }
 }
 

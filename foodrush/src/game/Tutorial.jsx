@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { sound } from './sound'
 import { AntIcon, FlyIcon, SprayIcon, SwatterIcon } from './icons'
+import useModalLock from './useModalLock'
 
 const STEPS = [
   {
@@ -95,6 +96,8 @@ export default function Tutorial({ onComplete, onSkip }) {
     resetPractice()
     setIndex((i) => Math.max(0, i - 1))
   }
+
+  useModalLock(true)
 
   return (
     <div className="overlay overlay--tutorial" role="dialog" aria-modal="true">

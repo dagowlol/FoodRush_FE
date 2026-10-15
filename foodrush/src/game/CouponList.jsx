@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import VoucherCard from './VoucherCard'
 import { VOUCHER_STATUS, sortVoucherCards } from './myCodes'
 import { CloseIcon, RefreshIcon, TicketIcon } from './icons'
+import useModalLock from './useModalLock'
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
@@ -90,11 +91,12 @@ export default function CouponList({
     return `${n} voucher có thể sử dụng`
   }, [cards.length, usable.length, loading, error])
 
-  /* --- hộp thoại: focus trap, Escape, khôi phục focus, khoá scroll --- */
+  /* --- hộp thoại: khoá trang + ẩn thanh điều hướng dưới ------------------ */
+  useModalLock(true)
+
+  /* --- hộp thoại: focus trap, Escape, khôi phục focus --------------------- */
   useEffect(() => {
     restoreFocusRef.current = document.activeElement
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
 
     const focusFirst = setTimeout(() => {
       const target = dialogRef.current?.querySelector('[data-autofocus]')
@@ -126,7 +128,6 @@ export default function CouponList({
     return () => {
       clearTimeout(focusFirst)
       document.removeEventListener('keydown', onKeyDown, true)
-      document.body.style.overflow = prevOverflow
       const el = restoreFocusRef.current
       if (el && typeof el.focus === 'function') el.focus()
     }

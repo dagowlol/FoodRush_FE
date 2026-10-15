@@ -19,6 +19,40 @@
   --color-success: #2E7D32;
   --color-success-bg: #EBF7EE;
 
+  /* ---------------------------------------------------------------------
+     Responsive / stacking tokens (shared by customer + admin/staff UI).
+
+     --mobile-nav-height is the real height of the customer bottom bar:
+       padding 6px * 2 + tab min-height 48px + border 1px * 2 = 62px.
+     --mobile-nav-gap is the distance kept between the bar and the
+     viewport bottom edge. Together they make the space the bar occupies.
+     --mobile-nav-reserved is what scrollable page content must reserve so
+     the fixed bar never covers the last card / field / action.
+     Only consumed inside `max-width: 760px` blocks, so desktop/tablet
+     never gets extra blank space.
+     --------------------------------------------------------------------- */
+  --mobile-nav-height: 62px;
+  --mobile-nav-gap: 12px;
+  --mobile-nav-offset: calc(var(--mobile-nav-height) + var(--mobile-nav-gap));
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-nav-reserved: calc(var(--mobile-nav-offset) + var(--safe-bottom));
+  /* Khoảng trống tối thiểu giữa mép dưới khung nhìn và mép dưới hộp thoại.
+     Khi hộp thoại mở, thanh điều hướng bị ẩn (body[data-modal-open]) nên hộp
+     thoại được phép dùng --dialog-inset, còn nếu không (ví dụ hộp thoại chưa
+     gọi hook) thì vẫn chừa --dialog-inset-nav để không bị thanh fixed che. */
+  --dialog-inset: 12px;
+  --dialog-inset-nav: calc(var(--mobile-nav-offset) + var(--safe-bottom) + var(--dialog-inset));
+
+  /* Stacking order, lowest to highest. The bottom navigation sits *below*
+     every backdrop so a dialog can never be covered by (or intercepted by)
+     the navigation bar. */
+  --z-page-header: 100;
+  --z-mobile-nav: 150;
+  --z-toast: 180;
+  --z-backdrop: 300;
+  --z-dialog: 320;
+  --z-blocking-dialog: 420;
+
   font-family: var(--font-body);
   color: var(--color-charcoal);
   background-color: var(--color-cream);

@@ -3,6 +3,7 @@ import { fetchWallet } from './voucherApi'
 import { apiEnabled, gameApi } from './gameApi'
 import AuthModal from './AuthModal'
 import { CoinIcon } from './icons'
+import useModalLock from './useModalLock'
 
 export default function ResultScreen({
   result,
@@ -18,6 +19,8 @@ export default function ResultScreen({
   const [showAuth, setShowAuth] = useState(false)
   const [claiming, setClaiming] = useState(false)
   const [claimResult, setClaimResult] = useState(null)
+
+  useModalLock(true)
 
   useEffect(() => {
     let cancelled = false

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import useModalLock from './useModalLock'
 import {
   fetchVouchersStrict,
   fetchWallet,
@@ -73,6 +74,10 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
   const [user, setUser] = useState(() => getStoredUser())
   const [showCoupons, setShowCoupons] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
+
+  // Cả 3 hộp thoại đổi voucher đều chặn: giữ trang không cuộn và ẩn thanh
+  // điều hướng dưới, nếu không nút hành động sẽ nằm dưới thanh fixed.
+  useModalLock(Boolean(confirming || issued || redeemIssue))
 
   const { cards: myCodes, loading: myCodesLoading, error: myCodesError, reload: loadCodes } =
     useMyVouchers({ enabled: Boolean(user) && !user.isGuest })

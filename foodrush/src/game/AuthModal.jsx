@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { loginApi, requestOtpApi, verifyOtpApi } from './authApi'
 import { FiveStarLogo, CoinIcon } from './icons'
+import useModalLock from './useModalLock'
 
 /* Small inline glyphs - no emoji anywhere in this dialog. */
 function CheckIcon({ size = 14 }) {
@@ -59,6 +60,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
   const firstFieldRef = useRef(null)
   const restoreFocusRef = useRef(null)
 
+  // Khoá trang + ẩn thanh điều hướng dưới (dùng chung cho mọi hộp thoại).
+  useModalLock(isOpen)
+
   // --- dialog behaviour: escape, backdrop, focus restore, scroll lock ---
   useEffect(() => {
     if (!isOpen) return undefined
@@ -90,13 +94,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     }
 
     document.addEventListener('keydown', onKeyDown)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
 
     return () => {
       clearTimeout(focusFirst)
       document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = prevOverflow
       restoreFocusRef.current?.focus?.()
     }
   }, [isOpen, onClose])

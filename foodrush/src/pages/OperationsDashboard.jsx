@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+﻿import { useEffect, useMemo, useState, useCallback } from 'react'
 import { getStoredUser, fetchMeApi } from '../game/authApi'
 import {
   adminListVouchers,
@@ -801,6 +801,19 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
           </div>
 
           <div className="dash-header__actions">
+            {/* Ở <=768px sidebar (kèm user card + nút về trang chính) bị ẩn,
+                nên phải có nút quay lại ngay trên header, nếu không màn hình
+                nhỏ không có đường về trang game. */}
+            <button
+              type="button"
+              className="dash-btn-ghost dash-header__back-home"
+              onClick={goHome}
+              title="Về trang chính"
+            >
+              <ReturnExitIcon size={16} />
+              <span>Về trang chính</span>
+            </button>
+
             {activeTab === 'vouchers' && isAdmin && (
               <button
                 type="button"
@@ -1900,7 +1913,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="dash-grid-2">
                   <div className="dash-form-group">
                     <label>Mức giảm *</label>
                     <input
@@ -1928,7 +1941,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="dash-grid-2">
                   <div className="dash-form-group">
                     <label>Số lượng phát hành ban đầu *</label>
                     <input
@@ -2007,7 +2020,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="dash-grid-2">
                   <div className="dash-form-group">
                     <label>Mức giảm *</label>
                     <input
@@ -2034,7 +2047,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="dash-grid-2">
                   <div className="dash-form-group">
                     <label>Kho còn lại *</label>
                     <input
@@ -2133,7 +2146,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                     }
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="dash-grid-2">
                   <div className="dash-form-group">
                     <label>Vai trò *</label>
                     <select

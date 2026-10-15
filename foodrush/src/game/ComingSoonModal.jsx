@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import useModalLock from './useModalLock'
 
 export default function ComingSoonModal({ game, onClose }) {
   const [notified, setNotified] = useState(false)
+
+  useModalLock(Boolean(game))
 
   if (!game) return null
 
