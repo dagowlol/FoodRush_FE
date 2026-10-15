@@ -206,12 +206,12 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
     }
   }, [activeTab, isAdmin, loadUsers])
 
-  // Transactions synthesis (combining real issued vouchers, redemptions, wallet transactions, and fallback demo items)
+  // Transactions synthesis (combining real issued vouchers, redemptions and wallet transactions)
   const transactionsList = useMemo(() => {
     const list = []
 
     // Helper to find the coin price of a voucher
-    const getVoucherCoinCost = (vId, vName, fallbackPrice = 500) => {
+    const getVoucherCoinCost = (vId, vName) => {
       if (vId) {
         const found = vouchers.find((v) => v.id === vId)
         if (found && found.priceCoins != null) return Number(found.priceCoins)
@@ -220,135 +220,64 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
         const found = vouchers.find((v) => v.name === vName)
         if (found && found.priceCoins != null) return Number(found.priceCoins)
       }
-      return fallbackPrice
+      return 0
     }
 
     // 1. Issued vouchers (active and used)
-    if (issuedVouchers.length > 0) {
-      issuedVouchers.forEach((iv, idx) => {
-        const cost = getVoucherCoinCost(iv.voucherId, iv.voucherName, 500)
-        list.push({
-          id: `FS-TX-${iv.id || 1000 + idx}`,
-          voucherCode: iv.code,
-          customerName: `Người dùng #${iv.userId || idx + 1}`,
-          description: `Đổi ${iv.voucherName || 'voucher FiveStar'}`,
-          discountValue: iv.discountValue,
-          amount: -cost,
-          time: iv.issuedAt ? formatDate(iv.issuedAt) : 'Vừa xong',
-          status: iv.status === 'USED' ? 'Hoàn tất' : 'Chờ đổi',
-          canRedeem: iv.status !== 'USED',
-        })
+    issuedVouchers.forEach((iv, idx) => {
+      const cost = getVoucherCoinCost(iv.voucherId, iv.voucherName)
+      list.push({
+        id: `FS-TX-${iv.id || idx + 1}`,
+        voucherCode: iv.code,
+        customerName: iv.userName || iv.user?.displayName || iv.user?.username || '—',
+        description: iv.voucherName ? `Đổi ${iv.voucherName}` : 'Đổi voucher',
+        discountValue: iv.discountValue,
+        amount: -cost,
+        time: iv.issuedAt ? formatDate(iv.issuedAt) : '—',
+        status: iv.status === 'USED' ? 'Hoàn tất' : 'Chờ đổi',
+        canRedeem: iv.status !== 'USED',
       })
-    }
+    })
 
     // 2. Staff redemptions
-    if (redemptions.length > 0) {
-      redemptions.forEach((r, idx) => {
-        if (!list.some((item) => item.voucherCode === r.couponCode)) {
-          const matchingIssued = issuedVouchers.find((iv) => iv.code === r.couponCode)
-          const cost = getVoucherCoinCost(
-            matchingIssued?.voucherId,
-            r.voucherName,
-            matchingIssued ? 500 : 350
-          )
-          list.push({
-            id: `FS-RD-${r.id || 2000 + idx}`,
-            voucherCode: r.couponCode,
-            customerName: r.customerName || 'Khách hàng FiveStar',
-            description: r.codeType === 'VOUCHER'
-              ? `Đổi voucher ${r.voucherName || r.discountValue || ''}`
-              : `Mã thưởng game ${r.discountPercent}%`,
-            discountValue: r.codeType === 'VOUCHER' ? r.discountValue : `Giảm ${r.discountPercent}%`,
-            amount: r.codeType === 'VOUCHER' ? -cost : 120,
-            time: r.redeemedAt ? formatDate(r.redeemedAt) : 'Hôm nay',
-            status: 'Hoàn tất',
-            canRedeem: false,
-          })
-        }
-      })
-    }
+    redemptions.forEach((r, idx) => {
+      if (!list.some((item) => item.voucherCode === r.couponCode)) {
+        const matchingIssued = issuedVouchers.find((iv) => iv.code === r.couponCode)
+        const cost = getVoucherCoinCost(matchingIssued?.voucherId, r.voucherName)
+        list.push({
+          id: `FS-RD-${r.id || idx + 1}`,
+          voucherCode: r.couponCode,
+          customerName: r.customerName || '—',
+          description: r.codeType === 'VOUCHER'
+            ? `Đổi voucher ${r.voucherName || r.discountValue || ''}`.trim()
+            : `Mã thưởng game ${r.discountPercent}%`,
+          discountValue: r.codeType === 'VOUCHER' ? r.discountValue : `Giảm ${r.discountPercent}%`,
+          amount: r.codeType === 'VOUCHER' ? -cost : 0,
+          time: r.redeemedAt ? formatDate(r.redeemedAt) : '—',
+          status: 'Hoàn tất',
+          canRedeem: false,
+        })
+      }
+    })
 
     // 3. User wallet transactions
-    if (walletTx.length > 0) {
-      walletTx.forEach((tx) => {
-        const matchingIv = issuedVouchers.find((iv) => iv.id === tx.issuedVoucherId)
-        const code = matchingIv?.code || ''
-        if (!code || !list.some((item) => item.voucherCode === code)) {
-          list.push({
-            id: `FS-WL-${tx.id}`,
-            voucherCode: code,
-            customerName: user?.displayName || user?.username || 'Khách hàng FiveStar',
-            description: tx.description || (tx.amount > 0 ? 'Thưởng chơi game' : 'Đổi voucher FiveStar'),
-            discountValue: matchingIv?.discountValue || '',
-            amount: tx.amount,
-            time: tx.createdAt ? formatDate(tx.createdAt) : 'Gần đây',
-            status: 'Hoàn tất',
-            canRedeem: matchingIv ? matchingIv.status !== 'USED' : false,
-          })
-        }
-      })
-    }
-
-    // 4. Fallback demo transactions matching the design template if no transactions exist yet
-    if (list.length === 0) {
-      list.push(
-        {
-          id: 'FS-29481',
-          voucherCode: 'FSAW5WEAVVENC8J',
-          customerName: 'Minh Anh',
-          description: 'Đổi voucher 50.000đ',
-          discountValue: '50.000đ',
-          amount: -500,
-          time: '2 phút trước',
+    walletTx.forEach((tx) => {
+      const matchingIv = issuedVouchers.find((iv) => iv.id === tx.issuedVoucherId)
+      const code = matchingIv?.code || ''
+      if (!code || !list.some((item) => item.voucherCode === code)) {
+        list.push({
+          id: `FS-WL-${tx.id}`,
+          voucherCode: code,
+          customerName: tx.userName || user?.displayName || user?.username || '—',
+          description: tx.description || (tx.amount > 0 ? 'Thưởng chơi game' : 'Đổi voucher'),
+          discountValue: matchingIv?.discountValue || '',
+          amount: tx.amount,
+          time: tx.createdAt ? formatDate(tx.createdAt) : '—',
           status: 'Hoàn tất',
-          canRedeem: false,
-        },
-        {
-          id: 'FS-29480',
-          voucherCode: 'FS-BURGER-DASH90',
-          customerName: 'Quốc Bảo',
-          description: 'Thưởng Burger Dash',
-          discountValue: 'Thưởng game',
-          amount: 120,
-          time: '8 phút trước',
-          status: 'Hoàn tất',
-          canRedeem: false,
-        },
-        {
-          id: 'FS-29479',
-          voucherCode: 'FSZG92AZ9H3T9Q',
-          customerName: 'Thanh Hà',
-          description: 'Đổi khoai tây chiên',
-          discountValue: 'Khoai tây chiên',
-          amount: -350,
-          time: '16 phút trước',
-          status: 'Chờ đổi',
-          canRedeem: true,
-        },
-        {
-          id: 'FS-29478',
-          voucherCode: 'FS-FRIES-FREE44',
-          customerName: 'Đức Huy',
-          description: 'Thưởng Burger Dash',
-          discountValue: 'Thưởng game',
-          amount: 80,
-          time: '23 phút trước',
-          status: 'Hoàn tất',
-          canRedeem: false,
-        },
-        {
-          id: 'FS-29477',
-          voucherCode: 'FSXTK2QP9IMN4D',
-          customerName: 'Hoàng Nam',
-          description: 'Đổi Combo 20%',
-          discountValue: 'Giảm 20% combo',
-          amount: -700,
-          time: '35 phút trước',
-          status: 'Chờ đổi',
-          canRedeem: true,
-        }
-      )
-    }
+          canRedeem: matchingIv ? matchingIv.status !== 'USED' : false,
+        })
+      }
+    })
 
     return list
   }, [issuedVouchers, redemptions, walletTx, vouchers, user])
@@ -386,7 +315,49 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
     })
   }, [transactionsList, txSearch, txStatusFilter])
 
+  // Coins issued per day for the last 7 days (real data only)
+  const weeklyCoinSeries = useMemo(() => {
+    const DAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+    const days = []
+    const totals = new Array(7).fill(0)
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setHours(0, 0, 0, 0)
+      d.setDate(d.getDate() - i)
+      days.push({ key: d.toDateString(), label: DAY_LABELS[d.getDay()] })
+    }
+
+    const indexOfDay = (val) => {
+      const d = new Date(val)
+      if (Number.isNaN(d.getTime())) return -1
+      const key = new Date(d)
+      key.setHours(0, 0, 0, 0)
+      return days.findIndex((day) => day.key === key.toDateString())
+    }
+
+    walletTx.forEach((tx) => {
+      const idx = indexOfDay(tx.createdAt)
+      if (idx >= 0 && Number(tx.amount) > 0) totals[idx] += Number(tx.amount)
+    })
+
+    const max = Math.max(...totals, 0)
+
+    return days.map((day, i) => ({
+      ...day,
+      value: totals[i],
+      height: max > 0 ? `${Math.round((totals[i] / max) * 100)}%` : '0%',
+      isPeak: max > 0 && totals[i] === max,
+    }))
+  }, [walletTx])
+
+  const weeklyCoinTotal = useMemo(
+    () => weeklyCoinSeries.reduce((sum, day) => sum + day.value, 0),
+    [weeklyCoinSeries]
+  )
+
   // Quick redeem handler directly from transactions table
+
   const handleQuickRedeem = async (code) => {
     if (!code) return
     setActiveTab('redeem')
@@ -629,18 +600,18 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
   }
 
   // Derived metrics for overview
-  const totalUsersCount = userStats?.totalUsers || (usersTotalItems > 0 ? usersTotalItems : 12486)
-  const totalCoinsIssued = userStats?.totalCoins || 842560
-  const totalVouchersRedeemed = redemptions.length > 0 ? redemptions.length : 3294
-  const conversionRate = '24,8%'
+  const totalUsersCount = userStats?.totalUsers ?? usersTotalItems ?? 0
+  const totalCoinsIssued = userStats?.totalCoins ?? 0
+  const totalVouchersRedeemed = redemptions.length
+  const conversionRate = userStats?.conversionRate ? `${userStats.conversionRate}%` : '—'
 
-  const featuredVoucher = vouchers[0] || {
-    name: 'Giảm trực tiếp 50.000đ',
-    discountValue: '-50K',
-    initialStock: 1000,
-    remainingStock: 316,
-    issuedCount: 684,
-  }
+  const featuredVoucher = vouchers[0] || null
+  const featuredIssued = featuredVoucher?.issuedCount ?? 0
+  const featuredInitialStock = featuredVoucher?.initialStock ?? 0
+  const featuredRemaining = featuredVoucher?.remainingStock ?? 0
+  const featuredUsedPercent = featuredInitialStock > 0
+    ? Math.min(100, Math.round((featuredIssued / featuredInitialStock) * 100))
+    : 0
 
   const currentMeta = {
     overview: {
@@ -898,7 +869,6 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Người chơi</span>
                   <strong className="dash-stat-card__val">{formatNumber(totalUsersCount)}</strong>
-                  <span className="dash-stat-card__sub">+2,4% so với tháng này</span>
                 </div>
               </div>
 
@@ -909,7 +879,6 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Coin đã phát</span>
                   <strong className="dash-stat-card__val">{formatNumber(totalCoinsIssued)}</strong>
-                  <span className="dash-stat-card__sub">+12,1% tháng này</span>
                 </div>
               </div>
 
@@ -920,7 +889,6 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Voucher đã đổi</span>
                   <strong className="dash-stat-card__val">{formatNumber(totalVouchersRedeemed)}</strong>
-                  <span className="dash-stat-card__sub">+6,2% tháng này</span>
                 </div>
               </div>
 
@@ -931,7 +899,6 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Tỉ lệ đổi thưởng</span>
                   <strong className="dash-stat-card__val">{conversionRate}</strong>
-                  <span className="dash-stat-card__sub is-neutral">Trong 30 ngày</span>
                 </div>
               </div>
             </div>
@@ -944,36 +911,40 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                     <span className="dash-card__eyebrow">HIỆU SUẤT 7 NGÀY</span>
                     <h3 className="dash-card__title">FiveCoin được phát</h3>
                     <div className="dash-card__stat-hero">
-                      <span className="dash-card__stat-number">186.240</span>
-                      <span className="dash-card__stat-badge">+14,6% so với tuần trước</span>
+                      <span className="dash-card__stat-number">{formatNumber(weeklyCoinTotal)}</span>
+                      <span className="dash-card__stat-badge">7 ngày gần nhất</span>
                     </div>
                   </div>
 
                   <select className="dash-select-box" defaultValue="7days">
                     <option value="7days">7 ngày gần nhất</option>
-                    <option value="30days">30 ngày gần nhất</option>
                   </select>
                 </div>
 
                 <div className="dash-bar-chart">
-                  {[
-                    { day: 'T2', height: '42%', value: '26.400' },
-                    { day: 'T3', height: '58%', value: '38.100' },
-                    { day: 'T4', height: '48%', value: '31.200' },
-                    { day: 'T5', height: '65%', value: '44.800' },
-                    { day: 'T6', height: '54%', value: '35.600' },
-                    { day: 'T7', height: '88%', value: '62.400', isPeak: true },
-                    { day: 'CN', height: '70%', value: '49.000' },
-                  ].map((bar, i) => (
-                    <div key={i} className="dash-bar-col">
-                      <div className="dash-bar-col__tooltip">{bar.value} Coin</div>
-                      <div
-                        className={`dash-bar-col__fill ${bar.isPeak ? 'is-peak' : ''}`}
-                        style={{ height: bar.height }}
-                      />
-                      <span className="dash-bar-col__label">{bar.day}</span>
+                  {weeklyCoinSeries.some((bar) => bar.value > 0) ? (
+                    weeklyCoinSeries.map((bar, i) => (
+                      <div key={i} className="dash-bar-col">
+                        <div className="dash-bar-col__tooltip">{formatNumber(bar.value)} Coin</div>
+                        <div
+                          className={`dash-bar-col__fill ${bar.isPeak ? 'is-peak' : ''}`}
+                          style={{ height: bar.height }}
+                        />
+                        <span className="dash-bar-col__label">{bar.label}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        gridColumn: '1 / -1',
+                        textAlign: 'center',
+                        color: '#8E857B',
+                        padding: '24px 0',
+                      }}
+                    >
+                      Chưa có dữ liệu coin phát trong 7 ngày gần nhất.
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -993,48 +964,40 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </button>
                 </div>
 
-                <div className="dash-featured-voucher">
-                  <div className="dash-voucher-banner">
-                    {featuredVoucher.discountValue || '-50K'}
-                  </div>
+                {featuredVoucher ? (
+                  <div className="dash-featured-voucher">
+                    <div className="dash-voucher-banner">
+                      {featuredVoucher.discountValue || '—'}
+                    </div>
 
-                  <div>
-                    <div className="dash-featured-voucher__name">{featuredVoucher.name}</div>
-                    <div className="dash-featured-voucher__stat">
-                      {formatNumber(featuredVoucher.issuedCount || 684)} trên{' '}
-                      {formatNumber(featuredVoucher.initialStock || 1000)} voucher đã được đổi
+                    <div>
+                      <div className="dash-featured-voucher__name">{featuredVoucher.name}</div>
+                      <div className="dash-featured-voucher__stat">
+                        {formatNumber(featuredIssued)} trên {formatNumber(featuredInitialStock)} voucher
+                        đã được đổi
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="dash-progress-wrap">
-                    <div className="dash-progress-bar">
-                      <div
-                        className="dash-progress-bar__fill"
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            Math.round(
-                              ((featuredVoucher.issuedCount || 684) /
-                                (featuredVoucher.initialStock || 1000)) *
-                                100
-                            )
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="dash-progress-meta">
-                      <span>
-                        {Math.round(
-                          ((featuredVoucher.issuedCount || 684) /
-                            (featuredVoucher.initialStock || 1000)) *
-                            100
-                        )}
-                        % đã dùng
-                      </span>
-                      <span>Còn {featuredVoucher.remainingStock ?? 316}</span>
+                    <div className="dash-progress-wrap">
+                      <div className="dash-progress-bar">
+                        <div
+                          className="dash-progress-bar__fill"
+                          style={{ width: `${featuredUsedPercent}%` }}
+                        />
+                      </div>
+                      <div className="dash-progress-meta">
+                        <span>{featuredUsedPercent}% đã dùng</span>
+                        <span>Còn {formatNumber(featuredRemaining)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    style={{ textAlign: 'center', color: '#8E857B', padding: '32px 0' }}
+                  >
+                    Chưa có voucher nào trong hệ thống.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1069,7 +1032,14 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactionsList.slice(0, 5).map((tx) => (
+                    {transactionsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#8E857B' }}>
+                          Chưa có giao dịch nào.
+                        </td>
+                      </tr>
+                    ) : (
+                      transactionsList.slice(0, 5).map((tx) => (
                       <tr key={tx.id}>
                         <td style={{ fontWeight: 700, color: '#1B1814' }}>{tx.id}</td>
                         <td>
@@ -1127,7 +1097,8 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                           )}
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1145,12 +1116,14 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Đã đổi hôm nay</span>
                   <strong className="dash-stat-card__val">
-                    {redemptions.filter((r) => {
-                      const today = new Date().toDateString()
-                      return new Date(r.redeemedAt).toDateString() === today
-                    }).length || 12}
+                    {formatNumber(
+                      redemptions.filter((r) => {
+                        const today = new Date().toDateString()
+                        return new Date(r.redeemedAt).toDateString() === today
+                      }).length
+                    )}
                   </strong>
-                  <span className="dash-stat-card__sub">+3 so với hôm qua</span>
+                  <span className="dash-stat-card__sub is-neutral">Trong ngày</span>
                 </div>
               </div>
 
@@ -1158,7 +1131,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Tổng lượt đổi</span>
                   <strong className="dash-stat-card__val">
-                    {formatNumber(redemptions.length > 0 ? redemptions.length : 3294)}
+                    {formatNumber(redemptions.length)}
                   </strong>
                   <span className="dash-stat-card__sub is-neutral">Từ khi vận hành</span>
                 </div>
@@ -1168,9 +1141,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Voucher đổi bằng coin</span>
                   <strong className="dash-stat-card__val">
-                    {String(
-                      redemptions.filter((r) => r.codeType === 'VOUCHER').length || 8
-                    ).padStart(2, '0')}
+                    {String(redemptions.filter((r) => r.codeType === 'VOUCHER').length).padStart(2, '0')}
                   </strong>
                   <span className="dash-stat-card__sub is-neutral">Đang hoạt động</span>
                 </div>
@@ -1246,7 +1217,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   <div className="dash-validation-fields">
                     <div className="dash-validation-field">
                       <span>Khách hàng</span>
-                      <strong>{scanValidation.ownerName || 'Khách vãng lai'}</strong>
+                      <strong>{scanValidation.ownerName || '—'}</strong>
                     </div>
                     <div className="dash-validation-field">
                       <span>Ưu đãi</span>
@@ -1254,16 +1225,12 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         {scanValidation.discountValue ||
                           (scanValidation.discountPercent
                             ? `Giảm ${scanValidation.discountPercent}%`
-                            : 'Ưu đãi đặc biệt')}
+                            : '—')}
                       </strong>
                     </div>
                     <div className="dash-validation-field">
                       <span>Hạn sử dụng</span>
-                      <strong>
-                        {scanValidation.expiresAt
-                          ? formatDateShort(scanValidation.expiresAt)
-                          : 'Trong ngày'}
-                      </strong>
+                      <strong>{scanValidation.expiresAt ? formatDateShort(scanValidation.expiresAt) : '—'}</strong>
                     </div>
                   </div>
 
@@ -1364,7 +1331,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                               ? r.discountValue
                               : `Giảm ${r.discountPercent}%`}
                           </td>
-                          <td>{r.staffName || 'Nhân viên'}</td>
+                          <td>{r.staffName || '—'}</td>
                           <td style={{ color: '#8E857B' }}>
                             {formatDate(r.redeemedAt)}
                           </td>
@@ -1377,27 +1344,11 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         </tr>
                       ))
                     ) : (
-                      [
-                        { code: 'FSAW5WEAVVENC8J', customer: 'Minh Anh', deal: 'Giảm 50.000đ', staff: 'Linh Nguyễn', time: '14:12 · Hôm nay' },
-                        { code: 'FSZG92AZ9H3T9Q', customer: 'Quốc Bảo', deal: 'Khoai tây chiên', staff: 'Linh Nguyễn', time: '21:32 · Hôm qua' },
-                        { code: 'FSXTK2QP9IMN4D', customer: 'Thanh Hà', deal: 'Giảm 20% combo', staff: 'Hoàng Nam', time: '18:05 · 22/08' },
-                      ].map((item, idx) => (
-                        <tr key={idx}>
-                          <td style={{ fontWeight: 700, color: '#1B1814' }}>
-                            <span className="dash-code-badge">{item.code}</span>
-                          </td>
-                          <td style={{ fontWeight: 600 }}>{item.customer}</td>
-                          <td>{item.deal}</td>
-                          <td>{item.staff}</td>
-                          <td style={{ color: '#8E857B' }}>{item.time}</td>
-                          <td>
-                            <span className="dash-badge dash-badge--success">
-                              <span className="dash-badge__dot" />
-                              Đã sử dụng
-                            </span>
-                          </td>
-                        </tr>
-                      ))
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '32px 16px', color: '#8E857B' }}>
+                          Chưa có lượt đổi voucher nào được ghi nhận.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
@@ -1416,7 +1367,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Voucher đang chạy</span>
                   <strong className="dash-stat-card__val">
-                    {String(vouchers.filter((v) => v.active && !v.outOfStock).length || 12).padStart(2, '0')}
+                    {String(vouchers.filter((v) => v.active && !v.outOfStock).length).padStart(2, '0')}
                   </strong>
                 </div>
               </div>
@@ -1425,7 +1376,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Lượt đổi tháng này</span>
                   <strong className="dash-stat-card__val">
-                    {formatNumber(issuedVouchers.length > 0 ? issuedVouchers.length : 3294)}
+                    {formatNumber(issuedVouchers.length)}
                   </strong>
                 </div>
               </div>
@@ -1434,7 +1385,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Sắp hết lượt</span>
                   <strong className="dash-stat-card__val">
-                    {String(vouchers.filter((v) => (v.remainingStock ?? 0) <= 5).length || 3).padStart(2, '0')}
+                    {String(vouchers.filter((v) => (v.remainingStock ?? 0) <= 5).length).padStart(2, '0')}
                   </strong>
                 </div>
               </div>
@@ -1477,12 +1428,14 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(filteredVouchers.length > 0 ? filteredVouchers : [
-                    { id: 1, name: 'Giảm trực tiếp 50.000đ', code: 'FIVE50', priceCoins: 500, issuedCount: 684, initialStock: 1000, active: true },
-                    { id: 2, name: 'Khoai tây chiên miễn phí', code: 'FREEFRIES', priceCoins: 350, issuedCount: 428, initialStock: 750, active: true },
-                    { id: 3, name: 'Giảm 20% Combo FiveStar', code: 'COMBO20', priceCoins: 700, issuedCount: 291, initialStock: 500, active: true },
-                    { id: 4, name: 'Burger tự chọn', code: 'MYBURGER', priceCoins: 900, issuedCount: 196, initialStock: 200, active: true, outOfStock: true },
-                  ]).map((v) => {
+                  {filteredVouchers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '32px 16px', color: '#8E857B' }}>
+                        Không có voucher nào khớp bộ lọc.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredVouchers.map((v) => {
                     const isOutOfStock = v.remainingStock <= 0 || v.outOfStock
                     return (
                       <tr key={v.id}>
@@ -1526,7 +1479,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         </td>
                         <td>
                           <span style={{ fontWeight: 600 }}>
-                            {formatNumber(v.issuedCount || 0)} / {formatNumber(v.initialStock || (v.remainingStock ? v.remainingStock + (v.issuedCount || 0) : 100))}
+                            {formatNumber(v.issuedCount || 0)} / {formatNumber(v.initialStock || 0)}
                           </span>
                         </td>
                         <td>
@@ -1555,7 +1508,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                                 description: v.description || '',
                                 discountValue: v.discountValue || '',
                                 priceCoins: v.priceCoins,
-                                remainingStock: v.remainingStock ?? (v.initialStock - (v.issuedCount || 0)),
+                                remainingStock: v.remainingStock ?? 0,
                                 active: v.active,
                                 imageUrl: v.imageUrl || '',
                                 imagePublicId: v.imagePublicId || '',
@@ -1569,7 +1522,8 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         </td>
                       </tr>
                     )
-                  })}
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1594,14 +1548,18 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
               <div className="dash-stat-card">
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Hoạt động hôm nay</span>
-                  <strong className="dash-stat-card__val">2.108</strong>
+                  <strong className="dash-stat-card__val">
+                    {formatNumber(userStats?.activeToday ?? 0)}
+                  </strong>
                 </div>
               </div>
 
               <div className="dash-stat-card">
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Tài khoản mới</span>
-                  <strong className="dash-stat-card__val">+184</strong>
+                  <strong className="dash-stat-card__val">
+                    {formatNumber(userStats?.newUsers ?? 0)}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -1644,12 +1602,14 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(usersList.length > 0 ? usersList : [
-                    { id: 1, displayName: 'Nguyễn Minh Anh', email: 'minhanh@gmail.com', coinBalance: 2480, totalScore: 46, role: 'CUSTOMER', createdAt: '2026-08-12' },
-                    { id: 2, displayName: 'Trần Quốc Bảo', email: 'quocbao@gmail.com', coinBalance: 1920, totalScore: 38, role: 'CUSTOMER', createdAt: '2026-08-14' },
-                    { id: 3, displayName: 'Lê Thanh Hà', email: 'thanhha@gmail.com', coinBalance: 1250, totalScore: 29, role: 'STAFF', createdAt: '2026-08-18' },
-                    { id: 4, displayName: 'Phạm Đức Huy', email: 'duchuy@gmail.com', coinBalance: 980, totalScore: 21, role: 'CUSTOMER', createdAt: '2026-08-21' },
-                  ]).map((u, idx) => {
+                  {usersList.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '32px 16px', color: '#8E857B' }}>
+                        Không có người dùng nào.
+                      </td>
+                    </tr>
+                  ) : (
+                    usersList.map((u, idx) => {
                     const initials = getInitials(u.displayName || u.username)
                     const tint = idx % 3 === 0 ? 'is-coral' : idx % 3 === 1 ? 'is-gold' : 'is-teal'
                     return (
@@ -1711,7 +1671,7 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         </td>
                       </tr>
                     )
-                  })}
+                  }))}
                 </tbody>
               </table>
 
@@ -1750,21 +1710,35 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
               <div className="dash-stat-card">
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Giao dịch hôm nay</span>
-                  <strong className="dash-stat-card__val">1.284</strong>
+                  <strong className="dash-stat-card__val">{formatNumber(filteredTransactions.length)}</strong>
                 </div>
               </div>
 
               <div className="dash-stat-card">
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Coin đã phát</span>
-                  <strong className="dash-stat-card__val">48.620</strong>
+                  <strong className="dash-stat-card__val">
+                    {formatNumber(
+                      filteredTransactions
+                        .filter((tx) => tx.amount > 0)
+                        .reduce((sum, tx) => sum + Number(tx.amount), 0)
+                    )}
+                  </strong>
                 </div>
               </div>
 
               <div className="dash-stat-card">
                 <div className="dash-stat-card__content">
                   <span className="dash-stat-card__label">Coin đã sử dụng</span>
-                  <strong className="dash-stat-card__val">31.450</strong>
+                  <strong className="dash-stat-card__val">
+                    {formatNumber(
+                      Math.abs(
+                        filteredTransactions
+                          .filter((tx) => tx.amount < 0)
+                          .reduce((sum, tx) => sum + Number(tx.amount), 0)
+                      )
+                    )}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -1808,7 +1782,14 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((tx) => (
+                  {filteredTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '32px 16px', color: '#8E857B' }}>
+                        Không có giao dịch nào khớp bộ lọc.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTransactions.map((tx) => (
                     <tr key={tx.id}>
                       <td style={{ fontWeight: 700, color: '#1B1814' }}>{tx.id}</td>
                       <td>
@@ -1866,7 +1847,8 @@ export default function OperationsDashboard({ initialTab = 'overview' }) {
                         )}
                       </td>
                     </tr>
-                  ))}
+                  ))
+                  )}
                 </tbody>
               </table>
             </div>
