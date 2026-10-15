@@ -470,7 +470,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
           <button
             type="button"
             className="fs-auth-google"
-            onClick={() => { window.location.href = '/oauth2/authorization/google' }}
+            onClick={() => {
+              const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
+              // If frontend is deployed on a different domain (e.g. Vercel), redirect directly to backend
+              // to avoid reverse-proxy/rewrite stripping the Set-Cookie header.
+              const target = apiBase 
+                ? `${apiBase}/oauth2/authorization/google`
+                : (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+                  ? 'https://api.foodrush.id.vn/oauth2/authorization/google'
+                  : '/oauth2/authorization/google'
+              window.location.href = target
+            }}
           >
             <GoogleIcon size={16} />
             <span>Đăng nhập bằng Google</span>
