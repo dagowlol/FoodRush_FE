@@ -78,6 +78,13 @@ export function getDifficulty(score = 0) {
   // Max concurrent bugs on screen to keep gameplay fast and responsive
   const maxBugs = Math.min(8, 3 + Math.floor(s / 110))
 
+  // Dodge mechanic: chance a bug will detour to a random waypoint before
+  // heading to the dish. Kicks in at score >= 150, caps at 55%.
+  const dodgeChance = s < 150 ? 0 : Math.min(0.55, (s - 150) * 0.0011)
+
+  // How often (seconds) a dodging bug picks a new waypoint (shorter = more erratic)
+  const dodgeInterval = Math.max(1.0, 2.6 - s * 0.003)
+
   return {
     spawnMs,
     flyingProb,
@@ -85,13 +92,15 @@ export function getDifficulty(score = 0) {
     flyingSpeed,
     hp,
     maxBugs,
+    dodgeChance,
+    dodgeInterval,
     level: Math.floor(s / 100) + 1,
   }
 }
 
 // Vertical bands used for spawn hints and rules of thumb.
 // Module-private: nothing outside config.js needs them.
-const GROUND_BAND = { minY: 800, maxY: 980 }
+const GROUND_BAND = { minY: 720, maxY: 960 }
 const FLYING_BAND = { minY: 60, maxY: 380 }
 
 export const rand = (min, max) => min + Math.random() * (max - min)
@@ -100,9 +109,16 @@ export const rand = (min, max) => min + Math.random() * (max - min)
 // centered dish, so they crawl slowly across the field before arriving.
 export function groundSpawn() {
   const roll = Math.random()
-  if (roll < 0.42) return { x: -70, y: rand(GROUND_BAND.minY, GROUND_BAND.maxY) }
-  if (roll < 0.84) return { x: FIELD.W + 70, y: rand(GROUND_BAND.minY, GROUND_BAND.maxY) }
-  return { x: Math.random() < 0.5 ? -70 : FIELD.W + 70, y: FIELD.H + 70 }
+  // 40% xuất hiện từ mép dưới bàn bò ngược lên
+  if (roll < 0.4) {
+    return { x: rand(90, FIELD.W - 90), y: FIELD.H + 60 }
+  }
+  // 30% xuất hiện từ mép trái
+  if (roll < 0.7) {
+    return { x: -60, y: rand(GROUND_BAND.minY, GROUND_BAND.maxY) }
+  }
+  // 30% xuất hiện từ mép phải
+  return { x: FIELD.W + 60, y: rand(GROUND_BAND.minY, GROUND_BAND.maxY) }
 }
 
 export function flyingSpawn() {

@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   BUG_TYPES,
   COUPON_TIERS,
@@ -186,6 +186,20 @@ export function useGameEngine(onEvent) {
     const isFlying = Math.random() < diff.flyingProb
     const type = isFlying ? BUG_TYPES.FLYING : BUG_TYPES.GROUND
     const pos = isFlying ? flyingSpawn() : groundSpawn()
+
+    // Determine if this bug has the dodge mechanic
+    const isDodger = Math.random() < diff.dodgeChance
+
+    // Dodgers initially head to a random waypoint on the field before the dish
+    const finalX = FOOD.x + rand(-24, 24)
+    const finalY = FOOD.y + rand(-18, 18)
+    let targetX = finalX
+    let targetY = finalY
+    if (isDodger) {
+      targetX = rand(120, FIELD.W - 120)
+      targetY = rand(550, 900)
+    }
+
     const bug = {
       id: (idRef.current += 1),
       type,
@@ -197,9 +211,16 @@ export function useGameEngine(onEvent) {
       speed: isFlying ? diff.flyingSpeed : diff.groundSpeed,
       seed: Math.random() * 1000,
       angle: 0,
-      targetX: FOOD.x + rand(-24, 24),
-      targetY: FOOD.y + rand(-18, 18),
+      targetX,
+      targetY,
+      finalX,
+      finalY,
       points: isFlying ? SCORE.flying : SCORE.ground,
+      // Dodge state
+      isDodger,
+      dodgeInterval: diff.dodgeInterval,
+      dodgeTimer: diff.dodgeInterval * (0.5 + Math.random() * 0.5),
+      dodgePhase: isDodger ? 'waypoint' : 'final', // 'waypoint' | 'final'
     }
     bugsRef.current.push(bug)
     syncBugs()
@@ -373,6 +394,27 @@ export function useGameEngine(onEvent) {
     const list = bugsRef.current
     for (let i = 0; i < list.length; i += 1) {
       const bug = list[i]
+
+      // --- Dodge mechanic: waypoint timer ---
+      if (bug.isDodger) {
+        bug.dodgeTimer -= dt
+        if (bug.dodgeTimer <= 0) {
+          if (bug.dodgePhase === 'waypoint') {
+            // Has reached roughly the waypoint area — now head to food
+            bug.dodgePhase = 'final'
+            bug.targetX = bug.finalX
+            bug.targetY = bug.finalY
+            bug.dodgeTimer = bug.dodgeInterval * (0.8 + Math.random() * 0.4)
+          } else {
+            // Mid-approach: dodge sideways to a new random waypoint then resume
+            bug.dodgePhase = 'waypoint'
+            bug.targetX = rand(100, FIELD.W - 100)
+            bug.targetY = rand(500, 920)
+            bug.dodgeTimer = bug.dodgeInterval * (0.6 + Math.random() * 0.5)
+          }
+        }
+      }
+
       const dx = bug.targetX - bug.x
       const dy = bug.targetY - bug.y
       const base = Math.atan2(dy, dx)
