@@ -231,12 +231,35 @@
 }
 .bug__hp {
   position: absolute;
-  top: -12%;
+  top: -14%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 3px;
+  padding: 3px 5px;
+  border-radius: 999px;
+  background: rgba(20, 12, 8, 0.55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   z-index: 3;
+  pointer-events: none;
+}
+/* One pip per remaining HP. Empty (lost) pips stay visible so the player can
+   read "this bug still has N hits left" at a glance. */
+.hp-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.hp-pip--on {
+  background: #ff4d4d;
+  box-shadow: 0 0 6px rgba(255, 77, 77, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  animation: hpPipPulse 1.1s ease-in-out infinite;
+}
+@keyframes hpPipPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
 }
 /* ------------------------------- Effects -------------------------------- */
 .fd-effects {
@@ -265,6 +288,27 @@
   border-radius: 50%;
   background: radial-gradient(circle, #fff 0%, #ffe27a 45%, rgba(255, 226, 122, 0) 70%);
   animation: burst 0.32s ease-out forwards;
+}
+/* "+1 ❤️" life bonus: deliberately loud — big, glowing, and it lingers longer
+   than a normal score popup so the player actually notices the heal. */
+.fx--heal {
+  color: #fff;
+  font-size: clamp(22px, 6.5vmin, 48px);
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  text-shadow:
+    0 0 14px rgba(255, 196, 0, 0.95),
+    0 3px 0 #b3541e,
+    0 0 34px rgba(255, 105, 180, 0.75);
+  animation: healPop 1.5s ease-out forwards;
+}
+@keyframes healPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.25); }
+  32% { transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -110%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -170%) scale(0.9); }
 }
 .fx--wrong,
 .fx--info {
@@ -328,6 +372,7 @@
   color: #fff;
   box-shadow: 0 6px 18px rgba(226, 69, 47, 0.45);
 }
+
 /* ------------------------------- Toolbar -------------------------------- */
 .tool {
   flex: 1;

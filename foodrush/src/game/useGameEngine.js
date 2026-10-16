@@ -93,12 +93,12 @@ export function useGameEngine(onEvent) {
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
   }, [])
 
-  const addEffect = useCallback((kind, x, y, text) => {
+  const addEffect = useCallback((kind, x, y, text, durationMs = 900) => {
     const id = (effectIdRef.current += 1)
     setEffects((prev) => [...prev, { id, kind, x, y, text: text ?? null }])
     const timer = setTimeout(() => {
       setEffects((prev) => prev.filter((e) => e.id !== id))
-    }, 900)
+    }, durationMs)
     effectTimersRef.current.push(timer)
   }, [])
 
@@ -353,10 +353,18 @@ export function useGameEngine(onEvent) {
       const nextVal = Math.min(100, powerUpRef.current + gain)
       powerUpRef.current = nextVal
       setPowerUp(nextVal)
-      if (nextVal >= 100) {
+      if (nextVal >= 100 && !isPowerUpActiveRef.current) {
         isPowerUpActiveRef.current = true
         setIsPowerUpActive(true)
-      addEffect('crit', FOOD.x, FOOD.y - 70, '2X SÁT THƯƠNG!')
+        addEffect('crit', FOOD.x, FOOD.y - 70, '2X SÁT THƯƠNG!')
+        // Bonus: +1 life when power-up activates (capped at LIVES max)
+        if (livesRef.current < LIVES) {
+          livesRef.current += 1
+          setLives(livesRef.current)
+          // Sit above the dish so it is not hidden by the food sprite, and
+          // keep it on screen long enough to actually be read.
+          addEffect('heal', FOOD.x, FOOD.y - 150, '+1 ❤️', 1500)
+        }
       }
     }
 
