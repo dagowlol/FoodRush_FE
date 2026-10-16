@@ -19,8 +19,22 @@ export default function ResultScreen({
   const [showAuth, setShowAuth] = useState(false)
   const [claiming, setClaiming] = useState(false)
   const [claimResult, setClaimResult] = useState(null)
+  const [cooldown, setCooldown] = useState(2)
 
   useModalLock(true)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -122,8 +136,11 @@ export default function ResultScreen({
             <button
               type="button"
               className="btn btn--primary"
-              onClick={() => setShowAuth(true)}
-              disabled={claiming}
+              onClick={() => {
+                if (cooldown > 0) return
+                setShowAuth(true)
+              }}
+              disabled={claiming || cooldown > 0}
             >
               Đăng nhập để nhận coin
             </button>
@@ -154,16 +171,40 @@ export default function ResultScreen({
           </div>
         )}
 
-        <div className="result-actions">
-          <button type="button" className="btn btn--primary" onClick={onRestart}>
-            Chơi lại
+        <div className="result-actions" style={{ pointerEvents: cooldown > 0 ? 'none' : 'auto' }}>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => {
+              if (cooldown > 0) return
+              onRestart?.()
+            }}
+            disabled={cooldown > 0}
+          >
+            {cooldown > 0 ? `Chơi lại (${cooldown}s)` : 'Chơi lại'}
           </button>
           {onOpenShop && (
-            <button type="button" className="btn btn--ghost" onClick={onOpenShop}>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => {
+                if (cooldown > 0) return
+                onOpenShop?.()
+              }}
+              disabled={cooldown > 0}
+            >
               Mở cửa hàng voucher
             </button>
           )}
-          <button type="button" className="btn btn--ghost" onClick={onExit}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => {
+              if (cooldown > 0) return
+              onExit?.()
+            }}
+            disabled={cooldown > 0}
+          >
             Về menu
           </button>
         </div>
