@@ -36,7 +36,7 @@ export default function VoucherCard({ card, copiedKey, onCopy }) {
     card.usedLabel && `Đã sử dụng: ${card.usedLabel}`,
     // Issued voucher không có hạn dùng — nói rõ để người dùng yên tâm giữ mã.
     !isExpired && card.source === 'voucher'
-      ? 'Không giới hạn thời gian sử dụng — dùng bất cứ khi nào bạn muốn.'
+      ? 'Hạn sử dụng của voucher được ghi trên giấy'
       : null,
   ].filter(Boolean)
 
