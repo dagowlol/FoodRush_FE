@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { loginApi, requestOtpApi, verifyOtpApi } from './authApi'
+import { loginApi, registerApi } from './authApi'
 import { FiveStarLogo, CoinIcon } from './icons'
 import useModalLock from './useModalLock'
 
@@ -45,17 +45,13 @@ function GoogleIcon({ size = 16 }) {
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
 
 export default function AuthModal({ isOpen, onClose, onSuccess }) {
-  const [mode, setMode] = useState('login') // 'login' | 'register' | 'otp'
+  const [mode, setMode] = useState('login') // 'login' | 'register'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
-  const [countdown, setCountdown] = useState(0)
-  const timerRef = useRef(null)
   const dialogRef = useRef(null)
   const firstFieldRef = useRef(null)
   const restoreFocusRef = useRef(null)
@@ -102,34 +98,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     }
   }, [isOpen, onClose])
 
-  // Clear the resend countdown if the dialog closes mid-timer.
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
   if (!isOpen) return null
-
-  const startCountdown = (seconds = 60) => {
-    setCountdown(seconds)
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }
 
   const handleSwitchMode = (newMode) => {
     setMode(newMode)
     setError(null)
     setSuccessMsg(null)
-    setOtp('')
+    setConfirmPassword('')
   }
 
   const handleSubmit = async (e) => {
@@ -156,54 +131,33 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
       return
     }
 
-    // === REGISTER: Step 1 - request OTP ===
+    // === REGISTER ===
     if (mode === 'register') {
-      if (!username.trim() || !password.trim() || !email.trim()) {
-        setError('Vui lòng nhập đầy đủ tên đăng nhập, email và mật khẩu.')
+      if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+        setError('Vui lòng nhập đầy đủ tên đăng nhập, mật khẩu và xác nhận mật khẩu.')
+        return
+      }
+      if (username.trim().length < 3 || username.trim().length > 50) {
+        setError('Tên đăng nhập phải có từ 3 đến 50 ký tự.')
+        return
+      }
+      if (!/^[a-zA-Z0-9._-]+$/.test(username.trim())) {
+        setError('Tên đăng nhập chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang.')
         return
       }
       if (password.length < 6) {
         setError('Mật khẩu phải có ít nhất 6 ký tự.')
         return
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email.trim())) {
-        setError('Email không hợp lệ.')
+      if (password !== confirmPassword) {
+        setError('Mật khẩu xác nhận không khớp.')
         return
       }
       setLoading(true)
       try {
-        await requestOtpApi({
-          username: username.trim(),
-          email: email.trim(),
-          password,
-          displayName: displayName.trim() || username.trim(),
-        })
-        setSuccessMsg(`Mã OTP đã được gửi đến ${email.trim()}. Vui lòng kiểm tra email!`)
-        setMode('otp')
-        startCountdown(60)
-      } catch (err) {
-        setError(err.message || 'Gửi OTP thất bại. Vui lòng thử lại.')
-      } finally {
-        setLoading(false)
-      }
-      return
-    }
-
-    // === REGISTER: Step 2 - verify OTP ===
-    if (mode === 'otp') {
-      if (!otp.trim()) {
-        setError('Vui lòng nhập mã OTP từ email.')
-        return
-      }
-      setLoading(true)
-      try {
-        const user = await verifyOtpApi({
-          email: email.trim(),
-          otp: otp.trim(),
+        const user = await registerApi({
           username: username.trim(),
           password,
-          displayName: displayName.trim() || username.trim(),
         })
         setSuccessMsg('Đăng ký tài khoản thành công!')
         setTimeout(() => {
@@ -211,30 +165,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
           onClose()
         }, 600)
       } catch (err) {
-        setError(err.message || 'Xác thực OTP thất bại. Vui lòng thử lại.')
+        setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.')
       } finally {
         setLoading(false)
       }
-    }
-  }
-
-  const handleResendOtp = async () => {
-    if (countdown > 0) return
-    setError(null)
-    setLoading(true)
-    try {
-      await requestOtpApi({
-        username: username.trim(),
-        email: email.trim(),
-        password,
-        displayName: displayName.trim() || username.trim(),
-      })
-      setSuccessMsg(`Đã gửi lại mã OTP đến ${email.trim()}.`)
-      startCountdown(60)
-    } catch (err) {
-      setError(err.message || 'Gửi lại OTP thất bại.')
-    } finally {
-      setLoading(false)
+      return
     }
   }
 
@@ -242,17 +177,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
     ? 'Đang xử lý...'
     : mode === 'login'
       ? 'Đăng nhập'
-      : mode === 'otp'
-        ? 'Xác nhận OTP'
-        : 'Tạo tài khoản'
+      : 'Tạo tài khoản'
 
-  const heading = mode === 'login' ? 'Chào mừng trở lại' : mode === 'otp' ? 'Xác thực OTP' : 'Tạo tài khoản'
+  const heading = mode === 'login' ? 'Chào mừng trở lại' : 'Tạo tài khoản'
   const subHeading =
     mode === 'login'
       ? 'Tiếp tục hành trình săn thưởng của bạn.'
-      : mode === 'otp'
-        ? `Nhập mã 6 chữ số đã gửi tới ${email}.`
-        : 'Chỉ mất một phút để bắt đầu tích FiveCoin.'
+      : 'Chỉ mất một phút để bắt đầu tích FiveCoin.'
 
   return (
     <div
@@ -312,28 +243,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
             <p className="fs-auth-sub">{subHeading}</p>
           </header>
 
-          {mode !== 'otp' && (
-            <div className="fs-auth-tabs" role="tablist" aria-label="Chế độ đăng nhập">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === 'login'}
-                className={`fs-auth-tab ${mode === 'login' ? 'is-active' : ''}`}
-                onClick={() => handleSwitchMode('login')}
-              >
-                Đăng nhập
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === 'register'}
-                className={`fs-auth-tab ${mode === 'register' ? 'is-active' : ''}`}
-                onClick={() => handleSwitchMode('register')}
-              >
-                Đăng ký
-              </button>
-            </div>
-          )}
+          <div className="fs-auth-tabs" role="tablist" aria-label="Chế độ đăng nhập">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'login'}
+              className={`fs-auth-tab ${mode === 'login' ? 'is-active' : ''}`}
+              onClick={() => handleSwitchMode('login')}
+            >
+              Đăng nhập
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'register'}
+              className={`fs-auth-tab ${mode === 'register' ? 'is-active' : ''}`}
+              onClick={() => handleSwitchMode('register')}
+            >
+              Đăng ký
+            </button>
+          </div>
 
           <div className="fs-auth-messages">
             {error && (
@@ -349,116 +278,59 @@ export default function AuthModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           <form className="fs-auth-form" onSubmit={handleSubmit} noValidate>
-            {mode === 'otp' ? (
-              <>
-                <div className="fs-auth-field">
-                  <label className="fs-auth-label" htmlFor="fs-auth-otp">Mã OTP</label>
-                  <input
-                    id="fs-auth-otp"
-                    ref={firstFieldRef}
-                    type="text"
-                    className="fs-auth-input fs-auth-input--otp"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    autoComplete="one-time-code"
-                    inputMode="numeric"
-                    maxLength={6}
-                    aria-describedby="fs-auth-otp-hint"
-                    required
-                  />
-                  <span className="fs-auth-hint" id="fs-auth-otp-hint">
-                    Mã gửi tới {email}
-                  </span>
-                </div>
+            <div className="fs-auth-field">
+              <label className="fs-auth-label" htmlFor="fs-auth-username">Tên đăng nhập</label>
+              <input
+                id="fs-auth-username"
+                ref={firstFieldRef}
+                type="text"
+                className="fs-auth-input"
+                placeholder="Nhập tên đăng nhập"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                required
+              />
+            </div>
 
-                <div className="fs-auth-otp-actions">
-                  <button
-                    type="button"
-                    className="fs-auth-btn-ghost"
-                    onClick={handleResendOtp}
-                    disabled={countdown > 0 || loading}
-                  >
-                    {countdown > 0 ? `Gửi lại OTP (${countdown}s)` : 'Gửi lại OTP'}
-                  </button>
-                  <button type="button" className="fs-auth-btn-ghost" onClick={() => handleSwitchMode('register')}>
-                    Quay lại
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="fs-auth-field">
-                  <label className="fs-auth-label" htmlFor="fs-auth-username">Tên đăng nhập</label>
-                  <input
-                    id="fs-auth-username"
-                    ref={firstFieldRef}
-                    type="text"
-                    className="fs-auth-input"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                    required
-                  />
-                </div>
+            <div className="fs-auth-field">
+              <label className="fs-auth-label" htmlFor="fs-auth-password">Mật khẩu</label>
+              <input
+                id="fs-auth-password"
+                type="password"
+                className="fs-auth-input"
+                placeholder={mode === 'register' ? 'Tối thiểu 6 ký tự' : 'Nhập mật khẩu'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                aria-describedby={mode === 'register' ? 'fs-auth-password-hint' : undefined}
+                required
+              />
+              {mode === 'register' && (
+                <span className="fs-auth-hint" id="fs-auth-password-hint">Tối thiểu 6 ký tự</span>
+              )}
+            </div>
 
-                {mode === 'register' && (
-                  <>
-                    <div className="fs-auth-field">
-                      <label className="fs-auth-label" htmlFor="fs-auth-email">Email</label>
-                      <input
-                        id="fs-auth-email"
-                        type="email"
-                        className="fs-auth-input"
-                        placeholder="ban@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        autoComplete="email"
-                        required
-                      />
-                      <span className="fs-auth-hint">Dùng để nhận mã OTP xác thực</span>
-                    </div>
+            {mode === 'register' && (
+              <div className="fs-auth-field">
+                <label className="fs-auth-label" htmlFor="fs-auth-confirm-password">Xác nhận mật khẩu</label>
+                <input
+                  id="fs-auth-confirm-password"
+                  type="password"
+                  className="fs-auth-input"
+                  placeholder="Nhập lại mật khẩu"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+            )}
 
-                    <div className="fs-auth-field">
-                      <label className="fs-auth-label" htmlFor="fs-auth-display">
-                        Tên hiển thị <span className="fs-auth-optional">tùy chọn</span>
-                      </label>
-                      <input
-                        id="fs-auth-display"
-                        type="text"
-                        className="fs-auth-input"
-                        placeholder="Nguyễn Văn A"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        autoComplete="name"
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="fs-auth-field">
-                  <label className="fs-auth-label" htmlFor="fs-auth-password">Mật khẩu</label>
-                  <input
-                    id="fs-auth-password"
-                    type="password"
-                    className="fs-auth-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                    aria-describedby={mode === 'register' ? 'fs-auth-password-hint' : undefined}
-                    required
-                  />
-                  {mode === 'register' && (
-                    <span className="fs-auth-hint" id="fs-auth-password-hint">Tối thiểu 6 ký tự</span>
-                  )}
-                </div>
-
-                {mode === 'register' && (
-                  <p className="fs-auth-terms">
-                    Bằng việc tạo tài khoản, bạn đồng ý với Điều khoản sử dụng của FiveStar Rush.
-                  </p>
-                )}
-              </>
+            {mode === 'register' && (
+              <p className="fs-auth-terms">
+                Bằng việc tạo tài khoản, bạn đồng ý với Điều khoản sử dụng của FiveStar Rush.
+              </p>
             )}
 
             <button type="submit" className="fs-auth-submit" disabled={loading}>

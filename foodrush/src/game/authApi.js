@@ -63,6 +63,32 @@ export async function loginApi(username, password) {
   }
 }
 
+export async function registerApi({ username, password, displayName }) {
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        password,
+        displayName: displayName || username,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data.message || data.error || 'Đăng ký thất bại. Vui lòng thử lại.')
+    }
+    const auth = data.data
+    setAuthData(auth.token, auth.user)
+    return auth.user
+  } catch (err) {
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      throw new Error('Không thể kết nối đến máy chủ backend (port 8080). Vui lòng thử lại!')
+    }
+    throw err
+  }
+}
+
 /** Step 1: Request OTP — sends verification code to user's email */
 export async function requestOtpApi({ username, email, password, displayName }) {
   try {
