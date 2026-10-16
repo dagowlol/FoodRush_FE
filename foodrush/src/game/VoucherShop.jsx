@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import useModalLock from './useModalLock'
 import {
   fetchVouchersStrict,
@@ -401,9 +401,9 @@ export default function VoucherShop({ onClose, onNavigate, onRedeemed }) {
         <section className="fs-shop-filters-row">
           <div className="fs-shop-section-head">
             <h2 className="fs-shop-section-title">Voucher dành cho bạn</h2>
-            <p className="fs-shop-section-sub">
-              Voucher không giới hạn thời gian sử dụng sau khi đổi.
-            </p>
+            {/* <p className="fs-shop-section-sub">
+              Voucher không giới hạn  sau khi đổi.
+            </p> */}
           </div>
           {/* Search box + Sort dropdown */}
           <div className="fs-shop-controls">
