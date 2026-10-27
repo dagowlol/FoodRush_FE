@@ -1,0 +1,1117 @@
+/* ==========================================================================
+   STACK ATTACK – XẾP BURGER (FIVE STAR ARCADE)
+   Handcrafted Mobile-First Web Arcade Game CSS
+   Strict anti-AI-slop: solid colors, restrained tactile shadows, no glassmorphism
+   ========================================================================== */
+
+:root {
+  --sa-cream: #FFF4E4;
+  --sa-cream-dark: #F7E4CB;
+  --sa-red: #D9272E;
+  --sa-red-hover: #C01E25;
+  --sa-brown: #42251D;
+  --sa-brown-light: #6E4033;
+  --sa-yellow: #FFC857;
+  --sa-yellow-hover: #F2B83D;
+  --sa-green: #65A653;
+  --sa-white: #FFFFFF;
+
+  --sa-font-heading: 'Baloo 2', 'Comfortaa', system-ui, -apple-system, sans-serif;
+  --sa-font-body: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Base Wrapper & Desktop Adaptation Container */
+.sa-desktop-wrapper {
+  min-height: 100dvh;
+  width: 100%;
+  background-color: #2B1611;
+  background-image: 
+    radial-gradient(circle at 50% 20%, #4A241A 0%, #22100B 70%),
+    repeating-linear-gradient(45deg, rgba(255, 200, 87, 0.03) 0, rgba(255, 200, 87, 0.03) 20px, transparent 20px, transparent 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  font-family: var(--sa-font-body);
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+/* Flanking Desktop Panels */
+.sa-desktop-flank {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .sa-desktop-flank {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 240px;
+    padding: 24px;
+    color: var(--sa-cream);
+    box-sizing: border-box;
+    z-index: 2;
+  }
+  .sa-desktop-flank--left {
+    text-align: right;
+  }
+  .sa-desktop-flank--right {
+    text-align: left;
+  }
+  .sa-desktop-badge {
+    display: inline-block;
+    background: var(--sa-red);
+    color: var(--sa-white);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: var(--sa-font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 2px solid var(--sa-brown);
+    box-shadow: 0 3px 0 var(--sa-brown);
+    margin-bottom: 12px;
+  }
+  .sa-desktop-brand {
+    font-family: var(--sa-font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--sa-yellow);
+    margin: 0 0 8px 0;
+    text-shadow: 2px 2px 0 var(--sa-brown);
+  }
+  .sa-desktop-tagline {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--sa-cream-dark);
+    margin: 0 0 20px 0;
+  }
+  .sa-desktop-tips-card {
+    background: #3B1C15;
+    border: 2px solid #5C2D22;
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 10px;
+    box-shadow: 0 4px 0 #1A0B08;
+  }
+  .sa-desktop-tips-card h4 {
+    margin: 0 0 8px 0;
+    font-family: var(--sa-font-heading);
+    font-size: 14px;
+    color: var(--sa-yellow);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sa-desktop-tips-card p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #E2CFB8;
+  }
+  .sa-desktop-key-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #25100B;
+    border: 1px solid #5C2D22;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-top: 8px;
+    color: var(--sa-cream);
+  }
+  .sa-key-badge {
+    background: var(--sa-cream);
+    color: var(--sa-brown);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: var(--sa-font-heading);
+    border: 1px solid var(--sa-brown);
+    box-shadow: 0 2px 0 var(--sa-brown);
+  }
+}
+
+/* ==========================================================================
+   MOBILE FRAME (Standard 390 × 844 px portrait container)
+   ========================================================================== */
+.sa-phone-frame {
+  width: 100%;
+  max-width: 390px;
+  height: 844px;
+  max-height: calc(100dvh - 32px);
+  background-color: var(--sa-cream);
+  border-radius: 36px;
+  border: 4px solid var(--sa-brown);
+  box-shadow: 
+    0 12px 0 var(--sa-brown),
+    0 24px 40px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+@media (max-width: 440px) {
+  .sa-desktop-wrapper {
+    padding: 0;
+  }
+  .sa-phone-frame {
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* Background fast-food subtle pattern */
+.sa-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: 
+    radial-gradient(circle at 10px 10px, rgba(217, 39, 46, 0.06) 3px, transparent 3px),
+    radial-gradient(circle at 35px 35px, rgba(255, 200, 87, 0.12) 4px, transparent 4px);
+  background-size: 50px 50px;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   TACTILE ARCADE BUTTONS
+   ========================================================================== */
+.sa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid var(--sa-brown);
+  border-radius: 16px;
+  font-family: var(--sa-font-heading);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.12s ease;
+  padding: 14px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  width: 100%;
+}
+
+.sa-btn:active {
+  transform: translateY(3px) !important;
+  box-shadow: 0 1px 0 var(--sa-brown) !important;
+}
+
+/* Primary Red Button */
+.sa-btn--primary {
+  background: var(--sa-red);
+  color: var(--sa-white);
+  box-shadow: 0 5px 0 var(--sa-brown);
+}
+.sa-btn--primary:hover {
+  background: var(--sa-red-hover);
+}
+
+/* Secondary Golden Yellow Button */
+.sa-btn--secondary {
+  background: var(--sa-yellow);
+  color: var(--sa-brown);
+  box-shadow: 0 5px 0 var(--sa-brown);
+}
+.sa-btn--secondary:hover {
+  background: var(--sa-yellow-hover);
+}
+
+/* Tertiary Outline / Ghost Button */
+.sa-btn--outline {
+  background: transparent;
+  color: var(--sa-brown);
+  border: 3px solid var(--sa-brown);
+  box-shadow: 0 4px 0 var(--sa-brown);
+}
+.sa-btn--outline:hover {
+  background: rgba(66, 37, 29, 0.06);
+}
+
+/* Disabled State for Result Card Cool-down */
+.sa-btn:disabled,
+.sa-btn--disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(20%);
+  transform: none !important;
+  box-shadow: 0 3px 0 var(--sa-brown) !important;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Compact HUD Pause Button */
+.sa-btn--pause {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--sa-cream);
+  color: var(--sa-brown);
+  border: 2px solid var(--sa-brown);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  gap: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sa-btn--pause:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--sa-brown) !important;
+}
+
+/* Audio Toggle Button */
+.sa-btn--sound {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sa-cream);
+  color: var(--sa-brown);
+  border: 2px solid var(--sa-brown);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.sa-btn--sound:hover {
+  background: var(--sa-cream);
+  transform: translateY(-1px);
+}
+.sa-btn--sound:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--sa-brown) !important;
+}
+
+/* Home Navigation Button */
+.sa-btn--home {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sa-white);
+  border: 2px solid var(--sa-brown);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.sa-btn--home:hover {
+  background: var(--sa-cream);
+  transform: translateY(-1px);
+}
+.sa-btn--home:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--sa-brown) !important;
+}
+
+/* ==========================================================================
+   A. MÀN HÌNH BẮT ĐẦU (START SCREEN)
+   ========================================================================== */
+.sa-start-screen {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.sa-start-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.sa-btn-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sa-white);
+  border: 2px solid var(--sa-brown);
+  color: var(--sa-brown);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: var(--sa-font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sa-btn-back-home:hover {
+  background: var(--sa-cream);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--sa-brown);
+}
+.sa-btn-back-home:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--sa-brown) !important;
+}
+
+.sa-start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.sa-start-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sa-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sa-red);
+  color: var(--sa-white);
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-family: var(--sa-font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 2px solid var(--sa-brown);
+  box-shadow: 0 3px 0 var(--sa-brown);
+}
+
+.sa-game-title {
+  margin: 10px 0 2px;
+  font-family: var(--sa-font-heading);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--sa-red);
+  text-transform: uppercase;
+  text-shadow: 
+    2px 2px 0 var(--sa-yellow),
+    3px 3px 0 var(--sa-brown);
+  letter-spacing: 1px;
+}
+
+.sa-tagline {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sa-brown);
+  line-height: 1.4;
+}
+
+/* Center Hero Burger */
+.sa-hero-art {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 10px 0;
+}
+
+.sa-hero-plate {
+  position: absolute;
+  bottom: 24px;
+  width: 240px;
+  height: 28px;
+  background: #E8D2B5;
+  border-radius: 50%;
+  border: 3px solid var(--sa-brown);
+  box-shadow: 0 6px 0 var(--sa-brown);
+  z-index: 1;
+}
+
+.sa-hero-burger-img {
+  max-width: 220px;
+  max-height: 270px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0 10px 14px rgba(66, 37, 29, 0.28));
+  animation: saBurgerBob 3.2s ease-in-out infinite;
+}
+
+@keyframes saBurgerBob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.sa-start-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.sa-highscore-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--sa-white);
+  border: 2px solid var(--sa-brown);
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  font-family: var(--sa-font-heading);
+  font-size: 14px;
+  color: var(--sa-brown);
+}
+.sa-highscore-pill b {
+  color: var(--sa-red);
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   B. MÀN HÌNH CHƠI (GAMEPLAY SCREEN)
+   ========================================================================== */
+.sa-game-screen {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+/* Top HUD Bar */
+.sa-hud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 10px;
+  gap: 8px;
+  z-index: 20;
+}
+
+.sa-hud-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sa-hud-pill {
+  background: var(--sa-white);
+  border: 2px solid var(--sa-brown);
+  border-radius: 12px;
+  padding: 5px 12px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 65px;
+}
+
+.sa-hud-pill--score {
+  background: #FFF9E6;
+  border-color: var(--sa-brown);
+}
+
+.sa-hud-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sa-brown-light);
+  font-family: var(--sa-font-heading);
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.sa-hud-value {
+  font-family: var(--sa-font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--sa-brown);
+}
+.sa-hud-pill--score .sa-hud-value {
+  color: #D96500;
+}
+
+/* Layer Counter Header */
+.sa-stage-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  z-index: 15;
+}
+
+.sa-layer-badge {
+  background: var(--sa-red);
+  color: var(--sa-white);
+  border: 2px solid var(--sa-brown);
+  border-radius: 999px;
+  padding: 4px 16px;
+  font-family: var(--sa-font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sa-streak-badge {
+  background: var(--sa-yellow);
+  color: var(--sa-brown);
+  border: 2px solid var(--sa-brown);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-family: var(--sa-font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 0 var(--sa-brown);
+  animation: saPopIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes saPopIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Active Stacking Stage */
+.sa-stage-area {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Instruction prompt */
+.sa-tap-instruction {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(66, 37, 29, 0.85);
+  color: var(--sa-white);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--sa-font-heading);
+  letter-spacing: 0.8px;
+  pointer-events: none;
+  animation: saInstructionPulse 1.8s infinite ease-in-out;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes saInstructionPulse {
+  0%, 100% { opacity: 0.9; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.45; transform: translateX(-50%) scale(0.96); }
+}
+
+/* Feedback text popup (CHUẨN!, HOÀN HẢO!, HƠI LỆCH!) */
+.sa-feedback-popup {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-family: var(--sa-font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  z-index: 25;
+  border: 3px solid var(--sa-brown);
+  box-shadow: 0 4px 0 var(--sa-brown);
+  animation: saFeedbackFloat 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.sa-feedback-popup--perfect {
+  background: var(--sa-green);
+  color: var(--sa-white);
+}
+
+.sa-feedback-popup--great {
+  background: var(--sa-yellow);
+  color: var(--sa-brown);
+}
+
+.sa-feedback-popup--slice {
+  background: #E58229;
+  color: var(--sa-white);
+}
+
+@keyframes saFeedbackFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -20px) scale(1.1);
+  }
+  40% {
+    transform: translate(-50%, -30px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60px) scale(0.95);
+  }
+}
+
+/* Stack Burger Container (smooth camera pan downwards) */
+.sa-stack-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Fast food diner serving tray */
+.sa-serving-board {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 50px;
+  width: 280px;
+  height: 24px;
+  background: #C49863;
+  border: 3px solid var(--sa-brown);
+  border-radius: 12px;
+  box-shadow: 0 6px 0 var(--sa-brown);
+  z-index: 2;
+}
+
+.sa-serving-paper {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 66px;
+  width: 250px;
+  height: 14px;
+  background: #FFF;
+  border: 2px dashed var(--sa-red);
+  border-radius: 4px;
+  opacity: 0.9;
+  z-index: 3;
+}
+
+/* Stacked and moving layers */
+.sa-layer {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: none;
+}
+
+.sa-layer--moving {
+  z-index: 35;
+  will-change: left;
+  overflow: visible !important;
+}
+
+/* Crisp bold arcade outline for moving ingredient so player can clearly see edges */
+.sa-layer--moving .sa-layer-img {
+  filter: 
+    drop-shadow(2px 0 0 #42251D) 
+    drop-shadow(-2px 0 0 #42251D) 
+    drop-shadow(0 2px 0 #42251D) 
+    drop-shadow(0 -2px 0 #42251D)
+    drop-shadow(0 6px 10px rgba(66, 37, 29, 0.45));
+}
+
+/* Highlight alignment border box around moving piece */
+/* Perfect alignment sweet spot glow (turns green when aligned!) */
+.sa-moving-guide-box--perfect {
+  border: 2.5px solid #22C55E;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.95), inset 0 0 8px rgba(34, 197, 94, 0.5);
+  animation: saPulseSweetSpot 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes saPulseSweetSpot {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.02); }
+}
+
+/* Sweet spot instant tag pill */
+.sa-sweet-spot-hint {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22C55E;
+  color: #FFFFFF;
+  font-family: var(--sa-font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #42251D;
+  box-shadow: 0 2px 0 #42251D;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: saPopIn 0.15s ease-out;
+  letter-spacing: 0.5px;
+}
+
+/* Target landing indicators on the current top layer */
+.sa-target-edge {
+  position: absolute;
+  top: -6px;
+  bottom: -4px;
+  width: 3px;
+  background: #D9272E;
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(217, 39, 46, 0.6);
+  pointer-events: none;
+  z-index: 20;
+}
+.sa-target-edge--left {
+  left: -1px;
+}
+.sa-target-edge--right {
+  right: -1px;
+}
+
+.sa-layer-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(66, 37, 29, 0.3));
+}
+
+/* Overhang sliced debris */
+.sa-debris {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 8;
+  animation: saDebrisFall 0.85s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes saDebrisFall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--debris-dx, 20px), 300px) rotate(var(--debris-rot, 45deg));
+  }
+}
+
+/* Missed falling ingredient */
+.sa-missed-ingredient {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+  animation: saMissFall 0.9s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes saMissFall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--miss-dx, 30px), 400px) rotate(var(--miss-rot, 60deg));
+  }
+}
+
+/* ==========================================================================
+   C. MÀN HÌNH TẠM DỪNG (PAUSE SCREEN)
+   ========================================================================== */
+.sa-pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(43, 22, 17, 0.65);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  animation: saFadeIn 0.15s ease-out;
+}
+
+.sa-pause-panel {
+  width: 100%;
+  max-width: 320px;
+  background: var(--sa-cream);
+  border: 4px solid var(--sa-brown);
+  border-radius: 28px;
+  box-shadow: 
+    0 10px 0 var(--sa-brown),
+    0 16px 30px rgba(0, 0, 0, 0.35);
+  padding: 28px 22px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: saScalePop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sa-pause-title {
+  margin: 0;
+  font-family: var(--sa-font-heading);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--sa-red);
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 var(--sa-yellow);
+}
+
+.sa-pause-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   D. MÀN HÌNH KẾT THÚC (GAME OVER SCREEN)
+   ========================================================================== */
+.sa-gameover-screen {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 20px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.sa-gameover-header {
+  margin-top: 6px;
+}
+
+.sa-gameover-title {
+  margin: 0 0 6px 0;
+  font-family: var(--sa-font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--sa-red);
+  letter-spacing: 0.5px;
+  text-shadow: 
+    2px 2px 0 var(--sa-yellow),
+    3px 3px 0 var(--sa-brown);
+}
+
+.sa-new-record-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sa-yellow);
+  color: var(--sa-brown);
+  border: 2px solid var(--sa-brown);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: var(--sa-font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--sa-brown);
+  animation: saBounceRecord 0.9s infinite alternate ease-in-out;
+}
+
+@keyframes saBounceRecord {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+/* Final Stack Showcase */
+.sa-gameover-burger-stage {
+  flex: 1;
+  min-height: 160px;
+  max-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 10px 0;
+}
+
+.sa-gameover-burger-img {
+  max-height: 180px;
+  max-width: 220px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(66, 37, 29, 0.25));
+}
+
+/* Score Card */
+.sa-results-card {
+  background: var(--sa-white);
+  border: 3px solid var(--sa-brown);
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 0 var(--sa-brown);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sa-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed #E5D5C0;
+  padding-bottom: 8px;
+}
+.sa-score-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sa-score-row--main {
+  background: #FFF9E6;
+  margin: -6px -8px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid #F0D499;
+}
+
+.sa-score-label {
+  font-family: var(--sa-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sa-brown);
+}
+
+.sa-score-number {
+  font-family: var(--sa-font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sa-brown);
+}
+.sa-score-number--highlight {
+  font-size: 26px;
+  color: var(--sa-red);
+}
+
+.sa-performance-banner {
+  background: var(--sa-cream-dark);
+  border: 2px solid var(--sa-brown);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-family: var(--sa-font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sa-brown);
+}
+
+.sa-gameover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Animations */
+@keyframes saFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes saScalePop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Compact Mobile Viewport Optimization (e.g. 354x666 px) */
+@media (max-height: 720px) {
+  .sa-gameover-screen {
+    padding: 12px 16px 16px;
+  }
+  .sa-gameover-burger-stage {
+    min-height: 90px;
+    max-height: 125px;
+    margin: 4px 0;
+  }
+  .sa-gameover-burger-img {
+    max-height: 105px;
+  }
+  .sa-results-card {
+    padding: 10px 14px;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .sa-score-row {
+    padding-bottom: 4px;
+  }
+  .sa-score-row--main {
+    padding: 6px 10px;
+  }
+  .sa-gameover-title {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .sa-start-screen {
+    padding: 12px 16px 16px;
+  }
+  .sa-hero-art {
+    margin: 4px 0;
+  }
+  .sa-hero-burger-img {
+    max-height: 180px;
+  }
+  .sa-game-title {
+    font-size: 30px;
+  }
+}
+

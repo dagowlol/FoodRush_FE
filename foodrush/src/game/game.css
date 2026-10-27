@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    Five Star: Food Defender â€” cartoon theme
    Brand accents: red #e2452f, yellow #ffc531, cream, sky blue, grass green
    ========================================================================== */
@@ -2226,6 +2226,9 @@
 /* Featured Game Card */
 .fs-featured-section {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 .fs-featured-card {
   background: #FFFFFF;
@@ -2237,6 +2240,17 @@
   gap: 40px;
   box-shadow: 0 10px 32px rgba(29, 30, 26, 0.04);
   align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.fs-featured-card--spotlight {
+  border: 2px solid #FFC857;
+  box-shadow: 0 14px 40px rgba(217, 39, 46, 0.08), 0 2px 14px rgba(255, 200, 87, 0.18);
+  position: relative;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 100%);
+}
+.fs-featured-card--spotlight:hover {
+  box-shadow: 0 18px 48px rgba(217, 39, 46, 0.12), 0 4px 18px rgba(255, 200, 87, 0.25);
+  transform: translateY(-2px);
 }
 .fs-featured-card__media {
   position: relative;
@@ -2247,6 +2261,67 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.fs-featured-card__media--stackattack {
+  background: radial-gradient(circle at center, #FFF4E4 0%, #FDE4BD 70%, #F5C77E 100%);
+  padding: 24px;
+}
+.fs-featured-stack-img {
+  max-height: 320px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 20px rgba(66, 37, 29, 0.25));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: block;
+}
+.fs-featured-card--spotlight:hover .fs-featured-stack-img {
+  transform: scale(1.05) rotate(-1.5deg);
+}
+.fs-spotlight-ribbon {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: #D9272E;
+  color: #FFFFFF;
+  font-family: var(--font-heading, 'Manrope', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(217, 39, 46, 0.35);
+  z-index: 5;
+}
+.fs-badge-tag--new {
+  color: #D9272E;
+}
+.fs-live-badge--hot {
+  background: #FFF0F0;
+  color: #D9272E;
+  border: 1px solid rgba(217, 39, 46, 0.15);
+}
+.fs-pulse-dot--red {
+  background: #D9272E;
+  animation: pulseRed 1.6s infinite;
+}
+@keyframes pulseRed {
+  0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(217, 39, 46, 0.4); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(217, 39, 46, 0); }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+.fs-chip--highlight {
+  background: #FFF0F0;
+  border-color: #F8B4B4;
+  color: #D9272E;
+  font-weight: 700;
+}
+.fs-btn-primary--hot {
+  background: #D9272E;
+  box-shadow: 0 4px 14px rgba(217, 39, 46, 0.28);
+}
+.fs-btn-primary--hot:hover {
+  background: #B81D23;
+  box-shadow: 0 6px 18px rgba(217, 39, 46, 0.38);
 }
 .fs-featured-card__media--fooddefend {
   background: #FFF7ED;

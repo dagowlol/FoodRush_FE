@@ -4,7 +4,6 @@ import {
   CoinIcon,
   SparkleIcon,
   ArrowRightIcon,
-  CardArtStackAttack,
   CardArtSpeedyChef,
   CardArtFlavorMatch,
   TicketIcon,
@@ -21,26 +20,14 @@ import CouponList from './CouponList'
 import AuthModal from './AuthModal'
 import ComingSoonModal from './ComingSoonModal'
 import bgFoodDefend from '../assets/webg/bg_fooddefendd.webp'
-import stackAttackImg from '../assets/webg/stack_attack.webp'
+import stackAttackHomeImg from '../assets/stack-attack-home-img.png'
 import speedyChefImg from '../assets/webg/speedy_chef.webp'
 import flavorMatchImg from '../assets/webg/flavor_match.webp'
 
 const UPCOMING_GAMES = [
   {
-    id: 'burger-stack',
-    num: '01 · BURGER LAB',
-    title: 'Stack Attack',
-    desc: 'Xếp burger thật chuẩn, đừng để tháp đổ.',
-    fullDescription:
-      'Cùng trở thành bậc thầy xếp burger! Hứng đúng các lớp nhân thịt bò nướng, phô mai béo ngậy, rau tươi và sốt thơm ngon rơi từ trên xuống theo đúng đơn đặt hàng.',
-    genre: 'Phản xạ & Khéo léo',
-    releaseDate: 'Tháng 11/2026',
-    image: stackAttackImg,
-    renderArt: () => <CardArtStackAttack />,
-  },
-  {
     id: 'speedy-chef',
-    num: '02 · KITCHEN RUN',
+    num: '01 · KITCHEN RUN',
     title: 'Speedy Chef',
     desc: 'Chạy bếp thật nhanh và hoàn thành đơn đúng giờ.',
     fullDescription:
@@ -52,7 +39,7 @@ const UPCOMING_GAMES = [
   },
   {
     id: 'flavor-match',
-    num: '03 · MEMORY CARDS',
+    num: '02 · MEMORY CARDS',
     title: 'Flavor Match',
     desc: 'Ghép nguyên liệu để khám phá combo bí mật.',
     fullDescription:
@@ -75,6 +62,13 @@ export default function StartScreen({
   const [selectedComingSoon, setSelectedComingSoon] = useState(null)
   const [dailyCoin, setDailyCoin] = useState(null)
   const [bestScore, setBestScore] = useState(0)
+  const [stackBestScore, setStackBestScore] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem('stack_attack_best_score') || '0', 10)
+    } catch {
+      return 0
+    }
+  })
 
   const { cards: myCodes, loading: myCodesLoading, error: myCodesError, reload: loadCodes } =
     useMyVouchers({ enabled: Boolean(user) && !user.isGuest })
@@ -125,6 +119,12 @@ export default function StartScreen({
   const handlePlayClick = () => {
     sound.play('start')
     onPlay()
+  }
+
+  const handlePlayStackAttack = () => {
+    sound.play('start')
+    window.history.pushState({}, '', '/stack-attack')
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   const handleTutorialClick = () => {
@@ -283,8 +283,76 @@ export default function StartScreen({
           </p>
         </section>
 
-        {/* 3. Featured Food Defender Game Card */}
+        {/* 3. Featured Games Section (Prioritizing Newly Released Stack Attack) */}
         <section id="featured-game" className="fs-featured-section">
+          {/* Card 1: MỚI RA MẮT - Stack Attack (Premier Spotlight) */}
+          <div className="fs-featured-card fs-featured-card--spotlight">
+            {/* Left: Illustration artwork */}
+            <div className="fs-featured-card__media fs-featured-card__media--stackattack">
+              <span className="fs-spotlight-ribbon">🔥 MỚI RA MẮT</span>
+              <img
+                src={stackAttackHomeImg}
+                alt="Stack Attack – Xếp Burger Five Star"
+                className="fs-featured-stack-img"
+              />
+            </div>
+
+            {/* Right: Info and CTA */}
+            <div className="fs-featured-card__body">
+              <div className="fs-featured-card__top">
+                <span className="fs-badge-tag fs-badge-tag--new">🔥 GAME MỚI RA MẮT</span>
+                <span className="fs-live-badge fs-live-badge--hot">
+                  <span className="fs-pulse-dot fs-pulse-dot--red" />
+                  Vừa cập nhật
+                </span>
+              </div>
+
+              <h2 className="fs-featured-card__title">Stack Attack – Xếp Burger</h2>
+
+              <p className="fs-featured-card__desc">
+                Trở thành bậc thầy xếp burger Five Star! Căn chuẩn nhịp độ di chuyển, xếp thật khéo <b>7 tầng nguyên liệu</b>. Đạt chuỗi <b>HOÀN HẢO</b> để lập kỷ lục điểm số và nhận thưởng FiveCoin!
+              </p>
+
+              {/* Tags/Chips */}
+              <div className="fs-chip-list">
+                <span className="fs-chip">Phản xạ & Khéo léo</span>
+                <span className="fs-chip">Combo x2 FiveCoin</span>
+                <span className="fs-chip">7 Nguyên liệu Five Star</span>
+              </div>
+
+              <div className="fs-stats-box">
+                <div className="fs-stats-box__col">
+                  <span className="fs-stats-box__label">KỶ LỤC CỦA BẠN</span>
+                  <div className="fs-stats-box__val">
+                    <span>{stackBestScore > 0 ? `${stackBestScore.toLocaleString('vi-VN')} điểm` : 'Chưa có kỷ lục'}</span>
+                  </div>
+                </div>
+
+                <div className="fs-stats-box__divider" />
+
+                <div className="fs-stats-box__col">
+                  <span className="fs-stats-box__label">PHẦN THƯỞNG</span>
+                  <div className="fs-stats-box__val" style={{ color: '#D9272E', fontSize: '1.05rem' }}>
+                    <span>Đổi voucher Five Star</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="fs-featured-card__actions">
+                <button
+                  type="button"
+                  className="fs-btn-primary fs-btn-primary--hot"
+                  onClick={handlePlayStackAttack}
+                >
+                  <span>Chơi ngay</span>
+                  <ArrowRightIcon size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Food Defender Game Card */}
           <div className="fs-featured-card">
             {/* Left: Illustration artwork with Food Defender asset */}
             <div className="fs-featured-card__media fs-featured-card__media--fooddefend">
@@ -298,7 +366,7 @@ export default function StartScreen({
             {/* Right: Info and CTA */}
             <div className="fs-featured-card__body">
               <div className="fs-featured-card__top">
-                <span className="fs-badge-tag">GAME NỔI BẬT</span>
+                <span className="fs-badge-tag">GAME KINH ĐIỂN</span>
                 <span className="fs-live-badge">
                   <span className="fs-pulse-dot" />
                   Đang diễn ra
@@ -385,7 +453,9 @@ export default function StartScreen({
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') setSelectedComingSoon(game)
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setSelectedComingSoon(game)
+                  }
                 }}
               >
                 {/* Visual art banner */}

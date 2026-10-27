@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import FoodDefenderGame from './game/FoodDefenderGame'
 
-// Lazy load: chỉ tải khi user truy cập /admin, /staff, /auth/callback
+// Lazy load: chỉ tải khi user truy cập /admin, /staff, /auth/callback, /stack-attack
 const GoogleCallback = lazy(() => import('./auth/GoogleCallback'))
 const OperationsDashboard = lazy(() => import('./pages/OperationsDashboard'))
+const StackAttackGame = lazy(() => import('./game/StackAttackGame'))
 
 function LoadingScreen() {
   return (
@@ -51,6 +52,19 @@ function App() {
     return (
       <Suspense fallback={<LoadingScreen />}>
         <OperationsDashboard initialTab="redeem" />
+      </Suspense>
+    )
+  }
+
+  if (path === '/stack-attack' || path.startsWith('/stack-attack')) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <StackAttackGame
+          onExit={() => {
+            window.history.pushState({}, '', '/')
+            setPath('/')
+          }}
+        />
       </Suspense>
     )
   }
