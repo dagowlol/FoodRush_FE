@@ -492,11 +492,6 @@ export default function StackAttackGame({ onExit }) {
     <div className="sa-desktop-wrapper">
       {/* Flanking Left Panel (Desktop Arcade Experience) */}
       <aside className="sa-desktop-flank sa-desktop-flank--left" aria-hidden="true">
-        <div className="sa-desktop-badge">FIVE STAR ARCADE</div>
-        <h2 className="sa-desktop-brand">Five Star</h2>
-        <p className="sa-desktop-tagline">
-          Thương hiệu thức ăn nhanh được yêu thích hàng đầu với gà rán vàng giòn và burger đậm vị!
-        </p>
         <div className="sa-desktop-tips-card">
           <h4>💡 Bí quyết xếp chuẩn</h4>
           <p>Quan sát mép nguyên liệu ngay sát bên dưới để căn chuỗi <b>HOÀN HẢO!</b> và phục hồi độ rộng!</p>
