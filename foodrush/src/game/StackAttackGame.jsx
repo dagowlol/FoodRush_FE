@@ -508,8 +508,7 @@ export default function StackAttackGame({ onExit }) {
         {screen === 'start' && (
           <div className="sa-start-screen">
             <div className="sa-start-top-bar">
-              
-              <div className="sa-brand-badge">⭐ FIVE STAR</div>
+
             </div>
 
             <header className="sa-start-header">

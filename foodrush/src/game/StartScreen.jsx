@@ -21,6 +21,7 @@ import AuthModal from './AuthModal'
 import ComingSoonModal from './ComingSoonModal'
 import bgFoodDefend from '../assets/webg/bg_fooddefendd.webp'
 import stackAttackHomeImg from '../assets/stack-attack-home-img.png'
+import bubbleTeaHomeImg from '../assets/bubble-tea/bubble-tea.webp'
 import speedyChefImg from '../assets/webg/speedy_chef.webp'
 import flavorMatchImg from '../assets/webg/flavor_match.webp'
 
@@ -65,6 +66,13 @@ export default function StartScreen({
   const [stackBestScore, setStackBestScore] = useState(() => {
     try {
       return parseInt(localStorage.getItem('stack_attack_best_score') || '0', 10)
+    } catch {
+      return 0
+    }
+  })
+  const [bubbleBestScore, setBubbleBestScore] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem('bubble_tea_catch_best_score') || '0', 10)
     } catch {
       return 0
     }
@@ -124,6 +132,12 @@ export default function StartScreen({
   const handlePlayStackAttack = () => {
     sound.play('start')
     window.history.pushState({}, '', '/stack-attack')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
+
+  const handlePlayBubbleTea = () => {
+    sound.play('start')
+    window.history.pushState({}, '', '/bubble-tea-catch')
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
@@ -283,13 +297,80 @@ export default function StartScreen({
           </p>
         </section>
 
-        {/* 3. Featured Games Section (Prioritizing Newly Released Stack Attack) */}
+        {/* 3. Featured Games Section */}
         <section id="featured-game" className="fs-featured-section">
-          {/* Card 1: MỚI RA MẮT - Stack Attack (Premier Spotlight) */}
+          {/* Card: Bubble Tea Catch */}
           <div className="fs-featured-card fs-featured-card--spotlight">
             {/* Left: Illustration artwork */}
+            <div className="fs-featured-card__media fs-featured-card__media--bubbletea">
+              <span className="fs-spotlight-ribbon" style={{ background: '#FF5E7E' }}>🧋 HOT TREND</span>
+              <img
+                src={bubbleTeaHomeImg}
+                alt="Bubble Tea Catch – Hứng Topping Trà Sữa"
+                className="fs-featured-bubble-img"
+              />
+            </div>
+
+            {/* Right: Info and CTA */}
+            <div className="fs-featured-card__body">
+              <div className="fs-featured-card__top">
+
+                <span className="fs-live-badge fs-live-badge--hot">
+                  <span className="fs-pulse-dot fs-pulse-dot--red" />
+                  Mới ra mắt
+                </span>
+              </div>
+
+              <h2 className="fs-featured-card__title">Bubble Tea Catch</h2>
+
+              <p className="fs-featured-card__desc">
+                Cùng bé ly trà sữa hứng trọn topping theo <b>ĐƠN HÀNG</b>! Bắt đúng <b>Trân châu, Thạch dâu, Pudding trứng, Thạch dừa</b> để tích chuỗi combo bùng nổ và chinh phục kỷ lục mới!
+              </p>
+
+              {/* Tags/Chips */}
+              <div className="fs-chip-list">
+                <span className="fs-chip">Hứng topping Endless</span>
+                <span className="fs-chip">Combo x2 điểm</span>
+                <span className="fs-chip">5 Topping thơm ngon</span>
+              </div>
+
+              <div className="fs-stats-box">
+                <div className="fs-stats-box__col">
+                  <span className="fs-stats-box__label">KỶ LỤC CỦA BẠN</span>
+                  <div className="fs-stats-box__val">
+                    <span>{bubbleBestScore > 0 ? `${bubbleBestScore.toLocaleString('vi-VN')} điểm` : 'Chưa có kỷ lục'}</span>
+                  </div>
+                </div>
+
+                <div className="fs-stats-box__divider" />
+
+                <div className="fs-stats-box__col">
+                  <span className="fs-stats-box__label">ĐIỀU KHIỂN</span>
+                  <div className="fs-stats-box__val" style={{ color: '#5C3A24', fontSize: '0.95rem' }}>
+                    <span>Chạm vuốt / Phím mũi tên</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="fs-featured-card__actions">
+                <button
+                  type="button"
+                  className="fs-btn-primary fs-btn-primary--hot"
+                  onClick={handlePlayBubbleTea}
+                >
+                  <span>Chơi ngay</span>
+                  <ArrowRightIcon size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 1: MỚI RA MẮT - Stack Attack (Premier Spotlight) */}
+          <div className="fs-featured-card">
+            {/* Left: Illustration artwork */}
             <div className="fs-featured-card__media fs-featured-card__media--stackattack">
-              <span className="fs-spotlight-ribbon">🔥 MỚI RA MẮT</span>
+              <span className="fs-spotlight-ribbon">🔥 ĐANG HOT</span>
               <img
                 src={stackAttackHomeImg}
                 alt="Stack Attack – Xếp Burger Five Star"

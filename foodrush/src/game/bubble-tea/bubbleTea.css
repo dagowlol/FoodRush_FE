@@ -1,0 +1,1892 @@
+/* ==========================================================================
+   BUBBLE TEA CATCH (FIVE STAR ARCADE)
+   Mobile-first, polished 2D casual arcade design
+   Color palette: Pastel cream, strawberry pink, milk-tea brown, soft yellow
+   ========================================================================== */
+
+:root {
+  --btc-cream: #FFF8F0;
+  --btc-cream-warm: #F8EFE4;
+  --btc-cream-card: #FFFFFF;
+  --btc-brown-dark: #4A2E1B;
+  --btc-brown-text: #5C3A24;
+  --btc-brown-light: #8D6346;
+  --btc-pink: #FF6584;
+  --btc-pink-hover: #E84E6D;
+  --btc-yellow: #FFC02A;
+  --btc-yellow-hover: #EAA816;
+  --btc-border: #E8D8C8;
+  --btc-border-dark: #5C3A24;
+  --btc-font-heading: 'Baloo 2', 'Comfortaa', -apple-system, BlinkMacSystemFont, sans-serif;
+  --btc-font-body: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ==========================================================================
+   1. Desktop Wrapper & Responsive Container
+   ========================================================================== */
+
+.btc-desktop-wrapper {
+  min-height: 100dvh;
+  width: 100%;
+  background-color: #2F1E15;
+  background-image:
+    radial-gradient(circle at 50% 15%, #462D20 0%, #20130D 80%),
+    radial-gradient(circle at 10% 90%, rgba(255, 192, 42, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 101, 132, 0.05) 0%, transparent 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+  font-family: var(--btc-font-body);
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.btc-game-container {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  max-height: 780px;
+  background: var(--btc-cream);
+  border-radius: 28px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 4px var(--btc-brown-dark);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 460px) {
+  .btc-desktop-wrapper {
+    padding: 0;
+  }
+  .btc-game-container {
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+}
+
+/* Flanking Desktop Panels */
+.btc-desktop-flank {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .btc-desktop-flank {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 260px;
+    padding: 24px;
+    color: var(--btc-cream);
+    box-sizing: border-box;
+    z-index: 2;
+  }
+
+  .btc-desktop-flank--left {
+    text-align: right;
+  }
+
+  .btc-desktop-flank--right {
+    text-align: left;
+  }
+
+  .btc-desktop-badge {
+    display: inline-block;
+    background: var(--btc-pink);
+    color: #FFFFFF;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: var(--btc-font-heading);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border: 2px solid var(--btc-brown-dark);
+    box-shadow: 0 3px 0 var(--btc-brown-dark);
+    margin-bottom: 12px;
+  }
+
+  .btc-desktop-brand {
+    font-family: var(--btc-font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--btc-yellow);
+    margin: 0 0 8px 0;
+    text-shadow: 2px 2px 0 var(--btc-brown-dark);
+  }
+
+  .btc-desktop-tagline {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #E2CFBF;
+    margin: 0 0 16px 0;
+  }
+
+  .btc-desktop-card {
+    background: #3D261B;
+    border: 2px solid #5A3A2B;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    box-shadow: 0 4px 0 #1B0F0A;
+  }
+
+  .btc-desktop-card h4 {
+    margin: 0 0 10px 0;
+    font-family: var(--btc-font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--btc-yellow);
+    letter-spacing: 0.5px;
+  }
+
+  .btc-desktop-card p {
+    margin: 0 0 8px 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #E6D8CE;
+  }
+
+  .btc-desktop-best-val {
+    font-family: var(--btc-font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  .btc-desktop-topping-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btc-desktop-topping-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #2E1B12;
+    padding: 6px 10px;
+    border-radius: 10px;
+  }
+
+  .btc-desktop-topping-img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  }
+
+  .btc-desktop-topping-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .btc-desktop-topping-info strong {
+    font-size: 12px;
+    color: #FFFFFF;
+  }
+
+  .btc-desktop-topping-info span {
+    font-size: 11px;
+    color: #C0A898;
+  }
+
+  .btc-desktop-footer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #8C6A55;
+    font-weight: 600;
+  }
+}
+
+/* ==========================================================================
+   2. Buttons & Shared UI Components
+   ========================================================================== */
+
+.btc-icon-btn {
+  background: var(--btc-cream-card);
+  border: 2px solid var(--btc-brown-dark);
+  color: var(--btc-brown-dark);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--btc-brown-dark);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  touch-action: manipulation;
+}
+
+.btc-icon-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btc-brown-dark);
+}
+
+.btc-icon-btn--light {
+  background: #FFFFFF;
+}
+
+.btc-btn-primary {
+  background: var(--btc-yellow);
+  color: var(--btc-brown-dark);
+  border: 3px solid var(--btc-brown-dark);
+  border-radius: 18px;
+  font-family: var(--btc-font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 14px 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--btc-brown-dark);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.1s ease;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+.btc-btn-primary:hover {
+  background: var(--btc-yellow-hover);
+}
+
+.btc-btn-primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--btc-brown-dark);
+}
+
+.btc-btn-primary--gameover {
+  background: var(--btc-pink);
+  color: #FFFFFF;
+}
+
+.btc-btn-primary--gameover:hover {
+  background: var(--btc-pink-hover);
+}
+
+.btc-btn-secondary {
+  background: #FFFFFF;
+  color: var(--btc-brown-dark);
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 16px;
+  font-family: var(--btc-font-heading);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--btc-brown-dark);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+.btc-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--btc-brown-dark);
+}
+
+/* ==========================================================================
+   3. Start Screen
+   ========================================================================== */
+
+.btc-start-screen {
+  padding: 20px 20px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 50% 30%, #FFF5EA 0%, #F5E6D4 100%);
+  position: relative;
+  overflow-y: auto;
+}
+
+.btc-start-screen__top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.btc-start-screen__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.btc-start-screen__tag {
+  background: var(--btc-pink);
+  color: #FFFFFF;
+  font-family: var(--btc-font-heading);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--btc-brown-dark);
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  margin-bottom: 6px;
+}
+
+.btc-start-screen__title {
+  margin: 0;
+  font-family: var(--btc-font-heading);
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+.btc-start-screen__subtitle {
+  margin: 4px 0 14px 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--btc-brown-light);
+}
+
+/* Mascot Display with Floating Orbits */
+.btc-mascot-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 12px 0;
+}
+
+.btc-mascot-glow {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, rgba(255, 192, 42, 0.45) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  animation: btc-pulse 2s infinite ease-in-out;
+}
+
+.btc-mascot-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 8px 16px rgba(74, 46, 27, 0.25));
+  animation: btc-float 3s infinite ease-in-out;
+}
+
+.btc-mascot-orbit {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 var(--btc-brown-dark);
+  z-index: 3;
+}
+
+.btc-mascot-orbit img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.btc-mascot-orbit--1 {
+  top: 4px;
+  left: 2px;
+  animation: btc-orbit-bounce 2.6s infinite ease-in-out;
+}
+
+.btc-mascot-orbit--2 {
+  top: 16px;
+  right: -4px;
+  animation: btc-orbit-bounce 2.8s infinite ease-in-out 0.4s;
+}
+
+.btc-mascot-orbit--3 {
+  bottom: 6px;
+  left: 12px;
+  animation: btc-orbit-bounce 3s infinite ease-in-out 0.8s;
+}
+
+/* High Score Badge */
+.btc-start-screen__best-badge {
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 999px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 0 var(--btc-brown-dark);
+  margin-top: 4px;
+}
+
+.btc-best-icon {
+  font-size: 15px;
+}
+
+.btc-best-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--btc-brown-light);
+  letter-spacing: 0.5px;
+}
+
+.btc-best-val {
+  font-family: var(--btc-font-heading);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--btc-pink);
+}
+
+/* Instructions Card */
+.btc-instructions-card {
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 20px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 0 var(--btc-brown-dark);
+  margin: 10px 0;
+}
+
+.btc-instructions-title {
+  font-family: var(--btc-font-heading);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.btc-instructions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btc-instruction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--btc-cream);
+  padding: 7px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--btc-border);
+}
+
+.btc-instruction-emoji {
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.btc-instruction-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--btc-brown-text);
+}
+
+.btc-instruction-text strong {
+  color: var(--btc-brown-dark);
+}
+
+.btc-start-screen__actions {
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   4. Gameplay Screen & Top HUD
+   ========================================================================== */
+
+.btc-game-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background:
+    radial-gradient(circle at 50% 30%, #FFFDF8 0%, #F5ECE0 100%);
+  overflow: hidden;
+  touch-action: none;
+  outline: none;
+}
+
+/* Error flash on screen */
+.btc-game-screen--flash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(232, 78, 109, 0.22);
+  z-index: 50;
+  pointer-events: none;
+  animation: btc-flash 0.25s ease-out;
+}
+
+/* ==========================================================================
+   4. Redesigned Spacious Gameplay Header (Top HUD)
+   ========================================================================== */
+
+.btc-score-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 6px 12px;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 100%;
+  gap: 8px;
+}
+
+/* 4A. Left: Action Buttons (Pause & Sound) */
+.btc-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btc-icon-btn--pause {
+  background: var(--btc-cream);
+  color: var(--btc-brown-dark);
+}
+
+.btc-icon-btn--pause:hover {
+  background: #FFF0E0;
+}
+
+.btc-pause-icon {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* 4B. Center: Consolidated Score & Best Score */
+.btc-hud-score-box {
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 14px;
+  padding: 3px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  min-width: 80px;
+  flex: 0 1 auto;
+}
+
+.btc-hud-score-main {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.btc-hud-score-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--btc-brown-light);
+  letter-spacing: 0.5px;
+}
+
+.btc-hud-score-val {
+  font-family: var(--btc-font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  line-height: 1.1;
+}
+
+.btc-hud-speed-badge {
+  background: var(--btc-yellow);
+  color: var(--btc-brown-dark);
+  font-family: var(--btc-font-heading);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--btc-brown-dark);
+  box-shadow: 0 1px 0 var(--btc-brown-dark);
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  animation: btc-combo-bounce 0.3s ease-out;
+}
+
+.btc-hud-speed-badge--max {
+  background: #FF2A42;
+  color: #FFFFFF;
+  border-color: #5C131D;
+  box-shadow: 0 0 8px rgba(255, 42, 66, 0.6), 0 1px 0 #5C131D;
+  animation: btc-pulse 1s infinite alternate;
+}
+
+.btc-hud-score-best {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--btc-pink);
+  line-height: 1;
+  margin-top: 1px;
+}
+
+/* 4C. Right: Lives Indicator (MẠNG 5 Hearts) */
+.btc-hud-lives-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 14px;
+  padding: 5px 8px;
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  flex-shrink: 0;
+}
+
+.btc-hud-lives-box--shake {
+  animation: btc-shake 0.35s ease-in-out;
+}
+
+.btc-hud-lives-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--btc-brown-light);
+  letter-spacing: 0.5px;
+}
+
+.btc-hud-lives-hearts {
+  display: flex;
+  gap: 2.5px;
+}
+
+.btc-heart {
+  font-size: 13.5px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.btc-heart--active {
+  filter: drop-shadow(0 1px 2px rgba(232, 78, 109, 0.4));
+}
+
+.btc-heart--lost {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+
+/* ==========================================================================
+   5. Order Panel — "ĐƠN HÀNG" (Multi-item Order System: 1, 2, or 3 items)
+   ========================================================================== */
+
+.btc-order-panel {
+  margin: 2px 12px 6px 12px;
+  background: #FFFFFF;
+  border: 3px solid var(--btc-brown-dark);
+  border-radius: 18px;
+  padding: 8px 10px 7px 10px;
+  box-shadow: 0 4px 0 var(--btc-brown-dark);
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btc-order-panel--pulse {
+  animation: btc-target-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btc-order-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -14px;
+  padding: 0 4px;
+}
+
+.btc-order-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btc-order-panel__badge {
+  background: var(--btc-brown-dark);
+  color: var(--btc-yellow);
+  font-family: var(--btc-font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btc-order-panel__combo {
+  background: var(--btc-yellow);
+  color: var(--btc-brown-dark);
+  font-family: var(--btc-font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--btc-brown-dark);
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  animation: btc-combo-bounce 0.3s ease-out;
+}
+
+.btc-order-panel__count {
+  font-family: var(--btc-font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: var(--btc-pink);
+  border: 1.5px solid #FFFFFF;
+  border-radius: 999px;
+  padding: 1px 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.btc-order-panel__items {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 6px;
+  width: 100%;
+}
+
+.btc-order-item {
+  flex: 1;
+  background: var(--btc-cream);
+  border: 2px solid var(--btc-border);
+  border-radius: 12px;
+  padding: 5px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 0;
+}
+
+/* 1 Item Layout: Larger & Centered */
+.btc-order-panel--count-1 .btc-order-item {
+  padding: 8px 16px;
+  gap: 12px;
+}
+
+.btc-order-panel--count-1 .btc-order-item__icon-wrap {
+  width: 44px;
+  height: 44px;
+}
+
+.btc-order-panel--count-1 .btc-order-item__name {
+  font-size: 15px;
+}
+
+/* 3 Items Layout: Compact for Mobile */
+.btc-order-panel--count-3 .btc-order-item {
+  padding: 4px 4px;
+  gap: 5px;
+}
+
+.btc-order-panel--count-3 .btc-order-item__icon-wrap {
+  width: 32px;
+  height: 32px;
+}
+
+.btc-order-panel--count-3 .btc-order-item__img {
+  width: 24px;
+  height: 24px;
+}
+
+.btc-order-panel--count-3 .btc-order-item__name {
+  font-size: 10.5px;
+}
+
+.btc-order-panel--count-3 .btc-order-item__status {
+  font-size: 9px;
+}
+
+/* Pending item state */
+.btc-order-item--pending {
+  border-color: #E2A03F;
+  background: #FFFDF8;
+  box-shadow: 0 2px 6px rgba(255, 192, 42, 0.15);
+}
+
+/* Completed item state */
+.btc-order-item--completed {
+  border-color: #2ECC71;
+  background: #E8F8F0;
+  opacity: 0.85;
+}
+
+.btc-order-item__icon-wrap {
+  width: 36px;
+  height: 36px;
+  background: #FFFFFF;
+  border: 2px solid #FFBE0B;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.btc-order-item__img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(74, 46, 27, 0.25));
+}
+
+.btc-order-item__check {
+  position: absolute;
+  inset: -2px;
+  background: rgba(46, 204, 113, 0.9);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-family: var(--btc-font-heading);
+  font-size: 18px;
+  font-weight: 900;
+  animation: btc-check-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btc-order-item__info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.btc-order-item__name {
+  font-family: var(--btc-font-heading);
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btc-order-item__status {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--btc-brown-light);
+  margin-top: 1px;
+}
+
+.btc-order-item--completed .btc-order-item__status {
+  color: #27AE60;
+  font-weight: 800;
+}
+
+.btc-order-item--pending .btc-order-item__status {
+  color: #D35400;
+}
+
+/* ==========================================================================
+   6. Playfield Area, Catch Height Line & Miss Indicators
+   ========================================================================== */
+
+.btc-playfield-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  background-image:
+    radial-gradient(circle at 20% 40%, rgba(255, 192, 42, 0.04) 0, rgba(255, 192, 42, 0.04) 16px, transparent 16px),
+    radial-gradient(circle at 80% 70%, rgba(255, 101, 132, 0.04) 0, rgba(255, 101, 132, 0.04) 20px, transparent 20px);
+}
+
+/* Thanh đỏ chỉ định độ cao hứng ngang playfield */
+.btc-catch-guideline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  pointer-events: none;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.btc-catch-guideline__beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 42, 66, 0.3) 15%,
+    rgba(255, 42, 66, 0.75) 50%,
+    rgba(255, 42, 66, 0.3) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px rgba(255, 42, 66, 0.6);
+  border-top: 1px dashed rgba(255, 255, 255, 0.4);
+}
+
+.btc-catch-guideline__tag {
+  font-family: var(--btc-font-heading);
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: rgba(255, 42, 66, 0.85);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Dấu X đỏ hiển thị khi bỏ lỡ topping trong đơn hàng */
+.btc-miss-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: btc-miss-pop 0.65s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.btc-miss-marker__x {
+  font-family: var(--btc-font-heading);
+  font-size: 28px;
+  font-weight: 900;
+  color: #FF2A42;
+  text-shadow:
+    0 0 12px rgba(255, 42, 66, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+  line-height: 1;
+}
+
+.btc-miss-marker__tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: #FF2A42;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1.5px solid #FFFFFF;
+  margin-top: 1px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+/* Thanh đỏ tại miệng cốc của bé ly trà sữa */
+.btc-cup-catch-bar {
+  position: absolute;
+  top: 18px;
+  left: 8px;
+  right: 8px;
+  height: 4px;
+  pointer-events: none;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btc-cup-catch-bar__beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #FF2A42;
+  border-radius: 999px;
+  box-shadow:
+    0 0 8px rgba(255, 42, 66, 0.9),
+    0 0 16px rgba(255, 42, 66, 0.6);
+  animation: btc-pulse 1.2s infinite ease-in-out;
+}
+
+.btc-cup-catch-bar__marker {
+  width: 6px;
+  height: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid #FF2A42;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 6px #FF2A42;
+}
+
+/* Falling Heart Item (Extra Life) */
+.btc-falling-heart {
+  z-index: 8;
+}
+
+.btc-heart-icon-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btc-heart-glow-ring {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  background: radial-gradient(circle, rgba(255, 101, 132, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: btc-pulse 1s infinite ease-in-out;
+}
+
+.btc-heart-graphic {
+  font-size: 30px;
+  filter: drop-shadow(0 0 10px rgba(255, 77, 109, 0.9)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+  animation: btc-heart-pulse 0.6s infinite alternate ease-in-out;
+}
+
+.btc-heart-sparkle {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 13px;
+}
+
+.btc-heart-badge {
+  position: absolute;
+  bottom: -4px;
+  background: #D9272E;
+  color: #FFFFFF;
+  font-family: var(--btc-font-heading);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.btc-falling-topping {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btc-falling-topping__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Enhanced filter to make sure white pearls & coconut jelly pop vividly */
+  filter:
+    drop-shadow(0 3px 6px rgba(74, 46, 27, 0.35))
+    drop-shadow(0 0 1px rgba(74, 46, 27, 0.4));
+}
+
+/* ==========================================================================
+   7. Player Cup
+   ========================================================================== */
+
+.btc-player-cup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 15;
+  will-change: transform;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btc-player-cup__inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center bottom;
+  transition: filter 0.15s ease;
+}
+
+.btc-player-cup__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(74, 46, 27, 0.3));
+}
+
+/* Cup happy bounce on correct catch */
+.btc-player-cup__inner--happy {
+  animation: btc-cup-happy 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Cup wobble shake on wrong catch */
+.btc-player-cup__inner--wrong {
+  animation: btc-cup-shake 0.35s ease-in-out;
+  filter: drop-shadow(0 0 8px rgba(232, 78, 109, 0.8));
+}
+
+/* Sparkle particles emitting from cup rim */
+.btc-cup-particle {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  font-size: 16px;
+  pointer-events: none;
+  animation: btc-particle-fly 0.45s ease-out forwards;
+}
+
+/* Floating Popups (+10, combo, wrong) */
+.btc-popup {
+  position: absolute;
+  font-family: var(--btc-font-heading);
+  font-weight: 800;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 20;
+  animation: btc-popup-float 0.75s ease-out forwards;
+  white-space: nowrap;
+}
+
+.btc-popup--success {
+  color: #2ECC71;
+  text-shadow:
+    -1px -1px 0 var(--btc-brown-dark),
+    1px -1px 0 var(--btc-brown-dark),
+    -1px 1px 0 var(--btc-brown-dark),
+    1px 1px 0 var(--btc-brown-dark),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--combo {
+  color: var(--btc-yellow);
+  font-size: 16px;
+  text-shadow:
+    -1px -1px 0 var(--btc-brown-dark),
+    1px -1px 0 var(--btc-brown-dark),
+    -1px 1px 0 var(--btc-brown-dark),
+    1px 1px 0 var(--btc-brown-dark),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--wrong {
+  color: var(--btc-pink);
+  font-size: 16px;
+  text-shadow:
+    -1px -1px 0 var(--btc-brown-dark),
+    1px -1px 0 var(--btc-brown-dark),
+    -1px 1px 0 var(--btc-brown-dark),
+    1px 1px 0 var(--btc-brown-dark),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--heart {
+  color: #FF2A6D;
+  font-size: 18px;
+  text-shadow:
+    -1px -1px 0 #FFFFFF,
+    1px -1px 0 #FFFFFF,
+    -1px 1px 0 #FFFFFF,
+    1px 1px 0 #FFFFFF,
+    0 0 10px rgba(255, 42, 109, 0.8),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--order-done {
+  color: #FFD166;
+  font-size: 18px;
+  text-shadow:
+    -1.5px -1.5px 0 var(--btc-brown-dark),
+    1.5px -1.5px 0 var(--btc-brown-dark),
+    -1.5px 1.5px 0 var(--btc-brown-dark),
+    1.5px 1.5px 0 var(--btc-brown-dark),
+    0 0 12px rgba(255, 209, 102, 0.9),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--speed-up {
+  color: #00E5FF;
+  font-size: 17px;
+  text-shadow:
+    -1.5px -1.5px 0 var(--btc-brown-dark),
+    1.5px -1.5px 0 var(--btc-brown-dark),
+    -1.5px 1.5px 0 var(--btc-brown-dark),
+    1.5px 1.5px 0 var(--btc-brown-dark),
+    0 0 10px rgba(0, 229, 255, 0.8),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+.btc-popup--speed-max {
+  color: #FF2A42;
+  font-size: 19px;
+  text-shadow:
+    -1.5px -1.5px 0 #FFFFFF,
+    1.5px -1.5px 0 #FFFFFF,
+    -1.5px 1.5px 0 #FFFFFF,
+    1.5px 1.5px 0 #FFFFFF,
+    0 0 14px rgba(255, 42, 66, 0.9),
+    0 3px 0 var(--btc-brown-dark);
+}
+
+/* ==========================================================================
+   8. Countdown Overlay (3.. 2.. 1.. GO!)
+   ========================================================================== */
+
+.btc-countdown-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(47, 30, 21, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.btc-countdown-num {
+  font-family: var(--btc-font-heading);
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--btc-yellow);
+  text-shadow:
+    -2px -2px 0 var(--btc-brown-dark),
+    2px -2px 0 var(--btc-brown-dark),
+    -2px 2px 0 var(--btc-brown-dark),
+    2px 2px 0 var(--btc-brown-dark),
+    0 6px 0 var(--btc-brown-dark);
+  animation: btc-countdown-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btc-countdown-hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-top: 12px;
+  background: var(--btc-brown-dark);
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 2px solid #FFFFFF;
+}
+
+.btc-countdown-hint strong {
+  color: var(--btc-yellow);
+}
+
+/* ==========================================================================
+   8B. Pause Overlay & Modal
+   ========================================================================== */
+
+.btc-pause-overlay {
+  z-index: 50;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.btc-pause-card {
+  width: 100%;
+  max-width: 330px;
+  background: var(--btc-cream);
+  border: 4px solid var(--btc-brown-dark);
+  border-radius: 28px;
+  padding: 22px 18px;
+  box-shadow: 0 8px 0 var(--btc-brown-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  animation: btc-target-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btc-pause-mascot {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 4px;
+}
+
+.btc-pause-mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(74, 46, 27, 0.25));
+}
+
+.btc-pause-zzz {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  font-size: 18px;
+  animation: btc-float 1.5s infinite ease-in-out;
+}
+
+.btc-pause-title {
+  margin: 4px 0 0 0;
+  font-family: var(--btc-font-heading);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  line-height: 1.1;
+}
+
+.btc-pause-subtitle {
+  margin: 4px 0 14px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--btc-brown-light);
+}
+
+.btc-pause-stats {
+  width: 100%;
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 16px;
+  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 3px 0 var(--btc-brown-dark);
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.btc-pause-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btc-pause-stat-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--btc-brown-light);
+  letter-spacing: 0.5px;
+}
+
+.btc-pause-stat-val {
+  font-family: var(--btc-font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  line-height: 1.15;
+}
+
+.btc-pause-stat-val--score {
+  color: var(--btc-yellow);
+  text-shadow: 1px 1px 0 var(--btc-brown-dark);
+}
+
+.btc-pause-stat-val--order {
+  color: var(--btc-pink);
+}
+
+.btc-pause-stat-val--speed {
+  color: #0096C7;
+  font-size: 13.5px;
+}
+
+.btc-pause-stat-divider {
+  width: 2px;
+  height: 28px;
+  background: var(--btc-border);
+}
+
+.btc-pause-order-preview {
+  width: 100%;
+  background: #FFFDF8;
+  border: 1.5px solid var(--btc-border);
+  border-radius: 14px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.btc-pause-order-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.btc-pause-order-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btc-pause-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--btc-border);
+}
+
+.btc-pause-chip--done {
+  background: #E8F8F0;
+  border-color: #2ECC71;
+  color: #27AE60;
+}
+
+.btc-pause-chip--pending {
+  background: #FFFFFF;
+  border-color: #FFC02A;
+  color: var(--btc-brown-dark);
+}
+
+.btc-pause-chip-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.btc-chip-check {
+  font-weight: 900;
+  color: #2ECC71;
+}
+
+.btc-pause-sound-bar {
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.btc-pause-sound-btn {
+  background: #FFFFFF;
+  border: 1.5px solid var(--btc-brown-dark);
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--btc-brown-dark);
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  transition: transform 0.08s ease;
+  width: 100%;
+}
+
+.btc-pause-sound-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.btc-pause-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btc-btn-primary--resume {
+  background: var(--btc-yellow);
+}
+
+.btc-btn-ghost {
+  background: transparent;
+  color: var(--btc-brown-light);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  font-family: var(--btc-font-heading);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: color 0.1s ease;
+}
+
+.btc-btn-ghost:hover {
+  color: var(--btc-brown-dark);
+}
+
+/* ==========================================================================
+   9. Game Over Overlay
+   ========================================================================== */
+
+.btc-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(47, 30, 21, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 40;
+  box-sizing: border-box;
+  animation: btc-fade-in 0.3s ease-out;
+}
+
+.btc-game-over-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--btc-cream);
+  border: 4px solid var(--btc-brown-dark);
+  border-radius: 28px;
+  padding: 24px 20px;
+  box-shadow: 0 8px 0 var(--btc-brown-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.btc-game-over-mascot {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 4px;
+}
+
+.btc-game-over-mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(74, 46, 27, 0.25));
+}
+
+.btc-sweat-drop {
+  position: absolute;
+  top: 4px;
+  right: -4px;
+  font-size: 20px;
+  animation: btc-sweat 1s infinite alternate ease-in-out;
+}
+
+.btc-game-over-title {
+  font-family: var(--btc-font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--btc-brown-dark);
+  margin-top: 4px;
+  line-height: 1.1;
+}
+
+.btc-game-over-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--btc-brown-light);
+  margin-bottom: 12px;
+}
+
+.btc-new-best-banner {
+  background: var(--btc-yellow);
+  color: var(--btc-brown-dark);
+  font-family: var(--btc-font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--btc-brown-dark);
+  box-shadow: 0 2px 0 var(--btc-brown-dark);
+  margin-bottom: 12px;
+  animation: btc-pulse 1s infinite;
+}
+
+.btc-result-box {
+  width: 100%;
+  background: #FFFFFF;
+  border: 2px solid var(--btc-brown-dark);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 3px 0 var(--btc-brown-dark);
+  margin-bottom: 18px;
+  box-sizing: border-box;
+}
+
+.btc-result-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btc-result-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--btc-brown-light);
+  letter-spacing: 0.5px;
+}
+
+.btc-result-val {
+  font-family: var(--btc-font-heading);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.btc-result-val--score {
+  color: var(--btc-brown-dark);
+}
+
+.btc-result-val--best {
+  color: var(--btc-pink);
+}
+
+.btc-result-divider {
+  width: 2px;
+  height: 36px;
+  background: var(--btc-border);
+}
+
+.btc-game-over-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   10. Keyframe Animations
+   ========================================================================== */
+
+@keyframes btc-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes btc-orbit-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.05);
+  }
+}
+
+@keyframes btc-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes btc-flash {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes btc-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes btc-cup-happy {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.16, 0.86);
+  }
+  70% {
+    transform: scale(0.92, 1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes btc-cup-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-8px);
+  }
+  40%, 80% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes btc-target-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 16px rgba(255, 192, 42, 0.6), 0 4px 0 var(--btc-brown-dark);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes btc-combo-bounce {
+  0% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes btc-particle-fly {
+  0% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 0), var(--dy, -40px)) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes btc-popup-float {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-38px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes btc-countdown-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes btc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes btc-sweat {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes btc-miss-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -65%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes btc-heart-pulse {
+  0% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes btc-check-bounce {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

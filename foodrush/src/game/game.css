@@ -2266,6 +2266,21 @@
   background: radial-gradient(circle at center, #FFF4E4 0%, #FDE4BD 70%, #F5C77E 100%);
   padding: 24px;
 }
+.fs-featured-card__media--bubbletea {
+  background: radial-gradient(circle at center, #FFF8F0 0%, #F8EFE4 60%, #FFD699 100%);
+  padding: 24px;
+}
+.fs-featured-bubble-img {
+  max-height: 280px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 20px rgba(74, 46, 27, 0.28));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: block;
+}
+.fs-featured-card:hover .fs-featured-bubble-img {
+  transform: scale(1.05) rotate(2deg);
+}
 .fs-featured-stack-img {
   max-height: 320px;
   width: auto;

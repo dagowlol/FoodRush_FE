@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import FoodDefenderGame from './game/FoodDefenderGame'
 
-// Lazy load: chỉ tải khi user truy cập /admin, /staff, /auth/callback, /stack-attack
+// Lazy load: chỉ tải khi user truy cập /admin, /staff, /auth/callback, /stack-attack, /bubble-tea-catch
 const GoogleCallback = lazy(() => import('./auth/GoogleCallback'))
 const OperationsDashboard = lazy(() => import('./pages/OperationsDashboard'))
 const StackAttackGame = lazy(() => import('./game/StackAttackGame'))
+const BubbleTeaCatchGame = lazy(() => import('./game/bubble-tea/BubbleTeaCatchGame'))
 
 function LoadingScreen() {
   return (
@@ -60,6 +61,24 @@ function App() {
     return (
       <Suspense fallback={<LoadingScreen />}>
         <StackAttackGame
+          onExit={() => {
+            window.history.pushState({}, '', '/')
+            setPath('/')
+          }}
+        />
+      </Suspense>
+    )
+  }
+
+  if (
+    path === '/bubble-tea' ||
+    path.startsWith('/bubble-tea/') ||
+    path === '/bubble-tea-catch' ||
+    path.startsWith('/bubble-tea-catch')
+  ) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <BubbleTeaCatchGame
           onExit={() => {
             window.history.pushState({}, '', '/')
             setPath('/')
